@@ -5,9 +5,10 @@ const dbPath = resolve('./server/data/data.db')
 const db = new Database(dbPath)
 
 db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE
+  CREATE TABLE IF NOT EXISTS teachers (
+    id_teacher INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE,
+    subject TEXT
   );`)
 
 export default db

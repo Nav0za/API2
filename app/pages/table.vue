@@ -47,7 +47,7 @@
             <div
               v-for="(slot, colIndex) in row"
               :key="colIndex"
-              class="border border-gray-300 w-full h-15 p-1 flex items-center justify-center bg-white rounded relative"
+              class="border border-gray-300 w-full h-15 p-1 flex items-center justify-center bg-white relative"
               @dragover.prevent
               @drop="onDrop(rowIndex, colIndex)"
               @contextmenu.prevent="clearSlot(rowIndex, colIndex)"

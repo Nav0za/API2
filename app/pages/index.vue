@@ -1,8 +1,9 @@
 <template>
   <div>
+    <!-- show User -->
     <div class="w-2/3 border-2 border-amber-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
       <h1 class="text-2xl font-bold mb-5">
-        Show Users
+        รายชื่ออาจารย์
       </h1>
       <div class="flex flex-col">
         <div v-if="pending">
@@ -10,14 +11,14 @@
         </div>
         <div v-else>
           <div
-            v-for="user in users"
-            :key="user.id"
+            v-for="teacher in teachers"
+            :key="teacher.id_teacher"
             class="border-2 border-green-600 p-4 mb-2 rounded-lg flex justify-between items-center"
           >
-            {{ user.username }}
+            {{teacher.name }}
             <div class="flex gap-3">
-              <UButton icon="i-lucide-edit" color="warning" @click="openEditModal(user)" />
-              <UButton icon="i-lucide-trash" color="error" @click="delUser(user.id)" />
+              <UButton icon="i-lucide-edit" color="warning" @click="openEditModal(teacher)" />
+              <UButton icon="i-lucide-trash" color="error" @click="delTeacher(teacher.id_teacher)" />
             </div>
           </div>
         </div>
@@ -25,28 +26,28 @@
     </div>
     <!-- edit user -->
     <UModal
-      title="Edit Username"
+      title="แก้ไขชื่ออาจารย์"
       v-model:open="editModalopen"
     >
       <template #body>
-        <h2>Old username: {{ seletedUser?.username }}</h2>
-        <UInput placeholder="New username" v-model="newUsername" />
+        <h2>ชื่อเก่า: {{ seletedTeacher?.name }}</h2>
+        <UInput placeholder="ชื่อใหม่" v-model="newName" />
       </template>
       <template #footer>
-        <UButton label="Save" color="primary" @click="updateUser(seletedUser?.id)" />
-        <UButton label="Cancel" color="error" @click="editModalopen = false" />
+        <UButton label="บันทีก" color="primary" @click="updateTeacher(seletedTeacher?.id_teacher)" />
+        <UButton label="ยกเลิก" color="error" @click="editModalopen = false" />
       </template>
     </UModal>
     <!-- add user -->
     <div class="w-2/3 border-2 border-blue-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
       <h1 class="text-2xl font-bold mb-1">
-        Add User
+        เพิ่มอาจารย์
       </h1>
-      <p>noti</p>
-      <UInput v-model="username" />
+      <p v-if="error" class="text-red-600 mb-2">{{ error }}</p>
+      <UInput v-model="name" />
       <UButton
-        label="Add"
-        @click="addUser(username)"
+        label="เพิ่ม"
+        @click="addTeacher"
       />
     </div>
 
@@ -54,23 +55,23 @@
 </template>
 
 <script setup>
-const { data: users, pending } = await useFetch('/api/users')
+const { data: teachers, pending } = await useFetch('/api/teachers')
 
-const username = ref('')
-const addUser = async () => {
-  if (!username.value) return
+const name = ref('')
+const addTeacher = async () => {
+  if (!name.value) return // ตรวจสอบว่าช่องกรอกไม่ว่างเปล่า
   
   try {
-    const newUser = await $fetch('/api/users', {
+    const newTeacher = await $fetch('/api/teachers', {
       method: 'POST',
-      body: { username: username.value }
+      body: { name: name.value } // ส่งข้อมูลชื่อครูไปยัง API
     })
     
     // เคลียร์ช่องกรอก
-    username.value = ''
+    name.value = ''
     
     // อัปเดตข้อมูลในหน้าโดยไม่ต้อง reload
-    users.value.push(newUser)
+    teachers.value.push(newTeacher)
     
     // ถ้าอยากแน่ใจว่าข้อมูลตรงกับฐานจริง (optional)
     // await refresh()
@@ -78,45 +79,45 @@ const addUser = async () => {
     console.error(err)
   }
 }
-const delUser = async (id) => {
+const delTeacher = async (id) => {
   try {
-    await $fetch(`/api/users/${id}`, {
+    await $fetch(`/api/teachers/${id}`, {
       method: 'DELETE'
     })
     
     // อัปเดตข้อมูลในหน้าโดยไม่ต้อง reload
-    users.value = users.value.filter(user => user.id !== id)
+    teachers.value = teachers.value.filter(teacher => teacher.id_teacher !== id)
     
     // ถ้าอยากแน่ใจว่าข้อมูลตรงกับฐานจริง (optional)
-    // await refresh()
   } catch (err) {
     console.error(err)
   }
 }
 const editModalopen = ref(false)
-const seletedUser = ref(null)
-const newUsername = ref('')
-const updateUser = async (id) => {
-  if (!newUsername.value.trim()) return
+const seletedTeacher = ref(null)
+const newName = ref('')
+const updateTeacher = async (id) => {
+  if (!newName.value.trim()) return
   
   try {
-    await $fetch(`/api/users/${id}`, {
+    await $fetch(`/api/teachers/${id}`, {
       method: 'PUT',
-      body: { username: newUsername.value }
+      body: { name: newName.value }
     })
 
-    const user = users.value.find(u => u.id === id)
-    if (user) user.username = newUsername.value
+    const teacher = teachers.value.find(t => t.id_teacher === id) // หาอาจารย์ที่ถูกแก้ไข
+    if (teacher) teacher.name = newName.value // ถ้ามี ให้แก้ไขชื่อในรายการ
 
-    newUsername.value = ''
+    newName.value = ''
     editModalopen.value = false
   } catch (err) {
     console.error('Update failed:', err)
   }
 }
+// เปิด modal แก้ไข
 const openEditModal = (user) => {
-  seletedUser.value = user
-  newUsername.value = user.username
+  seletedTeacher.value = user
+  newName.value = user.name
   editModalopen.value = true
 }
 
