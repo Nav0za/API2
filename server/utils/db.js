@@ -11,4 +11,10 @@ db.exec(`
     subject TEXT
   );`)
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS Subjects (
+    id_subject INTEGER PRIMARY KEY AUTOINCREMENT,
+    name_subject TEXT UNIQUE
+  );`)
+
 export default db

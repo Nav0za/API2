@@ -1,8 +1,9 @@
 <template>
   <div>
     <!-- show User -->
-    <div class="w-2/3 border-2 border-amber-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
-      <h1 class="text-2xl font-bold mb-5">
+    <div class="flex flex-row items-center max-w-2xl ms-3 gap-2">
+      <div class="w-2/3 border-2 border-amber-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
+        <h1 class="text-2xl font-bold mb-5">
         รายชื่ออาจารย์
       </h1>
       <div class="flex flex-col">
@@ -14,9 +15,10 @@
             v-for="teacher in teachers"
             :key="teacher.id_teacher"
             class="border-2 border-green-600 p-4 mb-2 rounded-lg flex justify-between items-center"
-          >
+            >
             {{teacher.name }}
             <div class="flex gap-3">
+              <UButton icon="i-lucide-menu" color="secondary" :to="`/teacher/${teacher.id_teacher}`" />
               <UButton icon="i-lucide-edit" color="warning" @click="openEditModal(teacher)" />
               <UButton icon="i-lucide-trash" color="error" @click="delTeacher(teacher.id_teacher)" />
             </div>
@@ -26,8 +28,8 @@
     </div>
     <!-- edit user -->
     <UModal
-      title="แก้ไขชื่ออาจารย์"
-      v-model:open="editModalopen"
+    title="แก้ไขชื่ออาจารย์"
+    v-model:open="editModalopen"
     >
       <template #body>
         <h2>ชื่อเก่า: {{ seletedTeacher?.name }}</h2>
@@ -46,10 +48,11 @@
       <p v-if="error" class="text-red-600 mb-2">{{ error }}</p>
       <UInput v-model="name" />
       <UButton
-        label="เพิ่ม"
-        @click="addTeacher"
+      label="เพิ่ม"
+      @click="addTeacher"
       />
     </div>
+  </div>
 
   </div>
 </template>
@@ -93,6 +96,7 @@ const delTeacher = async (id) => {
     console.error(err)
   }
 }
+// แก้ไขชื่ออาจารย์
 const editModalopen = ref(false)
 const seletedTeacher = ref(null)
 const newName = ref('')
