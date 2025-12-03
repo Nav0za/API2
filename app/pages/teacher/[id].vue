@@ -22,7 +22,10 @@
                 </UModal>
             </div>
             <hr>
-
+            <div v-if="pending">Loading...</div>
+            <div v-else v-for="subject in subjects">
+                {{ subject.name_subject }}
+            </div>
         </div>
     </div>
 </template>
@@ -36,4 +39,8 @@ const { data: teachers, pending } = await useFetch('/api/teachers')
 const teacherName = teachers.value.find(t => t.id_teacher == id)?.name || 'ไม่พบชื่ออาจารย์'
 // โมดัลเพิ่มรายวิชา
 const open = ref(false)
+// function  เพิ่มวิชา
+// const addSubject = async () => {
+    
+// }
 </script>
