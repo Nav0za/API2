@@ -3,7 +3,7 @@
         <h1>show schedule</h1>
         <div class="flex border-2 border-amber-950 p-3 rounded-2xl w-1/3 mx-auto gap-3">
             <div v-if="pending">
-                Loading........
+                Loading...
             </div>
             <div v-else v-for="(schedule, index) in schedules" :key="index" class="bg-blue-300 p-3"
                 @click="selectedSchedule = schedule">

@@ -4,7 +4,7 @@
     <div class="flex flex-row items-center max-w-2xl ms-3 gap-2">
       <div class="w-2/3 border-2 border-amber-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
         <h1 class="text-2xl font-bold mb-5">
-        รายชื่ออาจารย์าาา
+        รายชื่ออาจารย์
       </h1>
       <div class="flex flex-col">
         <div v-if="pending">
