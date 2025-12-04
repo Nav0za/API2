@@ -33,7 +33,12 @@ useHead({
         color="secondary"
         label="show schedule"
       />
-
+			<UButton
+				to="/teacherTable"
+				variant="text"
+				color="secondary"
+				label="add teacher"
+			/>
       <template #right>
         <UColorModeButton />
       </template>
