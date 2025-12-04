@@ -4,7 +4,7 @@
 
     <div class="flex gap-5">
       <!-- 📋 Template วิชา -->
-      <div class="w-1/4 bg-gray-100 p-3 rounded shadow">
+      <!-- <div class="w-1/4 bg-gray-100 p-3 rounded shadow">
         <h2 class="font-semibold mb-2">Template วิชา / พัก</h2>
 
         <div
@@ -24,44 +24,47 @@
         >
           ☕ พักเบรก
         </div>
-      </div>
+      </div> -->
 
       <!-- 🧮 ตาราง schedule -->
       <div class="flex-1">
-        <div class="grid grid-cols-13">
-          <!-- หัวแถว -->
-          <div
-            v-for="hour in hours"
-            :key="hour"
-            class="bg-amber-200 border border-gray-400 w-full h-15 p-1 flex items-center justify-center font-bold"
-          >
-            ชม.ที่ {{ hour }}
+        <div class="flex">
+          <div class="grid grid-cols-1 text-center">
+            <div v-for="day in days" class="flex flex-col border p-3">
+                {{ day }}
+            </div>
           </div>
-
-          <!-- ช่องกรอก -->
-          <div
-            v-for="(row, rowIndex) in scheduleSlots"
-            :key="rowIndex"
-            class="contents"
-          >
+          <div class="grid grid-cols-13">
+            <!-- หัวแถว -->
+            <div v-for="time in timeSlots" class="border text-center">
+              {{ time }}
+            </div>
+  
+            <!-- ช่องกรอก -->
             <div
-              v-for="(slot, colIndex) in row"
-              :key="colIndex"
-              class="border border-gray-300 w-full h-15 p-1 flex items-center justify-center bg-white relative"
-              @dragover.prevent
-              @drop="onDrop(rowIndex, colIndex)"
-              @contextmenu.prevent="clearSlot(rowIndex, colIndex)"
-              :class="{
-                'bg-green-100': slot.value && slot.value.includes('พัก'),
-                'bg-blue-100': slot.value && !slot.value.includes('พัก'),
-              }"
+              v-for="(row, rowIndex) in scheduleSlots"
+              :key="rowIndex"
+              class="contents"
             >
-              <transition name="fade">
-                <div v-if="slot.value" class="">
-                  {{ slot.value }}
-                </div>
-                <div v-else class="text-gray-400 italic text-sm">ว่าง</div>
-              </transition>
+              <div
+                v-for="(slot, colIndex) in row"
+                :key="colIndex"
+                class="border border-gray-300 w-full h-15 p-1 flex items-center justify-center bg-white relative"
+                @dragover.prevent
+                @drop="onDrop(rowIndex, colIndex)"
+                @contextmenu.prevent="clearSlot(rowIndex, colIndex)"
+                :class="{
+                  'bg-green-100': slot.value && slot.value.includes('พัก'),
+                  'bg-blue-100': slot.value && !slot.value.includes('พัก'),
+                }"
+              >
+                <!-- <transition name="fade">
+                  <div v-if="slot.value" class="">
+                    {{ slot.value }}
+                  </div>
+                  <div v-else class="text-gray-400 italic text-sm">ว่าง</div>
+                </transition> -->
+              </div>
             </div>
           </div>
         </div>
@@ -84,6 +87,14 @@
 </template>
 
 <script setup>
+const days = [
+  '','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์'
+]
+const timeSlots = [
+    '8:00-9:00', '9:00-10:00', '10:00-11:00', '11:00-12:00', '12:00-13:00',
+    '13:00-14:00', '14:00-15:00', '15:00-16:00', '16:00-17:00', '17:00-18:00',
+    '18:00-19:00', '19:00-20:00', '20:00-21:00'
+]
 const hours = Array.from({ length: 13 }, (_, i) => i + 1)
 
 // 🧩 Template วิชา
