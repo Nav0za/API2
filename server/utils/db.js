@@ -14,7 +14,9 @@ db.exec(`
 db.exec(`
   CREATE TABLE IF NOT EXISTS Subjects (
     id_subject INTEGER PRIMARY KEY AUTOINCREMENT,
-    name_subject TEXT UNIQUE
+    name_subject TEXT UNIQUE,
+    id_teacher INTEGER,
+    FOREIGN KEY (id_teacher) REFERENCES teachers(id_teacher)
   );`)
 
 export default db

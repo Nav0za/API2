@@ -25,7 +25,7 @@
             <hr>
             <div v-if="pending">Loading...</div>
             <div v-else v-for="subject in subjects">
-                <div class="flex flex-row justify-between p-2">
+                <div class="flex flex-row justify-between p-2 items-center bg-gray-200 my-1 rounded-lg">
                     <span>
                         {{ subject.name_subject }}
                     </span>
@@ -33,17 +33,43 @@
                 </div>
             </div>
         </div>
-        <div class="grid grid-cols-13 mt-5 text-center">
+        <!-- ตารางสอน -->
+        <div class="grid grid-cols-14 mt-5 text-center">
+            <!-- แสดงเวลา -->
+            <div class="col-span-1 font-bold border bg-gray-300">วัน/เวลา</div>
             <div v-for="time in timeSlots" class="border">
                 {{ time }}
             </div>
+            <div class="border p-4 text-center">จันทร์</div>
+            <div v-for="value in 13" class="border p-4 text-center">
+                {{ value }}
+            </div>
+            <div class="border p-4 text-center">อังคาร</div>
+            <div v-for="value in 13" class="border p-4 text-center">
+                {{ value }}
+            </div>
+            <div class="border p-4 text-center">พุธ</div>
+            <div v-for="value in 13" class="border p-4 text-center">
+                {{ value }}
+            </div>
+            <div class="border p-4 text-center">พฤหัสบดี</div>
+            <div v-for="value in 13" class="border p-4 text-center">
+                {{ value }}
+            </div>
+            <div class="border p-4 text-center">ศุกร์</div>
+            <div v-for="value in 13" class="border p-4 text-center">
+                {{ value }}
+            </div>
+
         </div>
     </div>
 </template>
 
 <script setup>
+// ดึง id จากพารามิเตอร์
 const route = useRoute()
 const id = route.params.id
+// get API
 const { data: subjects } = await useFetch('/api/Subjects')
 const { data: teachers, pending } = await useFetch('/api/teachers')
 
@@ -66,7 +92,8 @@ const addSubject = async () => {
         const newSubject = await $fetch('/api/Subjects', {
             method: 'POST',
             body: {
-                name_subject: subjectName.value
+                name_subject: subjectName.value,
+                id_teacher: id
             }
         })
 

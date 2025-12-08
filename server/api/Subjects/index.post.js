@@ -9,8 +9,8 @@ export default defineEventHandler(async (event) => {
                 statusMessage: 'name subject is required'
             })
         }
-        const stmt = db.prepare('INSERT INTO Subjects (name_subject) VALUES (?)')
-        const result = stmt.run(body.name_subject)
+        const stmt = db.prepare('INSERT INTO Subjects (name_subject, id_teacher) VALUES (?, ?)')
+        const result = stmt.run(body.name_subject, body.id_teacher)
         return {
             id_subject: result.lastInsertRowid,
             name_subject: body.name_subject,
