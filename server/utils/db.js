@@ -17,6 +17,7 @@ db.exec(`
     name_subject TEXT UNIQUE,
     id_teacher INTEGER,
     FOREIGN KEY (id_teacher) REFERENCES teachers(id_teacher)
+      ON DELETE CASCADE
   );`)
 
 export default db
