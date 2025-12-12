@@ -29,21 +29,27 @@
                     <span>
                         {{ subject.name_subject }}
                     </span>
-                    <UButton icon="i-lucide-trash" color="error" @click="deleteSubject(subject.id_subject)"/>
+                    <UButton icon="i-lucide-trash" color="error" @click="deleteSubject(subject.id_subject)" />
                 </div>
             </div>
         </div>
         <!-- ตารางสอน -->
-        <div class="grid grid-cols-14 mt-5 text-center">
+        <div class="grid grid-cols-14 mt-5 text-center m-3">
             <!-- แสดงเวลา -->
-            <div class="col-span-1 font-bold border bg-gray-300">วัน/เวลา</div>
-            <div v-for="time in timeSlots" class="border">
+            <div class="flex-shrink-0 px-4 py-3 bg-slate-700 font-bold border-r border-slate-600 flex items-center justify-center text-white">วัน/เวลา</div>
+            <div v-for="time in timeSlots" class="flex-1 min-w-[80px] px-1 py-3 bg-slate-700 text-center border-r border-slate-600 last:border-r-0 text-white">
                 {{ time }}
             </div>
+            <!-- วันจันทร์ -->
             <div class="border p-4 text-center">จันทร์</div>
-            <div v-for="value in 13" class="border p-4 text-center">
-                {{ value }}
+            <div v-for="slot in scheduleSlots[0].slice(0, 4)" class="border p-4 text-center">
+                {{ slot }}
             </div>
+            <div class="border">พักกลางวัน</div>
+            <div v-for="slot in scheduleSlots[0].slice(4)" class="border">
+                {{ slot }}
+            </div>
+
             <div class="border p-4 text-center">อังคาร</div>
             <div v-for="value in 13" class="border p-4 text-center">
                 {{ value }}
@@ -60,7 +66,6 @@
             <div v-for="value in 13" class="border p-4 text-center">
                 {{ value }}
             </div>
-
         </div>
     </div>
 </template>
@@ -110,8 +115,14 @@ const deleteSubject = async (id) => {
             method: 'DELETE'
         })
         subjects.value = subjects.value.filter(subject => subject.id_subject !== id)
-    }catch (err) {
+    } catch (err) {
         console.log(err)
     }
 }
+// ข้อมูลในตารางแบบ array 2d
+const scheduleSlots = Array.from({ length: 5 }, () =>
+  Array.from({ length: 12 }, () => ({ value: "" }))
+);
+console.log(scheduleSlots)
+
 </script>
