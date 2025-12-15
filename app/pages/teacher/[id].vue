@@ -40,31 +40,55 @@
             <div v-for="time in timeSlots" class="flex-1 min-w-[80px] px-1 py-3 bg-slate-700 text-center border-r border-slate-600 last:border-r-0 text-white">
                 {{ time }}
             </div>
+
             <!-- วันจันทร์ -->
-            <div class="border p-4 text-center">จันทร์</div>
-            <div v-for="slot in scheduleSlots[0].slice(0, 4)" class="border p-4 text-center">
+            <div class="border p-1 text-center">จันทร์</div>
+            <div v-for="slot in scheduleSlots[0].slice(0, 4)" class="border p-1 text-center">
                 {{ slot }}
             </div>
-            <div class="border">พักกลางวัน</div>
-            <div v-for="slot in scheduleSlots[0].slice(4)" class="border">
+            <div class="border p-1 text-center">พักกลางวัน</div>
+            <div v-for="slot in scheduleSlots[0].slice(4)" class="border p-1 text-center">
                 {{ slot }}
             </div>
 
-            <div class="border p-4 text-center">อังคาร</div>
-            <div v-for="value in 13" class="border p-4 text-center">
-                {{ value }}
+            <!-- วันอังคาร -->
+            <div class="border p-1 text-center">อังคาร</div>
+            <div v-for="slot in scheduleSlots[1].slice(0, 4)" class="border p-1 text-center">
+                {{ slot}}
             </div>
-            <div class="border p-4 text-center">พุธ</div>
-            <div v-for="value in 13" class="border p-4 text-center">
-                {{ value }}
+            <div class="border p-1 text-center">พักกลางวัน</div>
+            <div v-for="slot in scheduleSlots[1].slice(4)" class="border p-1 text-center">
+                {{ slot}}
             </div>
-            <div class="border p-4 text-center">พฤหัสบดี</div>
-            <div v-for="value in 13" class="border p-4 text-center">
-                {{ value }}
+
+            <!-- วันพุธ -->
+            <div class="border p-1 text-center">พุธ</div>
+            <div v-for="slot in scheduleSlots[2].slice(0, 4)" class="border p-1 text-center">
+                {{ slot }}
             </div>
-            <div class="border p-4 text-center">ศุกร์</div>
-            <div v-for="value in 13" class="border p-4 text-center">
-                {{ value }}
+            <div class="border p-1 text-center">พักกลางวัน</div>
+            <div v-for="slot in scheduleSlots[2].slice(4)" class="border p-1 text-center">
+                {{ slot }}
+            </div>
+
+            <!-- วันพฤหัสบดี -->
+            <div class="border p-1 text-center">พฤหัสบดี</div>
+            <div v-for="slot in scheduleSlots[3].slice(0, 4)" class="border p-1 text-center">
+                {{ slot}}
+            </div>
+            <div class="border p-1 text-center">พักกลางวัน</div>
+            <div v-for="slot in scheduleSlots[3].slice(4)" class="border p-1 text-center">
+                {{ slot}}
+            </div>
+
+            <!-- วันศุกร์ -->
+            <div class="border p-1 text-center">ศุกร์</div>
+            <div v-for="slot in scheduleSlots[4].slice(0, 4)" class="border p-1 text-center">
+                {{ slot}}
+            </div>
+            <div class="border p-1 text-center">พักกลางวัน</div>
+            <div v-for="slot in scheduleSlots[4].slice(4)" class="border p-1 text-center">
+                {{ slot}}
             </div>
         </div>
     </div>
@@ -123,6 +147,5 @@ const deleteSubject = async (id) => {
 const scheduleSlots = Array.from({ length: 5 }, () =>
   Array.from({ length: 12 }, () => ({ value: "" }))
 );
-console.log(scheduleSlots)
 
 </script>
