@@ -44,51 +44,61 @@
             <!-- วันจันทร์ -->
             <div class="border p-1 text-center">จันทร์</div>
             <div v-for="slot in scheduleSlots[0].slice(0, 4)" class="border p-1 text-center">
-                {{ slot }}
+                <span v-if="slot.value === ''">ว่าง</span>
+                <span v-else>{{ slot }}</span>
             </div>
             <div class="border p-1 text-center">พักกลางวัน</div>
             <div v-for="slot in scheduleSlots[0].slice(4)" class="border p-1 text-center">
-                {{ slot }}
+                <span v-if="slot.value === ''">ว่าง</span>
+                <span v-else>{{ slot }}</span>
             </div>
 
             <!-- วันอังคาร -->
             <div class="border p-1 text-center">อังคาร</div>
             <div v-for="slot in scheduleSlots[1].slice(0, 4)" class="border p-1 text-center">
-                {{ slot}}
+                <span v-if="slot.value === ''">ว่าง</span>
+                <span v-else>{{ slot }}</span>
             </div>
             <div class="border p-1 text-center">พักกลางวัน</div>
             <div v-for="slot in scheduleSlots[1].slice(4)" class="border p-1 text-center">
-                {{ slot}}
+                <span v-if="slot.value === ''">ว่าง</span>
+                <span v-else>{{ slot }}</span>
             </div>
 
             <!-- วันพุธ -->
             <div class="border p-1 text-center">พุธ</div>
             <div v-for="slot in scheduleSlots[2].slice(0, 4)" class="border p-1 text-center">
-                {{ slot }}
+                <span v-if="slot.value === ''">ว่าง</span>
+                <span v-else>{{ slot }}</span>
             </div>
             <div class="border p-1 text-center">พักกลางวัน</div>
             <div v-for="slot in scheduleSlots[2].slice(4)" class="border p-1 text-center">
-                {{ slot }}
+                <span v-if="slot.value === ''">ว่าง</span>
+                <span v-else>{{ slot }}</span>
             </div>
 
             <!-- วันพฤหัสบดี -->
             <div class="border p-1 text-center">พฤหัสบดี</div>
             <div v-for="slot in scheduleSlots[3].slice(0, 4)" class="border p-1 text-center">
-                {{ slot}}
+                <span v-if="slot.value === ''">ว่าง</span>
+                <span v-else>{{ slot }}</span>
             </div>
             <div class="border p-1 text-center">พักกลางวัน</div>
             <div v-for="slot in scheduleSlots[3].slice(4)" class="border p-1 text-center">
-                {{ slot}}
+                <span v-if="slot.value === ''">ว่าง</span>
+                <span v-else>{{ slot }}</span>
             </div>
 
             <!-- วันศุกร์ -->
             <div class="border p-1 text-center">ศุกร์</div>
             <div v-for="slot in scheduleSlots[4].slice(0, 4)" class="border p-1 text-center">
-                {{ slot}}
+                <span v-if="slot.value === ''">ว่าง</span>
+                <span v-else>{{ slot }}</span>
             </div>
             <div class="border p-1 text-center">พักกลางวัน</div>
             <div v-for="slot in scheduleSlots[4].slice(4)" class="border p-1 text-center">
-                {{ slot}}
+                <span v-if="slot.value === ''">ว่าง</span>
+                <span v-else>{{ slot }}</span>
             </div>
         </div>
     </div>
