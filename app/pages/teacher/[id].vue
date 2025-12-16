@@ -16,6 +16,7 @@
                     <template #footer="{ close }">
                         <UButton label="ยกเลิก" color="error" @click="close" />
                         <UButton label="บันทึก" color="primary" @click="async () => {
+                            // เพิ่มรายวิชาและ ปิด modal
                             await addSubject()
                             close()
                         }" />
