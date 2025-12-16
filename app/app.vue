@@ -21,18 +21,6 @@ useHead({
         </NuxtLink>
 
       </template>
-      <UButton
-        to="/table"
-        variant="text"
-        color="secondary"
-        label="add schedule"
-      />
-      <UButton
-        to="/shoTable"
-        variant="text"
-        color="secondary"
-        label="show schedule"
-      />
 			<UButton
 				to="/teacherTable"
 				variant="text"
