@@ -40,7 +40,7 @@
 
         <!-- ตารางสอน (ขวา) -->
         <div class="flex-1">
-          <div class="bg-slate-800 rounded-lg shadow-xl border border-slate-700 p-6">
+          <div class=" rounded-lg shadow-xl border border-slate-700 p-6">
             <div class="flex items-center justify-between mb-6">
               <div class="flex items-center gap-4">
                 <h1 class="text-2xl font-bold text-blue-300">ตารางสอน</h1>
@@ -93,8 +93,8 @@
             <div class="overflow-x-auto">
               <div class="inline-block min-w-full">
                 <!-- หัวตาราง -->
-                <div class="flex border-b border-slate-600">
-                  <div class="w-20 flex-shrink-0 px-4 py-3 bg-slate-700 font-bold text-center border-r border-slate-600">
+                <div class="flex border-b">
+                  <div class="w-20 flex-shrink-0 px-4 py-3 font-bold text-center border-r border-slate-600">
                     วัน
                   </div>
                   <div class="flex flex-1">
