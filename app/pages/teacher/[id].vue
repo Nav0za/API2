@@ -37,70 +37,33 @@
         <!-- ตารางสอน -->
         <div class="grid grid-cols-14 mt-5 text-center m-3">
             <!-- แสดงเวลา -->
-            <div class="flex-shrink-0 px-4 py-3 bg-slate-700 font-bold border-r border-slate-600 flex items-center justify-center text-white">วัน/เวลา</div>
-            <div v-for="time in timeSlots" class="flex-1 min-w-[80px] px-1 py-3 bg-slate-700 text-center border-r border-slate-600 last:border-r-0 text-white">
+            <div
+                class="flex-shrink-0 px-4 py-3 bg-slate-700 font-bold border-r border-slate-600 flex items-center justify-center text-white">
+                วัน/เวลา</div>
+            <div v-for="time in timeSlots"
+                class="flex-1 min-w-[80px] px-1 py-3 bg-slate-700 text-center border-r border-slate-600 last:border-r-0 text-white">
                 {{ time }}
             </div>
+            <!-- ลูปทุกวัน -->
+            <template v-for="(day, index) in days" :key="index">
+                <div class="border border-slate-600 p-1 text-center bg-slate-800 text-white flex items-center justify-center">{{ day }}</div>
 
-            <!-- วันจันทร์ -->
-            <div class="border p-1 text-center">จันทร์</div>
-            <div v-for="slot in scheduleSlots[0].slice(0, 4)" class="border p-1 text-center">
-                <span v-if="slot.value === ''">ว่าง</span>
-                <span v-else>{{ slot }}</span>
-            </div>
-            <div class="border p-1 text-center">พักกลางวัน</div>
-            <div v-for="slot in scheduleSlots[0].slice(4)" class="border p-1 text-center">
-                <span v-if="slot.value === ''">ว่าง</span>
-                <span v-else>{{ slot }}</span>
-            </div>
+                <div v-for="(slot, i) in scheduleSlots[index].slice(0, 4)" :key="`morning-${index}-${i}`"
+                    class="border text-center">
+                    <span v-if="slot.value === ''" class="
+                          h-full px-2 py-5 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm
+                        ">ว่าง</span>
+                    <span v-else>{{ slot.value }}</span>
+                </div>
+                <!-- พักกลางวัน -->
+                <div class="border border-slate-600 p-1 text-center bg-slate-800 text-white flex items-center justify-center">พักกลางวัน</div>
 
-            <!-- วันอังคาร -->
-            <div class="border p-1 text-center">อังคาร</div>
-            <div v-for="slot in scheduleSlots[1].slice(0, 4)" class="border p-1 text-center">
-                <span v-if="slot.value === ''">ว่าง</span>
-                <span v-else>{{ slot }}</span>
-            </div>
-            <div class="border p-1 text-center">พักกลางวัน</div>
-            <div v-for="slot in scheduleSlots[1].slice(4)" class="border p-1 text-center">
-                <span v-if="slot.value === ''">ว่าง</span>
-                <span v-else>{{ slot }}</span>
-            </div>
-
-            <!-- วันพุธ -->
-            <div class="border p-1 text-center">พุธ</div>
-            <div v-for="slot in scheduleSlots[2].slice(0, 4)" class="border p-1 text-center">
-                <span v-if="slot.value === ''">ว่าง</span>
-                <span v-else>{{ slot }}</span>
-            </div>
-            <div class="border p-1 text-center">พักกลางวัน</div>
-            <div v-for="slot in scheduleSlots[2].slice(4)" class="border p-1 text-center">
-                <span v-if="slot.value === ''">ว่าง</span>
-                <span v-else>{{ slot }}</span>
-            </div>
-
-            <!-- วันพฤหัสบดี -->
-            <div class="border p-1 text-center">พฤหัสบดี</div>
-            <div v-for="slot in scheduleSlots[3].slice(0, 4)" class="border p-1 text-center">
-                <span v-if="slot.value === ''">ว่าง</span>
-                <span v-else>{{ slot }}</span>
-            </div>
-            <div class="border p-1 text-center">พักกลางวัน</div>
-            <div v-for="slot in scheduleSlots[3].slice(4)" class="border p-1 text-center">
-                <span v-if="slot.value === ''">ว่าง</span>
-                <span v-else>{{ slot }}</span>
-            </div>
-
-            <!-- วันศุกร์ -->
-            <div class="border p-1 text-center">ศุกร์</div>
-            <div v-for="slot in scheduleSlots[4].slice(0, 4)" class="border p-1 text-center">
-                <span v-if="slot.value === ''">ว่าง</span>
-                <span v-else>{{ slot }}</span>
-            </div>
-            <div class="border p-1 text-center">พักกลางวัน</div>
-            <div v-for="slot in scheduleSlots[4].slice(4)" class="border p-1 text-center">
-                <span v-if="slot.value === ''">ว่าง</span>
-                <span v-else>{{ slot }}</span>
-            </div>
+                <div v-for="(slot, i) in scheduleSlots[index].slice(4)" :key="`afternoon-${index}-${i}`"
+                    class="border text-center">
+                    <span v-if="slot.value === ''" class="h-full px-2 py-5 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm">ว่าง</span>
+                    <span v-else>{{ slot.value }}</span>
+                </div>
+            </template>
         </div>
     </div>
 </template>
@@ -113,11 +76,13 @@ const id = route.params.id
 const { data: subjects } = await useFetch('/api/Subjects')
 const { data: teachers, pending } = await useFetch('/api/teachers')
 
+// ข้อมูลวันเวลา
 const timeSlots = [
     '8:00-9:00', '9:00-10:00', '10:00-11:00', '11:00-12:00', '12:00-13:00',
     '13:00-14:00', '14:00-15:00', '15:00-16:00', '16:00-17:00', '17:00-18:00',
     '18:00-19:00', '19:00-20:00', '20:00-21:00'
 ]
+const days = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์']
 
 // หาอาจารย์ตาม id จากพารามิเตอร์q
 const teacherName = teachers.value.find(t => t.id_teacher == id)?.name || 'ไม่พบชื่ออาจารย์'
@@ -155,8 +120,8 @@ const deleteSubject = async (id) => {
     }
 }
 // ข้อมูลในตารางแบบ array 2d
-const scheduleSlots = Array.from({ length: 5 }, () =>
-  Array.from({ length: 12 }, () => ({ value: "" }))
+const scheduleSlots = Array.from({ length: 7 }, () =>
+    Array.from({ length: 12 }, () => ({ value: "" }))
 );
 
 </script>
