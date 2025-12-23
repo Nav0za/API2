@@ -35,18 +35,14 @@
             </div>
         </div>
         <p>แสดงตารางสอน</p>
-        <select name="term" id="">
-            <option value="">เทอม 1/68</option>
-            <option value=""></option>
-            <option value=""></option>
-        </select>
+        <USelect placeholder="เลือกภาคการศึกษา" variant="" :items="['เทอม 1/68', 'เทอม 2/68']" class="w-1/4 my-4" />
         <!-- ตารางสอน -->
         <div class="grid grid-cols-14 mt-5 text-center m-3">
             <!-- แสดงเวลา -->
             <div
                 class="flex-shrink-0 px-4 py-3 bg-slate-700 font-bold border-r border-slate-600 flex items-center justify-center text-white">
                 วัน/เวลา</div>
-            <div v-for="time in timeSlots"
+            <div v-for="time in timeSlots" :key="time"
                 class="flex-1 min-w-[80px] px-1 py-3 bg-slate-700 text-center border-r border-slate-600 last:border-r-0 text-white">
                 {{ time }}
             </div>
@@ -57,12 +53,7 @@
                 <!-- เช้า -->
                 <div v-for="(slot, i) in scheduleSlots[index].slice(0, 4)" :key="`morning-${index}-${i}`"
                     class="border border-slate-600 text-center bg-slate-800">
-                    <USelect v-if="slot.value === ''" placeholder="ว่าง" v-model="slot.value" class="w-full h-full px-2 py-5 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm"/>
-                    <USelect v-else v-model="slot.value" class="w-full h-full px-2 py-5 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm"/>
-                    <!-- <span v-if="slot.value === ''" class="
-                          h-full px-2 py-5 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm
-                        ">ว่าง</span>
-                    <span v-else>{{ slot.value }}</span> -->
+                    <USelect placeholder="ว่าง" v-model="slot.value" :items="subjects" value-key="id_subject" label-key="name_subject" class="w-full h-full transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm rounded-none text-white"/>
                 </div>
                 <!-- พักกลางวัน -->
                 <div class="border border-slate-600 p-1 text-center bg-slate-800 text-white flex items-center justify-center">พักกลางวัน</div>
@@ -70,8 +61,7 @@
                 <!-- บ่าย -->
                 <div v-for="(slot, i) in scheduleSlots[index].slice(4)" :key="`afternoon-${index}-${i}`"
                     class="border text-center">
-                    <span v-if="slot.value === ''" class="h-full px-2 py-5 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm">ว่าง</span>
-                    <span v-else>{{ slot.value }}</span>
+                    <USelect placeholder="ว่าง" v-model="slot.value" :items="subjects" value-key="id_subject" label-key="name_subject" class="w-full h-20 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm rounded-none"/>
                 </div>
             </template>
         </div>
@@ -117,7 +107,7 @@ const addSubject = async () => {
         })
 
         subjectName.value = ''
-        subjects.value.push(newSubject)
+        subjects.value = [...(subjects.value || []), newSubject]
     } catch (err) {
         console.log(err)
     }
@@ -128,14 +118,24 @@ const deleteSubject = async (id) => {
         await $fetch(`/api/Subjects/${id}`, {
             method: 'DELETE'
         })
+        // ลบข้อมูลในตัวแปร subjects
         subjects.value = subjects.value.filter(subject => subject.id_subject !== id)
+        // ลบข้อมูลในตารางสอน
+        scheduleSlots.value.forEach(day => {
+            day.forEach(slot => {
+                if (slot.value === id) {
+                    slot.value = null
+                }
+            })
+        })
     } catch (err) {
         console.log(err)
     }
 }
 // ข้อมูลในตารางแบบ array 2d
-const scheduleSlots = Array.from({ length: 7 }, () =>
-    Array.from({ length: 12 }, () => ({ value: "" }))
-);
+const scheduleSlots = ref(Array.from({ length: 7 }, () =>
+    Array.from({ length: 12 }, () => ({ value: null }))
+))
+
 
 </script>
