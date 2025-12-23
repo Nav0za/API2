@@ -34,6 +34,12 @@
                 </div>
             </div>
         </div>
+        <p>แสดงตารางสอน</p>
+        <select name="term" id="">
+            <option value="">เทอม 1/68</option>
+            <option value=""></option>
+            <option value=""></option>
+        </select>
         <!-- ตารางสอน -->
         <div class="grid grid-cols-14 mt-5 text-center m-3">
             <!-- แสดงเวลา -->
@@ -48,16 +54,20 @@
             <template v-for="(day, index) in days" :key="index">
                 <div class="border border-slate-600 p-1 text-center bg-slate-800 text-white flex items-center justify-center">{{ day }}</div>
 
+                <!-- เช้า -->
                 <div v-for="(slot, i) in scheduleSlots[index].slice(0, 4)" :key="`morning-${index}-${i}`"
-                    class="border text-center">
-                    <span v-if="slot.value === ''" class="
+                    class="border border-slate-600 text-center bg-slate-800">
+                    <USelect v-if="slot.value === ''" placeholder="ว่าง" v-model="slot.value" class="w-full h-full px-2 py-5 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm"/>
+                    <USelect v-else v-model="slot.value" class="w-full h-full px-2 py-5 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm"/>
+                    <!-- <span v-if="slot.value === ''" class="
                           h-full px-2 py-5 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm
                         ">ว่าง</span>
-                    <span v-else>{{ slot.value }}</span>
+                    <span v-else>{{ slot.value }}</span> -->
                 </div>
                 <!-- พักกลางวัน -->
                 <div class="border border-slate-600 p-1 text-center bg-slate-800 text-white flex items-center justify-center">พักกลางวัน</div>
 
+                <!-- บ่าย -->
                 <div v-for="(slot, i) in scheduleSlots[index].slice(4)" :key="`afternoon-${index}-${i}`"
                     class="border text-center">
                     <span v-if="slot.value === ''" class="h-full px-2 py-5 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm">ว่าง</span>
@@ -73,7 +83,11 @@
 const route = useRoute()
 const id = route.params.id
 // get API
-const { data: subjects } = await useFetch('/api/Subjects')
+const { data: subjects } = await useFetch('/api/Subjects', {
+    query: {
+        id_teacher: id
+    }
+})
 const { data: teachers, pending } = await useFetch('/api/teachers')
 
 // ข้อมูลวันเวลา
