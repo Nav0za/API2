@@ -1,41 +1,85 @@
 <template>
-    <div>
+    <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-white">
         <!-- // แสดงรายละเอียดอาจารย์ตาม id -->
         <h1 class="text-4xl">รายละเอียดอาจารย์</h1>
         <p class="text-2xl">ชื่ออาจารย์ : <b v-if="pending">กำลังโหลดข้อมูล</b><b v-else>{{ teacherName }}</b></p>
-        <!-- แสดงรายวิชาที่สอนโดยอาจารย์ท่านนี้ -->
-        <div class="border-1 rounded-2xl p-4 mt-6 shadow-lg max-w-lg">
-            <div class="flex justify-between items-center mb-2">
-                <h1 class="text-xl">รายวิชาที่สอน</h1>
-                <UModal v-model:open="open" title="เพิ่มรายวิชา">
-                    <UButton label="เพิ่มรายวิชา" />
-                    <template #body>
-                        <h3 class="text-xl">ชื่อวิชา</h3>
-                        <UInput v-model="subjectName" />
-                    </template>
-                    <template #footer="{ close }">
-                        <UButton label="ยกเลิก" color="error" @click="close" />
-                        <UButton label="บันทึก" color="primary" @click="async () => {
-                            // เพิ่มรายวิชาและ ปิด modal
-                            await addSubject()
-                            close()
-                        }" />
-                    </template>
-                </UModal>
-            </div>
-            <hr>
-            <div v-if="pending">Loading...</div>
-            <div v-else v-for="subject in subjects">
-                <div class="flex flex-row justify-between p-2 items-center bg-gray-200 my-1 rounded-lg">
-                    <span>
-                        {{ subject.name_subject }}
-                    </span>
-                    <UButton icon="i-lucide-trash" color="error" @click="deleteSubject(subject.id_subject)" />
+        <div class="container mx-auto py-8">
+            <!-- ฝั่งซ้าย ***** -->
+
+            <!-- แสดงรายวิชาที่สอนโดยอาจารย์ท่านนี้ -->
+            <div class="w-80 flex-shrink-0">
+                <div class="bg-slate-800 rounded-lg shadow-xl border border-slate-700">
+                    <div class="p-4 border-b border-slate-700 flex justify-between items-center">
+                        <h1 class="text-lg font-bold text-blue-300">รายชื่ออาจารย์</h1>
+                        <UModal v-model:open="open" title="เพิ่มรายวิชา">
+                            <UButton label="เพิ่มรายวิชา" />
+                            <template #body>
+                                <h3 class="text-xl">ชื่อวิชา</h3>
+                                <UInput v-model="subjectName" />
+                            </template>
+                            <template #footer="{ close }">
+                                <UButton label="ยกเลิก" color="error" @click="close" />
+                                <UButton label="บันทึก" color="primary" @click="async () => {
+                                    // เพิ่มรายวิชาและ ปิด modal
+                                    await addSubject()
+                                    close()
+                                }" />
+                            </template>
+                        </UModal>
+                    </div>
+                    <div class="overflow-y-auto max-h-[calc(100vh-250px)] custom-scrollbar">
+                        <div v-if="pending">Loading...</div>
+                        <div v-else class="p-2 space-y-2">
+                            <p v-if="subjects.length === 0" class="my-3 text-center text-slate-400">ไม่มีรายวิชาที่สอน</p>
+                            <div v-else v-for="(subject, index) in subjects" :key="index" class="
+                                w-full px-4 py-3 rounded-lg text-left bg-slate-700 text-slate-200 flex justify-between items-center">
+                                <span>
+                                    {{ subject.name_subject }}
+                                </span>
+                                <UButton icon="i-lucide-trash" color="error" @click="deleteSubject(subject.id_subject)" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+            <!-- <div class="border-1 rounded-2xl p-4 mt-6 shadow-lg max-w-lg">
+                <div class="flex justify-between items-center mb-2">
+                    <h1 class="text-xl">รายวิชาที่สอน</h1>
+                    <UModal v-model:open="open" title="เพิ่มรายวิชา">
+                        <UButton label="เพิ่มรายวิชา" />
+                        <template #body>
+                            <h3 class="text-xl">ชื่อวิชา</h3>
+                            <UInput v-model="subjectName" />
+                        </template>
+<template #footer="{ close }">
+                            <UButton label="ยกเลิก" color="error" @click="close" />
+                            <UButton label="บันทึก" color="primary" @click="async () => {
+                                // เพิ่มรายวิชาและ ปิด modal
+                                await addSubject()
+                                close()
+                            }" />
+                        </template>
+</UModal>
+</div>
+<hr>
+<div v-if="pending">Loading...</div>
+<div v-else>
+    <p v-if="subjects.length === 0" class="mt-4">ไม่มีรายวิชาที่สอน</p>
+    <div v-else v-for="subject in subjects"
+        class="flex flex-row justify-between p-2 items-center bg-gray-200 my-1 rounded-lg">
+        <span>
+            {{ subject.name_subject }}
+        </span>
+        
+    </div>
+</div>
+</div> -->
+
         </div>
+
         <p>แสดงตารางสอน</p>
-        <USelect placeholder="เลือกภาคการศึกษา" variant="" :items="['เทอม 1/68', 'เทอม 2/68']" class="w-1/4 my-4" />
+        <USelect placeholder="เลือกภาคการศึกษา" variant="ghost" color="neutral" :items="['เทอม 1/68', 'เทอม 2/68']"
+            class="w-1/4 my-4" />
         <!-- ตารางสอน -->
         <div class="grid grid-cols-14 mt-5 text-center m-3">
             <!-- แสดงเวลา -->
@@ -48,20 +92,28 @@
             </div>
             <!-- ลูปทุกวัน -->
             <template v-for="(day, index) in days" :key="index">
-                <div class="border border-slate-600 p-1 text-center bg-slate-800 text-white flex items-center justify-center">{{ day }}</div>
+                <div
+                    class="border-r border-t border-slate-600 p-1 text-center bg-slate-700/50 text-white flex items-center justify-center">
+                    {{ day }}</div>
 
                 <!-- เช้า -->
                 <div v-for="(slot, i) in scheduleSlots[index].slice(0, 4)" :key="`morning-${index}-${i}`"
-                    class="border border-slate-600 text-center bg-slate-800">
-                    <USelect placeholder="ว่าง" v-model="slot.value" :items="subjects" value-key="id_subject" label-key="name_subject" class="w-full h-full transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm rounded-none text-white"/>
+                    class="border-r border-t border-slate-600 text-center bg-slate-800">
+                    <USelect placeholder="ว่าง" v-model="slot.value" :items="subjects" value-key="id_subject"
+                        label-key="name_subject" variant="none"
+                        class="w-full h-full transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm rounded-none text-white" />
                 </div>
                 <!-- พักกลางวัน -->
-                <div class="border border-slate-600 p-1 text-center bg-slate-800 text-white flex items-center justify-center">พักกลางวัน</div>
+                <div
+                    class="border-r border-t border-slate-600 p-1 text-center bg-slate-800 text-white flex items-center justify-center">
+                    พักกลางวัน</div>
 
                 <!-- บ่าย -->
                 <div v-for="(slot, i) in scheduleSlots[index].slice(4)" :key="`afternoon-${index}-${i}`"
-                    class="border text-center">
-                    <USelect placeholder="ว่าง" v-model="slot.value" :items="subjects" value-key="id_subject" label-key="name_subject" class="w-full h-20 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm rounded-none"/>
+                    class="border-r border-t border-slate-600 text-center bg-slate-800">
+                    <USelect placeholder="ว่าง" v-model="slot.value" :items="subjects" value-key="id_subject"
+                        label-key="name_subject" variant="none"
+                        class="w-full h-20 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-slate-400 text-sm rounded-none" />
                 </div>
             </template>
         </div>
@@ -139,3 +191,24 @@ const scheduleSlots = ref(Array.from({ length: 7 }, () =>
 
 
 </script>
+
+<style scoped>
+    /* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+</style>
