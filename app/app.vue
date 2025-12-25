@@ -14,21 +14,21 @@ useHead({
 
 <template>
   <UApp>
-    <UHeader>
+    <UHeader class="bg-slate-900 text-white border-none shadow-md shadow-slate-600/60">
       <template #left>
+        <img src="/image/rmutiLogo.png" class="h-12 w-auto mx-5" alt="RMUTI logo">
         <NuxtLink to="/">
-          <h1 class="text-3xl">Home</h1>
+          <h1 class="text-xl">ระบบจัดวันสอนชดเชย semi-auto</h1>
         </NuxtLink>
-
       </template>
-			<UButton
-				to="/teacherTable"
-				variant="text"
-				color="secondary"
-				label="add teacher"
-			/>
+
       <template #right>
-        <UColorModeButton />
+        <UButton
+          to="/teacherTable"
+          variant="text"
+          color="secondary"
+          label="add teacher"
+        />
       </template>
     </UHeader>
 
