@@ -16,8 +16,15 @@ useHead({
   <UApp>
     <UHeader class="bg-slate-900 text-white border-none shadow-md shadow-slate-600/60">
       <template #left>
-        <NuxtLink class="flex items-center" to="/">
-          <img src="/image/rmutiLogo.png" class="h-12 w-auto mx-5" alt="RMUTI logo">
+        <NuxtLink
+          class="flex items-center"
+          to="/"
+        >
+          <img
+            src="/image/rmutiLogo.png"
+            class="h-12 w-auto mx-5"
+            alt="RMUTI logo"
+          >
           <span class="text-xl">ระบบจัดวันสอนชดเชย semi-auto</span>
         </NuxtLink>
       </template>
