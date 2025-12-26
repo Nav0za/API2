@@ -4,7 +4,9 @@
     <nav class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50">
       <div class="container mx-auto px-4">
         <div class="flex items-center justify-between h-16">
-          <h2 class="text-xl font-bold text-blue-400">ระบบจัดตารางสอน</h2>
+          <h2 class="text-xl font-bold text-blue-400">
+            ระบบจัดตารางสอน
+          </h2>
         </div>
       </div>
     </nav>
@@ -16,20 +18,22 @@
         <div class="w-80 flex-shrink-0">
           <div class="bg-slate-800 rounded-lg shadow-xl border border-slate-700">
             <div class="p-4 border-b border-slate-700">
-              <h1 class="text-lg font-bold text-blue-300">รายชื่ออาจารย์</h1>
+              <h1 class="text-lg font-bold text-blue-300">
+                รายชื่ออาจารย์
+              </h1>
             </div>
             <div class="overflow-y-auto max-h-[calc(100vh-250px)] custom-scrollbar">
               <div class="p-2 space-y-2">
                 <button
                   v-for="(template, index) in templates"
                   :key="index"
-                  @click="selectedTemplate = template"
                   :class="[
                     'w-full px-4 py-3 rounded-lg text-left transition-all',
                     selectedTemplate === template
                       ? 'bg-blue-600 text-white shadow-lg'
                       : 'bg-slate-700 hover:bg-slate-600 text-slate-200'
                   ]"
+                  @click="selectedTemplate = template"
                 >
                   {{ template }}
                 </button>
@@ -43,9 +47,11 @@
           <div class=" rounded-lg shadow-xl border border-slate-700 p-6">
             <div class="flex items-center justify-between mb-6">
               <div class="flex items-center gap-4">
-                <h1 class="text-2xl font-bold text-blue-300">ตารางสอน</h1>
+                <h1 class="text-2xl font-bold text-blue-300">
+                  ตารางสอน
+                </h1>
                 <div class="flex items-center space-x-2">
-									<!-- ปุ่มเพิ่มวิชา / ปุ่มเพิ่มตาราง-->
+                  <!-- ปุ่มเพิ่มวิชา / ปุ่มเพิ่มตาราง -->
                   <UButton
                     icon="i-heroicons-plus-circle"
                     label="เพิ่มวิชา"
@@ -59,28 +65,75 @@
                   />
                 </div>
               </div>
-							<!-- เลือกเทอม / ปีการศึกษา (Dropdown) -->
-              <div class="relative" ref="termDropdownContainer">
-                <button @click="toggleTermDropdown" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors text-slate-200">
+              <!-- เลือกเทอม / ปีการศึกษา (Dropdown) -->
+              <div
+                ref="termDropdownContainer"
+                class="relative"
+              >
+                <button
+                  class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors text-slate-200"
+                  @click="toggleTermDropdown"
+                >
                   <span>เทอม: {{ selectedTerm }} / {{ selectedYear }}</span>
-                  <svg class="w-4 h-4 transition-transform" :class="{ 'rotate-180': isTermDropdownOpen }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                  <svg
+                    class="w-4 h-4 transition-transform"
+                    :class="{ 'rotate-180': isTermDropdownOpen }"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                    />
                   </svg>
                 </button>
-								<!-- Dropdown ที่่อยู่ในช่องว่าง -->
+                <!-- Dropdown ที่่อยู่ในช่องว่าง -->
                 <Transition name="dropdown">
-                  <div v-if="isTermDropdownOpen" class="absolute top-full right-0 mt-2 w-56 bg-slate-800 rounded-lg shadow-2xl border border-slate-600 overflow-hidden z-50">
+                  <div
+                    v-if="isTermDropdownOpen"
+                    class="absolute top-full right-0 mt-2 w-56 bg-slate-800 rounded-lg shadow-2xl border border-slate-600 overflow-hidden z-50"
+                  >
                     <div class="p-3 space-y-2">
                       <div>
-                        <label for="term" class="text-xs font-medium text-slate-400">เทอม</label>
-                        <select id="term" v-model="selectedTerm" class="w-full mt-1 bg-slate-700 text-white rounded-md px-3 py-2 text-sm border border-slate-600 focus:ring-blue-500 focus:border-blue-500">
-                          <option v-for="term in terms" :key="term" :value="term">{{ term }}</option>
+                        <label
+                          for="term"
+                          class="text-xs font-medium text-slate-400"
+                        >เทอม</label>
+                        <select
+                          id="term"
+                          v-model="selectedTerm"
+                          class="w-full mt-1 bg-slate-700 text-white rounded-md px-3 py-2 text-sm border border-slate-600 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option
+                            v-for="term in terms"
+                            :key="term"
+                            :value="term"
+                          >
+                            {{ term }}
+                          </option>
                         </select>
                       </div>
                       <div>
-                        <label for="year" class="text-xs font-medium text-slate-400">ปีการศึกษา</label>
-                        <select id="year" v-model="selectedYear" class="w-full mt-1 bg-slate-700 text-white rounded-md px-3 py-2 text-sm border border-slate-600 focus:ring-blue-500 focus:border-blue-500">
-                          <option v-for="year in academicYears" :key="year" :value="year">{{ year }}</option>
+                        <label
+                          for="year"
+                          class="text-xs font-medium text-slate-400"
+                        >ปีการศึกษา</label>
+                        <select
+                          id="year"
+                          v-model="selectedYear"
+                          class="w-full mt-1 bg-slate-700 text-white rounded-md px-3 py-2 text-sm border border-slate-600 focus:ring-blue-500 focus:border-blue-500"
+                        >
+                          <option
+                            v-for="year in academicYears"
+                            :key="year"
+                            :value="year"
+                          >
+                            {{ year }}
+                          </option>
                         </select>
                       </div>
                     </div>
@@ -88,7 +141,7 @@
                 </Transition>
               </div>
             </div>
-            
+
             <!-- ตารางสอน -->
             <div class="overflow-x-auto">
               <div class="inline-block min-w-full">
@@ -118,7 +171,7 @@
                   <div class="w-20 flex-shrink-0 px-4 py-8 bg-slate-700/50 font-medium border-r border-slate-600 flex items-center justify-center">
                     {{ row.day }}
                   </div>
-                  
+
                   <!-- ช่องเวลา -->
                   <div class="flex flex-1">
                     <div
@@ -147,7 +200,9 @@
                         >
                           <!-- ส่วนหัว -->
                           <div class="px-4 py-3 bg-slate-700 border-b border-slate-600">
-                            <h3 class="text-sm font-bold text-blue-300">เลือกรายวิชา</h3>
+                            <h3 class="text-sm font-bold text-blue-300">
+                              เลือกรายวิชา
+                            </h3>
                           </div>
 
                           <!-- รายชื่อวิชา -->
@@ -155,8 +210,8 @@
                             <button
                               v-for="(subject, index) in subjects"
                               :key="index"
-                              @click="selectOption(rowIndex, slotIndex, subject)"
                               class="w-full px-4 py-3 text-left hover:bg-slate-700 transition-colors flex items-center gap-3 border-b border-slate-700/50 last:border-b-0"
+                              @click="selectOption(rowIndex, slotIndex, subject)"
                             >
                               <span class="text-blue-400 text-lg">📚</span>
                               <span class="text-white text-sm">{{ subject }}</span>
@@ -166,25 +221,25 @@
                           <!-- ตัวเลือกเพิ่มเติม -->
                           <div class="border-t border-slate-600">
                             <button
-                              @click="selectOption(rowIndex, slotIndex, 'พักเบรก')"
                               class="w-full px-4 py-3 text-left hover:bg-slate-700 transition-colors flex items-center gap-3 border-b border-slate-700/50"
+                              @click="selectOption(rowIndex, slotIndex, 'พักเบรก')"
                             >
                               <span class="text-green-400 text-lg">☕</span>
                               <span class="text-white text-sm">พักเบรก</span>
                             </button>
-                            
+
                             <button
-                              @click="selectOption(rowIndex, slotIndex, 'ติวเสริม')"
                               class="w-full px-4 py-3 text-left hover:bg-slate-700 transition-colors flex items-center gap-3 border-b border-slate-700/50"
+                              @click="selectOption(rowIndex, slotIndex, 'ติวเสริม')"
                             >
                               <span class="text-yellow-400 text-lg">✏️</span>
                               <span class="text-white text-sm">ติวเสริม</span>
                             </button>
-                            
+
                             <button
                               v-if="slot"
-                              @click="selectOption(rowIndex, slotIndex, '')"
                               class="w-full px-4 py-3 text-left hover:bg-red-600/20 transition-colors flex items-center gap-3"
+                              @click="selectOption(rowIndex, slotIndex, '')"
                             >
                               <span class="text-red-400 text-lg">🗑️</span>
                               <span class="text-red-400 text-sm font-medium">ลบรายการ</span>
@@ -205,7 +260,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue'
 
 // รายชื่ออาจารย์ (Template)
 const templates = ref([
@@ -222,10 +277,10 @@ const templates = ref([
   'นายกา',
   'นางสาวไก่',
   'นายแมว',
-  'นางสาวกระต่าย',
-]);
+  'นางสาวกระต่าย'
+])
 
-const selectedTemplate = ref('นายสมชาย');
+const selectedTemplate = ref('นายสมชาย')
 
 // รายวิชา
 const subjects = ref([
@@ -243,8 +298,8 @@ const subjects = ref([
   'ดนตรี',
   'คอมพิวเตอร์',
   'วิทยาศาสตร์',
-  'การงานอาชีพ',
-]);
+  'การงานอาชีพ'
+])
 
 // ข้อมูลตาราง - 5 แถว (วัน) และ 13 ช่องเวลา
 const scheduleRows = ref([
@@ -253,59 +308,59 @@ const scheduleRows = ref([
   { day: 'พุธ', slots: Array(13).fill('') },
   { day: 'พฤหัสบดี', slots: Array(13).fill('') },
   { day: 'ศุกร์', slots: Array(13).fill('') }
-]);
+])
 
 // สถานะของ Dropdown ในแต่ละช่อง
-const activeDropdown = ref({ row: null, slot: null });
+const activeDropdown = ref({ row: null, slot: null })
 
 // สถานะของ Dropdown เลือกเทอม/ปี
-const isTermDropdownOpen = ref(false);
-const termDropdownContainer = ref(null);
-const terms = ref([1, 2, 3]);
-const currentYear = new Date().getFullYear() + 543;
-const academicYears = ref(Array.from({ length: 5 }, (_, i) => currentYear - i));
-const selectedTerm = ref(1);
-const selectedYear = ref(currentYear);
+const isTermDropdownOpen = ref(false)
+const termDropdownContainer = ref(null)
+const terms = ref([1, 2, 3])
+const currentYear = new Date().getFullYear() + 543
+const academicYears = ref(Array.from({ length: 5 }, (_, i) => currentYear - i))
+const selectedTerm = ref(1)
+const selectedYear = ref(currentYear)
 
 const toggleTermDropdown = () => {
-  isTermDropdownOpen.value = !isTermDropdownOpen.value;
-};
+  isTermDropdownOpen.value = !isTermDropdownOpen.value
+}
 
 // เปิด/ปิด Dropdown ในช่องตาราง
 const toggleDropdown = (rowIndex, slotIndex) => {
   if (activeDropdown.value.row === rowIndex && activeDropdown.value.slot === slotIndex) {
-    activeDropdown.value = { row: null, slot: null };
+    activeDropdown.value = { row: null, slot: null }
   } else {
-    activeDropdown.value = { row: rowIndex, slot: slotIndex };
+    activeDropdown.value = { row: rowIndex, slot: slotIndex }
   }
-};
+}
 
 // เลือกรายการจาก Dropdown
 const selectOption = (rowIndex, slotIndex, value) => {
-  scheduleRows.value[rowIndex].slots[slotIndex] = value;
-  activeDropdown.value = { row: null, slot: null };
-};
+  scheduleRows.value[rowIndex].slots[slotIndex] = value
+  activeDropdown.value = { row: null, slot: null }
+}
 
 // ฟังก์ชันปิด Dropdown เมื่อคลิกนอกพื้นที่
 const handleClickOutside = (event) => {
   // ปิด Dropdown ของช่องตาราง
   if (!event.target.closest('.relative')) {
-    activeDropdown.value = { row: null, slot: null };
+    activeDropdown.value = { row: null, slot: null }
   }
 
   // ปิด Dropdown ของเทอม/ปี
   if (termDropdownContainer.value && !termDropdownContainer.value.contains(event.target)) {
-    isTermDropdownOpen.value = false;
+    isTermDropdownOpen.value = false
   }
-};
+}
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-});
+  document.addEventListener('click', handleClickOutside)
+})
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside);
-});
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <style scoped>

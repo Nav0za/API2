@@ -29,5 +29,4 @@ db.exec(`
       ON DELETE CASCADE
   );`)
 
-
 export default db
