@@ -37,7 +37,6 @@
               />
               <template
                 #body
-                class="bg-slate-600"
               >
                 <h3 class="text-xl">
                   ชื่อวิชา
@@ -209,13 +208,13 @@ const timeSlots = [
 ]
 const days = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์']
 
-// หาอาจารย์ตาม id จากพารามิเตอร์q
+// หาอาจารย์ตาม id จากพารามิเตอร์
 const teacherName = teachers.value.find(t => t.id_teacher == id)?.name || 'ไม่พบชื่ออาจารย์'
 
 // โมดัลเพิ่มรายวิชา
 const open = ref(false)
 
-// function  เพิ่มวิชา
+// function เพิ่มวิชา
 const subjectName = ref('')
 const addSubject = async () => {
   if (!subjectName.value.trim()) return
