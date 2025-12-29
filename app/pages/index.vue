@@ -66,7 +66,7 @@
       <!-- add user -->
       <div class="w-2/3 border-2 border-blue-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
         <h1 class="text-2xl font-bold mb-1">
-          เพิ่มอาจารย์
+          1.เพิ่มอาจารย์
         </h1>
         <p
           v-if="error"
@@ -79,6 +79,18 @@
           label="เพิ่ม"
           @click="addTeacher"
         />
+      </div>
+      <div class="w-2/3 border-2 border-green-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
+        <h1 class="text-2xl font-bold mb-1">
+          2.เพิ่มเทอม
+        </h1>
+        <p>แสดงเทอม</p>
+        <div class="border p-2 shadow-2xl flex flex-col mb-3">
+          <p>เทอม 1/2566</p>
+          <p>เทอม 2/2566</p>
+          <p>เทอม 1/2567</p>
+        </div>
+        <FormTerm />
       </div>
     </div>
   </div>
