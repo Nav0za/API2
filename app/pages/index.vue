@@ -80,15 +80,24 @@
           @click="addTeacher"
         />
       </div>
-      <div class="w-2/3 border-2 border-green-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
+      <div class="w-full border-2 border-green-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
         <h1 class="text-2xl font-bold mb-1">
           2.เพิ่มเทอม
         </h1>
         <p>แสดงเทอม</p>
-        <div class="border p-2 shadow-2xl flex flex-col mb-3">
-          <p>เทอม 1/2566</p>
-          <p>เทอม 2/2566</p>
-          <p>เทอม 1/2567</p>
+        <div class="border p-2 shadow-2xl flex flex-col gap-2 mb-3 w-full">
+          <div
+            v-for="term in terms"
+            :key="term.id_term"
+            class="flex flex-col bg-neutral-500 justify-between p-2 border-b"
+          >
+            <div class="text-white font-bold">
+              {{ term.term }} / {{ term.academic_year }}
+            </div>
+            <div class="text-gray-200 text-sm">
+              เริ่ม: {{ term.start_date }} - สิ้นสุด: {{ term.end_date }}
+            </div>
+          </div>
         </div>
         <FormTerm />
       </div>
@@ -97,6 +106,7 @@
 </template>
 
 <script setup>
+const { data: terms, error } = await useFetch('/api/terms')
 const { data: teachers, pending } = await useFetch('/api/teachers')
 
 const name = ref('')

@@ -5,34 +5,76 @@ import { CalendarDate } from '@internationalized/date'
 // Date picker
 const inputDate = useTemplateRef('inputDate')
 
-const modelValue = shallowRef({
+// Model value for date range
+const modelValue = ref({
   start: new CalendarDate(2022, 1, 10),
   end: new CalendarDate(2022, 1, 20)
 })
 
 // Form
 const state = reactive({
-  term: undefined,
-  academicYear: undefined,
-  startDate: modelValue.value.start,
-  endDate: modelValue.value.end
+  term: null,
+  academic_year: null,
+  start_date: modelValue.value.start,
+  end_date: modelValue.value.end
 })
+
+watch(modelValue, (val) => {
+  state.start_date = val.start
+  state.end_date = val.end
+}, { deep: true })
 
 type Schema = typeof state
 
 function validate(state: Partial<Schema>): FormError[] {
   const errors = []
   if (!state.term) errors.push({ name: 'term', message: 'ต้องกรอก' })
-  if (!state.academicYear) errors.push({ name: 'academicYear', message: 'ต้องกรอก' })
-  if (!state.startDate) errors.push({ name: 'startDate', message: 'ต้องกรอก' })
-  if (!state.endDate) errors.push({ name: 'endDate', message: 'ต้องกรอก' })
+  if (!state.academic_year) errors.push({ name: 'academicYear', message: 'ต้องกรอก' })
+  if (!state.start_date) errors.push({ name: 'startDate', message: 'ต้องกรอก' })
+  if (!state.end_date) errors.push({ name: 'endDate', message: 'ต้องกรอก' })
   return errors
 }
 
+// เพิ่มเทอม
+const addTerm = async (
+  term: number,
+  academic_year: number,
+  start_date: string,
+  end_date: string
+) => {
+  try {
+    const result = await $fetch('/api/terms', {
+      method: 'POST',
+      body: {
+        term: term,
+        academic_year: academic_year,
+        start_date: start_date,
+        end_date: end_date
+      }
+    })
+    console.log(result)
+  } catch (err) {
+    return err
+  }
+}
+
 const toast = useToast()
-async function onSubmit(event: FormSubmitEvent<Schema>) {
-  toast.add({ title: 'สำเร็จ', description: 'เพิ่มเทอมเรียบร้อยแล้ว', color: 'success' })
-  console.log(event.data)
+async function onSubmit(_event: FormSubmitEvent<Schema>) {
+  // ดัก error
+  try {
+    await addTerm(
+      state.term,
+      state.academic_year,
+      state.start_date.toString(),
+      state.end_date.toString()
+    )
+
+    toast.add({ title: 'สำเร็จ', description: 'เพิ่มเทอมเรียบร้อยแล้ว', color: 'success' })
+    console.log(state)
+    console.log(modelValue.value)
+  } catch (err: any) {
+    toast.add({ title: 'ล้มเหลว', description: 'ไม่สามารถเพิ่มเทอมได้', color: 'error' })
+  }
 }
 </script>
 
@@ -60,7 +102,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       name="academicYear"
     >
       <UInput
-        v-model="state.academicYear"
+        v-model="state.academic_year"
         min="4"
         max="4"
         placeholder="2566"
@@ -104,5 +146,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
       label="เพิ่ม"
       type="submit"
     />
+    <hr>
   </UForm>
 </template>

@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gradient-to-br from-slate-800 to-slate-900 text-white">
+  <div class="bg-linear-to-br from-slate-800 to-slate-900 text-white">
     <!-- ปุ่มย้อนกลับ -->
     <UButton
       label="ย้อนกลับ"
@@ -19,7 +19,7 @@
       </p>
 
       <!-- แสดงรายวิชาที่สอนโดยอาจารย์ท่านนี้ -->
-      <div class="w-3/7 flex-shrink-0">
+      <div class="w-3/7 shrink-0">
         <div class="bg-slate-800 rounded-lg shadow-xl border border-slate-700">
           <div class="p-4 border-b border-slate-700 flex justify-between items-center">
             <h1 class="text-lg font-bold text-blue-300">
@@ -163,7 +163,7 @@
       <div class="grid grid-cols-14 mt-1 text-center">
         <!-- แสดงเวลา -->
         <div
-          class="flex-shrink-0 px-4 py-3 bg-slate-700 font-bold border-r border-slate-600 flex items-center justify-center text-white"
+          class="shrink-0 px-4 py-3 bg-slate-700 font-bold border-r border-slate-600 flex items-center justify-center text-white"
         >
           วัน/เวลา
         </div>
