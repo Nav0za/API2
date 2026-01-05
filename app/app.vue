@@ -14,33 +14,28 @@ useHead({
 
 <template>
   <UApp>
-    <UHeader>
+    <UHeader class="bg-slate-900 text-white border-none shadow-md shadow-slate-600/60">
       <template #left>
-        <NuxtLink to="/">
-          <h1 class="text-3xl">Home</h1>
+        <NuxtLink
+          class="flex items-center"
+          to="/"
+        >
+          <img
+            src="/image/rmutiLogo.png"
+            class="h-12 w-auto mx-5"
+            alt="RMUTI logo"
+          >
+          <span class="text-xl">ระบบจัดวันสอนชดเชย semi-auto</span>
         </NuxtLink>
-
       </template>
-      <UButton
-        to="/table"
-        variant="text"
-        color="secondary"
-        label="add schedule"
-      />
-      <UButton
-        to="/shoTable"
-        variant="text"
-        color="secondary"
-        label="show schedule"
-      />
-			<UButton
-				to="/teacherTable"
-				variant="text"
-				color="secondary"
-				label="add teacher"
-			/>
+
       <template #right>
-        <UColorModeButton />
+        <UButton
+          to="/teacherTable"
+          variant="ghost"
+          color="primary"
+          label="add teacher"
+        />
       </template>
     </UHeader>
 
@@ -48,9 +43,8 @@ useHead({
       <NuxtPage />
     </UMain>
 
-    <USeparator icon="i-simple-icons-nuxtdotjs" />
-
-    <UFooter>
+    <AppFooter />
+    <!-- <UFooter>
       <template #left>
         <p class="text-sm text-muted">
           Built with Nuxt UI • © {{ new Date().getFullYear() }}
@@ -67,6 +61,6 @@ useHead({
           variant="ghost"
         />
       </template>
-    </UFooter>
+    </UFooter> -->
   </UApp>
 </template>

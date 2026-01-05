@@ -77,6 +77,60 @@
           <UButton label="เพิ่ม" color="primary" @click="addTeacher" />
         </div>
       </div>
+      <!-- edit user -->
+      <UModal
+        v-model:open="editModalopen"
+        title="แก้ไขชื่ออาจารย์"
+      >
+        <template #body>
+          <h2>ชื่อเก่า: {{ seletedTeacher?.name }}</h2>
+          <UInput
+            v-model="newName"
+            placeholder="ชื่อใหม่"
+          />
+        </template>
+        <template #footer>
+          <UButton
+            label="บันทีก"
+            color="primary"
+            @click="updateTeacher(seletedTeacher?.id_teacher)"
+          />
+          <UButton
+            label="ยกเลิก"
+            color="error"
+            @click="editModalopen = false"
+          />
+        </template>
+      </UModal>
+      <!-- add user -->
+      <div class="w-2/3 border-2 border-blue-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
+        <h1 class="text-2xl font-bold mb-1">
+          1.เพิ่มอาจารย์
+        </h1>
+        <p
+          v-if="error"
+          class="text-red-600 mb-2"
+        >
+          {{ error }}
+        </p>
+        <UInput v-model="name" />
+        <UButton
+          label="เพิ่ม"
+          @click="addTeacher"
+        />
+      </div>
+      <div class="w-2/3 border-2 border-green-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
+        <h1 class="text-2xl font-bold mb-1">
+          2.เพิ่มเทอม
+        </h1>
+        <p>แสดงเทอม</p>
+        <div class="border p-2 shadow-2xl flex flex-col mb-3">
+          <p>เทอม 1/2566</p>
+          <p>เทอม 2/2566</p>
+          <p>เทอม 1/2567</p>
+        </div>
+        <FormTerm />
+      </div>
     </div>
 
     <!-- edit modal -->
@@ -131,30 +185,47 @@ const { data: teachers, pending } = await useFetch('/api/teachers')
 const name = ref('')
 
 const addTeacher = async () => {
-  if (!name.value) return
+  if (!name.value) return // ตรวจสอบว่าช่องกรอกไม่ว่างเปล่า
   try {
     const newTeacher = await $fetch('/api/teachers', {
       method: 'POST',
       body: { name: name.value }
     })
+    // เคลียร์ช่องกรอกชื่ออาจารย์
     name.value = ''
+    // อัปเดตข้อมูลในหน้าโดยไม่ต้อง reload
     teachers.value.push(newTeacher)
+
   } catch (err) {
     console.error(err)
   }
 }
+// ลบอาจารย์
+const delTeacher = async (id) => {
+  try {
+    await $fetch(`/api/teachers/${id}`, {
+      method: 'DELETE'
+    })
 
-// edit
+    // อัปเดตข้อมูลในหน้าโดยไม่ต้อง reload
+    teachers.value = teachers.value.filter(teacher => teacher.id_teacher !== id)
+
+    // ถ้าอยากแน่ใจว่าข้อมูลตรงกับฐานจริง (optional)
+  } catch (err) {
+    console.error(err)
+  }
+}
+// แก้ไขชื่ออาจารย์
 const editModalopen = ref(false)
 const seletedTeacher = ref(null)
 const newName = ref('')
-
+// เปิด modal แก้ไขชื่ออาจารย์
 const openEditModal = (teacher) => {
   seletedTeacher.value = teacher
   newName.value = teacher.name
   editModalopen.value = true
 }
-
+// บันทึกการแก้ไขชื่ออาจารย์
 const updateTeacher = async (id) => {
   if (!newName.value.trim()) return
   try {
@@ -174,12 +245,12 @@ const updateTeacher = async (id) => {
 // delete
 const deleteTeacherModalOpen = ref(false)
 const teacherToDelete = ref(null)
-
+// เปิด modal ลบอาจารย์
 const openDeleteModal = (teacher) => {
   teacherToDelete.value = teacher
   deleteTeacherModalOpen.value = true
 }
-
+// ยืนยันการลบอาจารย์
 const confirmDeleteTeacher = async () => {
   if (!teacherToDelete.value) return
   try {
