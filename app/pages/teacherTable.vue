@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 text-white">
+  <div class="min-h-screen bg-linear-to-br from-slate-800 to-slate-900 text-white">
     <!-- แถบนำทาง -->
     <nav class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50">
       <div class="container mx-auto px-4">
@@ -12,17 +12,17 @@
     </nav>
 
     <!-- เนื้อหาหลัก -->
-    <div class="container mx-auto px-4 py-8">
-      <div class="flex gap-6">
+    <div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+      <div class="flex flex-col lg:flex-row gap-6">
         <!-- รายชื่ออาจารย์ (ซ้าย) -->
-        <div class="w-80 flex-shrink-0">
+        <div class="w-full lg:w-80 shrink-0">
           <div class="bg-slate-800 rounded-lg shadow-xl border border-slate-700">
             <div class="p-4 border-b border-slate-700">
               <h1 class="text-lg font-bold text-blue-300">
                 รายชื่ออาจารย์
               </h1>
             </div>
-            <div class="overflow-y-auto max-h-[calc(100vh-250px)] custom-scrollbar">
+            <div class="overflow-y-auto max-h-[calc(40vh)] lg:max-h-[calc(100vh-250px)] custom-scrollbar">
               <div class="p-2 space-y-2">
                 <button
                   v-for="(template, index) in templates"
@@ -43,11 +43,11 @@
         </div>
 
         <!-- ตารางสอน (ขวา) -->
-        <div class="flex-1">
-          <div class=" rounded-lg shadow-xl border border-slate-700 p-6">
-            <div class="flex items-center justify-between mb-6">
-              <div class="flex items-center gap-4">
-                <h1 class="text-2xl font-bold text-blue-300">
+        <div class="flex-1 min-w-0">
+          <div class="rounded-lg shadow-xl border border-slate-700 p-2 sm:p-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-4">
+              <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                <h1 class="text-xl sm:text-2xl font-bold text-blue-300">
                   ตารางสอน
                 </h1>
                 <div class="flex items-center space-x-2">
@@ -146,17 +146,17 @@
             <div class="overflow-x-auto">
               <div class="inline-block min-w-full">
                 <!-- หัวตาราง -->
-                <div class="flex border-b">
-                  <div class="w-20 flex-shrink-0 px-4 py-3 font-bold text-center border-r border-slate-600">
+                <div class="flex border-b text-xs sm:text-sm">
+                  <div class="w-16 sm:w-20 shrink-0 px-2 sm:px-4 py-2 sm:py-3 font-bold text-center border-r border-slate-600">
                     วัน
                   </div>
                   <div class="flex flex-1">
                     <div
                       v-for="hour in 13"
                       :key="hour"
-                      class="flex-1 min-w-[80px] px-2 py-3 bg-slate-700 font-bold text-center border-r border-slate-600 last:border-r-0"
+                      class="flex-1 min-w-16 sm:min-w-20 px-1 sm:px-2 py-2 sm:py-3 bg-slate-700 font-bold text-center border-r border-slate-600 last:border-r-0"
                     >
-                      ชม.ที่ {{ hour }}
+                      <span class="hidden sm:inline">ชม.ที่</span> {{ hour }}
                     </div>
                   </div>
                 </div>
@@ -165,10 +165,10 @@
                 <div
                   v-for="(row, rowIndex) in scheduleRows"
                   :key="rowIndex"
-                  class="flex border-b border-slate-600 last:border-b-0"
+                  class="flex border-b border-slate-600 last:border-b-0 text-xs sm:text-sm"
                 >
                   <!-- หัวแถว -->
-                  <div class="w-20 flex-shrink-0 px-4 py-8 bg-slate-700/50 font-medium border-r border-slate-600 flex items-center justify-center">
+                  <div class="w-16 sm:w-20 shrink-0 px-2 sm:px-4 py-4 sm:py-8 bg-slate-700/50 font-medium border-r border-slate-600 flex items-center justify-center">
                     {{ row.day }}
                   </div>
 
@@ -177,16 +177,16 @@
                     <div
                       v-for="(slot, slotIndex) in row.slots"
                       :key="slotIndex"
-                      class="relative flex-1 min-w-[80px] border-r border-slate-600 last:border-r-0"
+                      class="relative flex-1 min-w-16 sm:min-w-20 border-r border-slate-600 last:border-r-0"
                     >
                       <div
                         :class="[
-                          'h-full px-2 py-8 transition-colors flex items-center justify-center cursor-pointer',
+                          'h-full px-1 sm:px-2 py-4 sm:py-8 transition-colors flex items-center justify-center cursor-pointer',
                           slot ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-500 hover:bg-gray-600'
                         ]"
                         @click="toggleDropdown(rowIndex, slotIndex)"
                       >
-                        <span :class="slot ? 'text-white text-sm font-medium' : 'text-slate-400 text-sm'">
+                        <span :class="slot ? 'text-white text-xs sm:text-sm font-medium' : 'text-slate-400 text-xs sm:text-sm'">
                           {{ slot || 'ว่าง' }}
                         </span>
                       </div>
@@ -195,7 +195,7 @@
                       <Transition name="dropdown">
                         <div
                           v-if="activeDropdown.row === rowIndex && activeDropdown.slot === slotIndex"
-                          class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-64 bg-slate-800 rounded-lg shadow-2xl border border-slate-600 overflow-hidden z-50"
+                          class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-56 sm:w-64 bg-slate-800 rounded-lg shadow-2xl border border-slate-600 overflow-hidden z-50"
                           @click.stop
                         >
                           <!-- ส่วนหัว -->
@@ -206,7 +206,7 @@
                           </div>
 
                           <!-- รายชื่อวิชา -->
-                          <div class="max-h-64 overflow-y-auto custom-scrollbar">
+                          <div class="max-h-48 sm:max-h-64 overflow-y-auto custom-scrollbar">
                             <button
                               v-for="(subject, index) in subjects"
                               :key="index"
@@ -403,5 +403,12 @@ onUnmounted(() => {
 .dropdown-leave-from {
   opacity: 1;
   transform: translateY(50%) translateY(-10);
+}
+
+/* Responsive tweaks */
+@media (max-width: 1023px) {
+  .container {
+    max-width: 100vw;
+  }
 }
 </style>
