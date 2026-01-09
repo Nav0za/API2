@@ -5,16 +5,16 @@ import { CalendarDate } from '@internationalized/date'
 // Date picker
 const inputDate = useTemplateRef('inputDate')
 
-// Model value for date range
-const modelValue = ref({
+// วันที่เริ่มต้น - สิ้นสุด
+const modelValue = shallowRef({
   start: new CalendarDate(2022, 1, 10),
   end: new CalendarDate(2022, 1, 20)
 })
 
 // Form
 const state = reactive({
-  term: null,
-  academic_year: null,
+  term: undefined as number | undefined,
+  academic_year: undefined as number | undefined,
   start_date: modelValue.value.start,
   end_date: modelValue.value.end
 })
@@ -25,7 +25,7 @@ watch(modelValue, (val) => {
 }, { deep: true })
 
 type Schema = typeof state
-
+// ตรวจสอบความถูกต้องของฟอร์ม
 function validate(state: Partial<Schema>): FormError[] {
   const errors = []
   if (!state.term) errors.push({ name: 'term', message: 'ต้องกรอก' })
@@ -57,10 +57,17 @@ const addTerm = async (
     return err
   }
 }
-
+// การแจ้งเตือน
 const toast = useToast()
 async function onSubmit(_event: FormSubmitEvent<Schema>) {
-  // ดัก error
+  if (
+    state.term === undefined ||
+    state.academic_year === undefined
+  ) {
+    toast.add({ title: 'ผิดพลาด', description: 'ข้อมูลไม่ครบ', color: 'error' })
+    return
+  }
+
   try {
     await addTerm(
       state.term,
@@ -70,12 +77,11 @@ async function onSubmit(_event: FormSubmitEvent<Schema>) {
     )
 
     toast.add({ title: 'สำเร็จ', description: 'เพิ่มเทอมเรียบร้อยแล้ว', color: 'success' })
-    console.log(state)
-    console.log(modelValue.value)
-  } catch (err: any) {
+  } catch {
     toast.add({ title: 'ล้มเหลว', description: 'ไม่สามารถเพิ่มเทอมได้', color: 'error' })
   }
 }
+
 </script>
 
 <template>
@@ -92,6 +98,9 @@ async function onSubmit(_event: FormSubmitEvent<Schema>) {
     >
       <UInput
         v-model="state.term"
+        type="number"
+        min="1"
+        max="3"
         placeholder="1"
       />
     </UFormField>
@@ -103,9 +112,9 @@ async function onSubmit(_event: FormSubmitEvent<Schema>) {
     >
       <UInput
         v-model="state.academic_year"
-        min="4"
-        max="4"
-        placeholder="2566"
+        type="number"
+        maxlength="4"
+        placeholder="256"
       />
     </UFormField>
 
