@@ -77,7 +77,7 @@
           <UButton label="เพิ่ม" color="primary" @click="addTeacher" />
         </div>
       </div>
-      <!-- edit user -->
+      <!-- แก้ไขชื่ออาจารย์ -->
       <UModal
         v-model:open="editModalopen"
         title="แก้ไขชื่ออาจารย์"
@@ -102,34 +102,21 @@
           />
         </template>
       </UModal>
-      <!-- add user -->
-      <div class="w-2/3 border-2 border-blue-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
-        <h1 class="text-2xl font-bold mb-1">
-          1.เพิ่มอาจารย์
-        </h1>
-        <p
-          v-if="error"
-          class="text-red-600 mb-2"
-        >
-          {{ error }}
-        </p>
-        <UInput v-model="name" />
-        <UButton
-          label="เพิ่ม"
-          @click="addTeacher"
-        />
-      </div>
+      <!-- เพิ่มเทอม -->
       <div class="w-full border-2 border-green-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
         <h1 class="text-2xl font-bold mb-1">
           2.เพิ่มเทอม
         </h1>
         <p>แสดงเทอม</p>
-        <div class="border p-2 shadow-2xl flex flex-col gap-2 mb-3 w-full">
+        <div class="border p-2 shadow-2xl flex flex-col gap-2 mb-3 w-full h-64 overflow-y-auto">
+          <!-- box เทอมการศึกษา -->
           <div
             v-for="term in terms"
             :key="term.id_term"
-            class="flex flex-col bg-neutral-500 justify-between p-2 border-b"
+            class="flex flex-row bg-neutral-500 justify-between p-2 border-b"
           >
+          <!-- รายละเอียดเทอมการศึกษา: -->
+          <div>
             <div class="text-white font-bold">
               {{ term.term }} / {{ term.academic_year }}
             </div>
@@ -137,12 +124,20 @@
               เริ่ม: {{ term.start_date }} - สิ้นสุด: {{ term.end_date }}
             </div>
           </div>
+          <UButton
+            label="ลบ"
+            icon="i-lucide-trash"
+            color="error"
+            @click="() => {}"
+          />
+          </div>
         </div>
+        <!-- ฟอร์มเพิ่มเทอมการศึกษา -->
         <FormTerm />
       </div>
     </div>
 
-    <!-- edit modal -->
+    <!-- edit name teacher MODAL -->
     <UModal title="แก้ไขชื่ออาจารย์" v-model:open="editModalopen">
       <template #body>
         <h2 class="mb-2">ชื่อเก่า: {{ seletedTeacher?.name }}</h2>
@@ -162,7 +157,7 @@
       </template>
     </UModal>
 
-    <!-- delete confirm -->
+    <!-- delete teacher confirm MODAL -->
     <UModal title="ยืนยันการลบ" v-model:open="deleteTeacherModalOpen">
       <template #body>
         <div class="py-3">
@@ -175,7 +170,7 @@
       <template #footer>
         <UButton
           label="ยกเลิก"
-          color="error"
+          color="warning"
           @click="deleteTeacherModalOpen = false"
         />
         <UButton
@@ -252,7 +247,7 @@ const updateTeacher = async (id) => {
   }
 }
 
-// delete
+// ลบอาจารย์
 const deleteTeacherModalOpen = ref(false)
 const teacherToDelete = ref(null)
 // เปิด modal ลบอาจารย์
