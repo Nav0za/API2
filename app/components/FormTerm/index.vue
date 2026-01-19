@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import type { FormError, FormSubmitEvent } from '@nuxt/ui'
-import { CalendarDate } from '@internationalized/date'
+import { CalendarDate, today, getLocalTimeZone } from '@internationalized/date'
 
 // Date picker
 const inputDate = useTemplateRef('inputDate')
 
 // วันที่เริ่มต้น - สิ้นสุด
 const modelValue = shallowRef({
-  start: new CalendarDate(2022, 1, 10),
-  end: new CalendarDate(2022, 1, 20)
+  start: today(getLocalTimeZone()),
+  end: today(getLocalTimeZone()).add({ days: 7 })
 })
 
 // Form
@@ -36,6 +36,7 @@ function validate(state: Partial<Schema>): FormError[] {
 }
 
 // เพิ่มเทอม
+const emit = defineEmits(['addedTerm']) // แจ้งเตือนเมื่อเพิ่มเทอมสำเร็จ
 const addTerm = async (
   term: number,
   academic_year: number,
@@ -43,7 +44,7 @@ const addTerm = async (
   end_date: string
 ) => {
   try {
-    const result = await $fetch('/api/terms', {
+    const newTerm = await $fetch('/api/terms', {
       method: 'POST',
       body: {
         term: term,
@@ -52,7 +53,9 @@ const addTerm = async (
         end_date: end_date
       }
     })
-    console.log(result)
+
+    emit('addedTerm', newTerm)
+    console.log(newTerm)
   } catch (err) {
     return err
   }
@@ -61,8 +64,8 @@ const addTerm = async (
 const toast = useToast()
 async function onSubmit(_event: FormSubmitEvent<Schema>) {
   if (
-    state.term === undefined ||
-    state.academic_year === undefined
+    state.term === undefined
+    || state.academic_year === undefined
   ) {
     toast.add({ title: 'ผิดพลาด', description: 'ข้อมูลไม่ครบ', color: 'error' })
     return
@@ -81,7 +84,6 @@ async function onSubmit(_event: FormSubmitEvent<Schema>) {
     toast.add({ title: 'ล้มเหลว', description: 'ไม่สามารถเพิ่มเทอมได้', color: 'error' })
   }
 }
-
 </script>
 
 <template>
