@@ -2,16 +2,26 @@
   <div>
     <div class="w-2/3 bg-white border border-gray-200 p-6 mx-auto mt-10 shadow-md rounded-2xl">
       <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl font-bold">รายชื่ออาจารย์</h1>
-        <div class="text-sm text-gray-500">แก้ไข</div>
+        <h1 class="text-2xl font-bold">
+          รายชื่ออาจารย์
+        </h1>
+        <div class="text-sm text-gray-500">
+          ตัวเลือก
+        </div>
       </div>
 
-      <div v-if="pending" class="py-8 text-center text-gray-500">
+      <div
+        v-if="pending"
+        class="py-8 text-center text-gray-500"
+      >
         Loading...
       </div>
 
       <div v-else>
-        <div v-if="teachers && teachers.length" class="space-y-3 mb-4">
+        <div
+          v-if="teachers && teachers.length"
+          class="space-y-3 mb-4"
+        >
           <div
             v-for="teacher in teachers"
             :key="teacher.id_teacher"
@@ -59,22 +69,61 @@
                   icon="i-lucide-trash"
                   color="error"
                   size="sm"
-                  @click="openDeleteModal(teacher)"
+                  @click="deleteTeacherModalOpen = true"
                 />
                 <span class="text-[11px] text-gray-500 mt-1">ลบ</span>
               </div>
             </div>
+            <!-- delete teacher confirm MODAL -->
+            <UModal
+              v-model:open="deleteTeacherModalOpen"
+              title="ยืนยันการลบ"
+            >
+              <template #body>
+                <div class="py-3">
+                  <p class="mb-2">
+                    คุณแน่ใจว่าจะลบอาจารย์คนนี้หรือไม่?
+                  </p>
+                  <p class="text-sm text-gray-600">
+                    <strong>ชื่อ:</strong> {{ teacher.name }}
+                  </p>
+                </div>
+              </template>
+              <template #footer>
+                <UButton
+                  label="ยกเลิก"
+                  color="warning"
+                  @click="deleteTeacherModalOpen = false"
+                />
+                <UButton
+                  label="ลบ"
+                  color="error"
+                  @click="delTeacher(teacher.id_teacher)"
+                />
+              </template>
+            </UModal>
           </div>
         </div>
 
-        <div v-else class="text-gray-500 italic mb-4">
+        <div
+          v-else
+          class="text-gray-500 italic mb-4"
+        >
           ไม่มีอาจารย์ในระบบ
         </div>
 
         <!-- เพิ่มอาจารย์ -->
         <div class="mt-2 border-t pt-4 flex items-center gap-3">
-          <UInput v-model="name" placeholder="ชื่ออาจารย์" class="flex-1" />
-          <UButton label="เพิ่ม" color="primary" @click="addTeacher" />
+          <UInput
+            v-model="name"
+            placeholder="ชื่ออาจารย์"
+            class="flex-1"
+          />
+          <UButton
+            label="เพิ่ม"
+            color="primary"
+            @click="addTeacher"
+          />
         </div>
       </div>
       <!-- แก้ไขชื่ออาจารย์ -->
@@ -102,19 +151,26 @@
           />
         </template>
       </UModal>
-      <!-- เพิ่มเทอม -->
-      <div class="w-full border-2 border-green-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
-        <h1 class="text-2xl font-bold mb-1">
-          2.เพิ่มเทอม
-        </h1>
-        <p>แสดงเทอม</p>
-        <div class="border p-2 shadow-2xl flex flex-col gap-2 mb-3 w-full h-64 overflow-y-auto">
-          <!-- box เทอมการศึกษา -->
-          <div
-            v-for="term in terms"
-            :key="term.id_term"
-            class="flex flex-row bg-neutral-500 justify-between p-2 border-b"
-          >
+    </div>
+    <!-- เพิ่มเทอม -->
+    <div class="w-4/6 border-2 border-green-600 p-4 mx-auto mt-10 shadow-lg rounded-2xl">
+      <h1 class="text-2xl font-bold mb-1">
+        2.เพิ่มเทอม
+      </h1>
+      <p>แสดงเทอม</p>
+      <div class="border p-2 shadow-2xl flex flex-col gap-2 mb-3 w-full h-64 overflow-y-auto">
+        <!-- box แสดงเทอมการศึกษา -->
+        <div
+          v-if="terms.length === 0"
+          class="text-gray-400"
+        >
+          ไม่มีเทอมการศึกษาในระบบ
+        </div>
+        <div
+          v-for="term in terms"
+          :key="term.id_term"
+          class="flex flex-row bg-neutral-500 justify-between p-2 border-b"
+        >
           <!-- รายละเอียดเทอมการศึกษา: -->
           <div>
             <div class="text-white font-bold">
@@ -124,24 +180,60 @@
               เริ่ม: {{ term.start_date }} - สิ้นสุด: {{ term.end_date }}
             </div>
           </div>
+          <!-- modal ลบเทอมการศึกษา -->
+          <UModal
+            v-model:open="confirmDeleteTerm"
+            title="ยืนยันการลบ"
+          >
+            <template #body>
+              <div class="py-3">
+                <p class="mb-2">
+                  คุณแน่ใจว่าจะลบเทอมนี้หรือไม่?
+                </p>
+                <p class="text-sm text-gray-600">
+                  <strong>เทอม:</strong> {{ term.term }} / {{ term.academic_year }}
+                </p>
+              </div>
+            </template>
+            <template #footer>
+              <UButton
+                label="ยกเลิก"
+                color="warning"
+                @click="confirmDeleteTerm = false"
+              />
+              <UButton
+                label="ลบ"
+                color="error"
+                @click="deleteTerm(term.id_term)"
+              />
+            </template>
+          </UModal>
+
           <UButton
             label="ลบ"
             icon="i-lucide-trash"
             color="error"
-            @click="() => {}"
+            @click="confirmDeleteTerm = true"
           />
-          </div>
         </div>
-        <!-- ฟอร์มเพิ่มเทอมการศึกษา -->
-        <FormTerm />
       </div>
+      <!-- ฟอร์มเพิ่มเทอมการศึกษา -->
+      <FormTerm @added-term="onAddedTerm" />
     </div>
 
     <!-- edit name teacher MODAL -->
-    <UModal title="แก้ไขชื่ออาจารย์" v-model:open="editModalopen">
+    <UModal
+      v-model:open="editModalopen"
+      title="แก้ไขชื่ออาจารย์"
+    >
       <template #body>
-        <h2 class="mb-2">ชื่อเก่า: {{ seletedTeacher?.name }}</h2>
-        <UInput placeholder="ชื่อใหม่" v-model="newName" />
+        <h2 class="mb-2">
+          ชื่อเก่า: {{ seletedTeacher?.name }}
+        </h2>
+        <UInput
+          v-model="newName"
+          placeholder="ชื่อใหม่"
+        />
       </template>
       <template #footer>
         <UButton
@@ -156,35 +248,14 @@
         />
       </template>
     </UModal>
-
-    <!-- delete teacher confirm MODAL -->
-    <UModal title="ยืนยันการลบ" v-model:open="deleteTeacherModalOpen">
-      <template #body>
-        <div class="py-3">
-          <p class="mb-2">คุณแน่ใจว่าจะลบอาจารย์คนนี้หรือไม่?</p>
-          <p class="text-sm text-gray-600">
-            <strong>ชื่อ:</strong> {{ teacherToDelete?.name }}
-          </p>
-        </div>
-      </template>
-      <template #footer>
-        <UButton
-          label="ยกเลิก"
-          color="warning"
-          @click="deleteTeacherModalOpen = false"
-        />
-        <UButton
-          label="ลบ"
-          color="error"
-          @click="confirmDeleteTeacher"
-        />
-      </template>
-    </UModal>
   </div>
 </template>
 
 <script setup>
-const { data: terms, error } = await useFetch('/api/terms')
+const { data, error } = await useFetch('/api/terms', {
+  default: () => []
+})
+const terms = ref(data.value)
 const { data: teachers, pending } = await useFetch('/api/teachers')
 
 const name = ref('')
@@ -200,12 +271,12 @@ const addTeacher = async () => {
     name.value = ''
     // อัปเดตข้อมูลในหน้าโดยไม่ต้อง reload
     teachers.value.push(newTeacher)
-
   } catch (err) {
     console.error(err)
   }
 }
 // ลบอาจารย์
+const deleteTeacherModalOpen = ref(false)
 const delTeacher = async (id) => {
   try {
     await $fetch(`/api/teachers/${id}`, {
@@ -247,28 +318,19 @@ const updateTeacher = async (id) => {
   }
 }
 
-// ลบอาจารย์
-const deleteTeacherModalOpen = ref(false)
-const teacherToDelete = ref(null)
-// เปิด modal ลบอาจารย์
-const openDeleteModal = (teacher) => {
-  teacherToDelete.value = teacher
-  deleteTeacherModalOpen.value = true
+// ฟังก์ชันเมื่อเพิ่มเทอมสำเร็จ
+const onAddedTerm = (newTerm) => {
+  if (!terms.value) terms.value = []
+  terms.value.push(newTerm)
 }
-// ยืนยันการลบอาจารย์
-const confirmDeleteTeacher = async () => {
-  if (!teacherToDelete.value) return
-  try {
-    await $fetch(`/api/teachers/${teacherToDelete.value.id_teacher}`, {
-      method: 'DELETE'
-    })
-    teachers.value = teachers.value.filter(
-      t => t.id_teacher !== teacherToDelete.value.id_teacher
-    )
-    deleteTeacherModalOpen.value = false
-    teacherToDelete.value = null
-  } catch (err) {
-    console.error(err)
-  }
+
+// ลบเทอม
+const confirmDeleteTerm = ref(false)
+const deleteTerm = async (id) => {
+  await $fetch(`/api/terms/${id}`, {
+    method: 'DELETE'
+  })
+  // อัปเดตข้อมูลในหน้าโดยไม่ต้อง reload
+  terms.value = terms.value.filter(term => term.id_term !== id)
 }
 </script>

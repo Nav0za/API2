@@ -18,10 +18,13 @@ export default defineEventHandler(async (event) => {
     const result = stmt.run(body.term, body.academic_year, body.start_date, body.end_date)
 
     return {
-      result: result,
-      status: 1
+      id_term: Number(result.lastInsertRowid),
+      term: body.term,
+      academic_year: body.academic_year,
+      start_date: body.start_date,
+      end_date: body.end_date
     }
   } catch (error) {
-    return error
+    console.error('Error adding term:', error)
   }
 })
