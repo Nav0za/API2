@@ -229,13 +229,13 @@
 
     <!-- ปฏิทินการสอน -->
     <div class="w-5/6 mx-auto mt-10 mb-10">
-      <Calendar :teachers="teachers || []" />
+      <AppCalendar :teachers="teachers || []" />
     </div>
   </div>
 </template>
 
 <script setup>
-const { data, error } = await useFetch('/api/terms', {
+const { data } = await useFetch('/api/terms', {
   default: () => []
 })
 const terms = ref(data.value)
