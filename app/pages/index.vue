@@ -5,8 +5,11 @@
         <h1 class="text-2xl font-bold">
           รายชื่ออาจารย์
         </h1>
-        <div class="text-sm text-gray-500">
-          ตัวเลือก
+        <div class="flex items-center gap-2">
+          <div class="text-sm text-gray-500">
+            ตัวเลือก
+          </div>
+          <NuxtLink to="/formterm/13" class="ml-4"><UButton label="ตารางตึก" color="success" size="sm" /></NuxtLink>
         </div>
       </div>
 
