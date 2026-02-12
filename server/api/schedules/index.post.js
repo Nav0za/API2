@@ -1,4 +1,5 @@
 import db from '../../utils/db.js'
+import { syncTeacherToSections } from '../../utils/scheduleSync.js'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -12,35 +13,37 @@ export default defineEventHandler(async (event) => {
   }
 
   const jsonSchedule = JSON.stringify(body.schedule)
+  const teacherId = Number(body.id_teacher)
+  const term = body.term
 
-  // เช็คว่ามีตารางของอาจารย์คนนี้ในเทอมนี้อยู่แล้วหรือไม่
+  console.log(`[API] Saving teacher schedule for teacher ${teacherId}, term ${term}`)
+
+  // 1. Save Teacher Schedule (Existing Logic)
   const existing = db.prepare(
     'SELECT id_schedule FROM schedules WHERE id_teacher = ? AND term = ?'
-  ).get(body.id_teacher, body.term)
+  ).get(teacherId, term)
 
+  let result
   if (existing) {
-    // ถ้ามีแล้ว ให้ UPDATE
     const stmt = db.prepare(
       'UPDATE schedules SET scheduleData = ? WHERE id_teacher = ? AND term = ?'
     )
-    stmt.run(jsonSchedule, body.id_teacher, body.term)
-
-    return {
-      id: existing.id_schedule,
-      schedule: jsonSchedule,
-      message: 'Schedule updated successfully'
-    }
+    stmt.run(jsonSchedule, teacherId, term)
+    result = { id: existing.id_schedule, message: 'Schedule updated' }
   } else {
-    // ถ้ายังไม่มี ให้ INSERT
     const stmt = db.prepare(
       'INSERT INTO schedules (scheduleData, id_teacher, term) VALUES (?, ?, ?)'
     )
-    const res = stmt.run(jsonSchedule, body.id_teacher, body.term)
+    const res = stmt.run(jsonSchedule, teacherId, term)
+    result = { id: res.lastInsertRowid, message: 'Schedule created' }
+  }
 
-    return {
-      id: res.lastInsertRowid,
-      schedule: jsonSchedule,
-      message: 'Schedule created successfully'
-    }
+  // --- Auto-Sync Logic ---
+  syncTeacherToSections(teacherId, term, body.schedule)
+
+  return {
+    ...result,
+    schedule: jsonSchedule,
+    syncMessage: 'Teacher schedule saved and sections synchronized.'
   }
 })

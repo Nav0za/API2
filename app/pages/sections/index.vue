@@ -1,354 +1,384 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-8">
-    <div class="container mx-auto px-4">
-      <!-- Header -->
-      <div class="mb-8">
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">
-          จัดการกลุ่มเรียน
-        </h1>
-        <p class="text-gray-600">
-          เพิ่ม แก้ไข และจัดการกลุ่มเรียนนักศึกษา
-        </p>
-      </div>
-
-      <!-- Filter และปุ่มเพิ่ม -->
-      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-        <div class="flex justify-between items-center gap-4">
-          <div class="flex-1">
-            <label class="text-sm font-medium text-gray-700 mb-2 block">
-              กรองตามเทอม
-            </label>
-            <USelect
-              v-model="selectedTerm"
-              :options="termOptions"
-              placeholder="ทุกเทอม"
-              class="w-64"
+  <div class="min-h-screen bg-linear-to-br from-slate-800 to-slate-900 text-white">
+    <!-- Navbar -->
+    <nav class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-4">
+            <UButton
+              icon="i-lucide-arrow-left"
+              color="gray"
+              variant="ghost"
+              to="/"
             />
+            <h2 class="text-xl font-bold text-blue-400">
+              จัดการกลุ่มเรียน (Sections)
+            </h2>
           </div>
+        </div>
+      </div>
+    </nav>
 
+    <div class="container mx-auto px-4 py-8">
+      <!-- Header & Add Button -->
+      <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <div>
+          <h1 class="text-3xl font-bold mb-2">
+            รายชื่อกลุ่มเรียน
+          </h1>
+          <p class="text-slate-400">
+            จัดการข้อมูลกลุ่มนักศึกษาและตารางเรียน
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+           <USelect
+            v-model="selectedTerm"
+            :items="filterTermOptions"
+            placeholder="เลือกเทอม"
+            class="w-48"
+            icon="i-heroicons-funnel"
+          />
           <UButton
+            icon="i-heroicons-plus-circle"
             label="เพิ่มกลุ่มเรียน"
-            icon="i-lucide-plus"
             color="primary"
             size="lg"
-            @click="openAddModal"
+            @click="openAddModal = true"
           />
         </div>
       </div>
 
-      <!-- Loading -->
-      <div
-        v-if="pending"
-        class="text-center py-20"
-      >
-        <div class="text-gray-500">
-          กำลังโหลดข้อมูล...
-        </div>
-      </div>
+      <!-- Section List -->
+       <!-- Filters (Optional, can be added later) -->
 
-      <!-- รายการกลุ่มเรียน -->
-      <div
-        v-else
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        <div
-          v-if="filteredSections.length === 0"
-          class="col-span-full text-center py-20 bg-white rounded-lg shadow-md"
-        >
-          <p class="text-gray-500 text-lg">
-            ไม่พบกลุ่มเรียนในระบบ
-          </p>
+       <!-- Section List -->
+       <div v-if="pending" class="text-center py-10">
+          <UIcon name="i-lucide-loader" class="animate-spin text-2xl text-primary" />
+          <p class="mt-2 text-gray-500">กำลังโหลดข้อมูล...</p>
+       </div>
+
+       <div v-else-if="!sections || sections.length === 0" class="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
+          <UIcon name="i-heroicons-user-group" class="text-4xl text-gray-300 mb-2" />
+          <p class="text-gray-500">ยังไม่มีกลุ่มเรียน</p>
           <UButton
-            label="เพิ่มกลุ่มเรียนแรก"
-            icon="i-lucide-plus"
-            color="primary"
-            class="mt-4"
-            @click="openAddModal"
+            label="สร้างกลุ่มเรียนแรก"
+            variant="link"
+            @click="openAddModal = true"
           />
-        </div>
+       </div>
 
-        <!-- Card กลุ่มเรียน -->
-        <div
-          v-for="section in filteredSections"
-          :key="section.id_section"
-          class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6"
-        >
-          <div class="flex justify-between items-start mb-4">
-            <div>
-              <h3 class="text-xl font-bold text-gray-800 mb-1">
-                {{ section.section_name }}
-              </h3>
-              <p class="text-sm text-gray-500">
-                เทอม {{ section.term }}
-              </p>
-            </div>
-            <div class="flex gap-2">
-              <UButton
-                icon="i-lucide-edit"
-                color="warning"
-                size="sm"
-                square
-                @click="openEditModal(section)"
-              />
-              <UButton
-                icon="i-lucide-trash"
-                color="error"
-                size="sm"
-                square
-                @click="confirmDelete(section)"
-              />
-            </div>
-          </div>
-
-          <p
-            v-if="section.description"
-            class="text-gray-600 text-sm mb-4"
+       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <UCard
+            v-for="section in sections"
+            :key="section.id_section"
+            class="hover:ring-2 hover:ring-primary-200 transition-all cursor-pointer group"
           >
-            {{ section.description }}
-          </p>
+             <template #header>
+                <div class="flex justify-between items-start">
+                  <div>
+                     <h3 class="text-lg font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
+                        {{ section.section_name }}
+                     </h3>
+                     <span class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full border border-gray-200">
+                        {{ section.term ? `Term ${section.term}` : 'No Term' }}
+                     </span>
+                  </div>
+                  <UDropdownMenu :items="getActionItems(section)">
+                      <UButton icon="i-heroicons-ellipsis-vertical" color="neutral" variant="ghost" />
+                  </UDropdownMenu>
+                </div>
+             </template>
 
-          <UButton
-            label="จัดการตารางเรียน"
-            icon="i-lucide-calendar"
-            color="primary"
-            variant="outline"
-            block
-            :to="`/sections/${section.id_section}`"
-          />
-        </div>
-      </div>
+             <p class="text-sm text-gray-600 line-clamp-2 h-10">
+                {{ section.description || 'ไม่มีรายละเอียด' }}
+             </p>
+
+             <template #footer>
+                <UButton
+                  block
+                  label="จัดการตารางเรียน"
+                  icon="i-heroicons-calendar"
+                  color="primary"
+                  variant="solid"
+                  :to="`/sections/${section.id_section}?term=${section.term}`"
+                />
+             </template>
+          </UCard>
+       </div>
     </div>
 
-    <!-- Modal เพิ่ม/แก้ไขกลุ่มเรียน -->
-    <UModal
-      v-model:open="modalOpen"
-      :title="editingSection ? 'แก้ไขกลุ่มเรียน' : 'เพิ่มกลุ่มเรียน'"
-    >
+    <!-- Add Section Modal -->
+     <UModal v-model:open="openAddModal" title="เพิ่มกลุ่มเรียนใหม่">
       <template #body>
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">ชื่อกลุ่มเรียน</label>
-            <UInput
-              v-model="formData.section_name"
-              placeholder="เช่น TC2R1, TC2R2"
-            />
-          </div>
+        <form @submit.prevent="handleAddSection" class="space-y-4">
+           <UFormField label="ชื่อกลุ่มเรียน (Section Name)" required>
+              <UInput v-model="newSection.name" placeholder="เช่น TC2R1, SE66" autofocus />
+           </UFormField>
 
-          <div>
-            <label class="block text-sm font-medium mb-1">เทอม</label>
-            <USelect
-              v-model="formData.term"
-              :options="termOptions"
-              placeholder="เลือกเทอม"
-            />
-          </div>
+           <UFormField label="ปีการศึกษา (Term)" required>
+              <USelect
+                v-model="newSection.term"
+                :items="termOptions"
+                placeholder="เลือกเทอม"
+              />
+           </UFormField>
 
-          <div>
-            <label class="block text-sm font-medium mb-1">คำอธิบาย (ถ้ามี)</label>
-            <UTextarea
-              v-model="formData.description"
-              placeholder="รายละเอียดเพิ่มเติม"
-              :rows="3"
-            />
-          </div>
-        </div>
+           <UFormField label="รายละเอียด (Optional)">
+              <UTextarea v-model="newSection.description" placeholder="รายละเอียดเพิ่มเติม..." />
+           </UFormField>
+        </form>
       </template>
+
       <template #footer>
-        <UButton
-          label="ยกเลิก"
-          color="neutral"
-          @click="modalOpen = false"
-        />
-        <UButton
-          :label="editingSection ? 'บันทึก' : 'เพิ่ม'"
-          color="primary"
-          :loading="saving"
-          @click="saveSection"
-        />
+         <div class="flex justify-end gap-2">
+            <UButton label="ยกเลิก" color="error" variant="ghost" @click="openAddModal = false" />
+            <UButton label="บันทึก" color="primary" :loading="adding" @click="handleAddSection" />
+         </div>
       </template>
     </UModal>
 
-    <!-- Modal ยืนยันการลบ -->
-    <UModal
-      v-model:open="deleteModalOpen"
-      title="ยืนยันการลบ"
-    >
+    <!-- Edit Section Modal -->
+    <UModal v-model:open="openEditModal" title="แก้ไขข้อมูลกลุ่มเรียน">
       <template #body>
-        <div class="py-3">
-          <p class="mb-2">
-            คุณแน่ใจว่าจะลบกลุ่มเรียนนี้หรือไม่?
-          </p>
-          <p class="text-sm text-gray-600 mb-3">
-            <strong>กลุ่ม:</strong> {{ sectionToDelete?.section_name }}
-          </p>
-          <p class="text-sm text-red-600">
-            ⚠️ การลบจะลบตารางเรียนของกลุ่มนี้ด้วย
-          </p>
+        <form @submit.prevent="handleEditSection" class="space-y-4">
+           <UFormField label="ชื่อกลุ่มเรียน (Section Name)" required>
+              <UInput v-model="editingSection.name" placeholder="เช่น TC2R1, SE66" autofocus />
+           </UFormField>
+
+           <UFormField label="ปีการศึกษา (Term)">
+              <UInput :model-value="editingSection.term" disabled class="bg-gray-50" />
+              <p class="text-xs text-gray-500 mt-1">ไม่สามารถแก้ไขเทอมได้</p>
+           </UFormField>
+
+           <UFormField label="รายละเอียด (Optional)">
+              <UTextarea v-model="editingSection.description" placeholder="รายละเอียดเพิ่มเติม..." />
+           </UFormField>
+        </form>
+      </template>
+
+      <template #footer>
+         <div class="flex justify-end gap-2">
+            <UButton label="ยกเลิก" color="error" variant="ghost" @click="openEditModal = false" />
+            <UButton label="บันทึกการแก้ไข" color="primary" :loading="editing" @click="handleEditSection" />
+         </div>
+      </template>
+    </UModal>
+
+    <!-- Delete Confirmation Modal -->
+    <UModal v-model:open="openDeleteModal" title="ยืนยันการลบกลุ่มเรียน">
+      <template #body>
+        <div class="py-4">
+          <p class="mb-4 text-gray-600">คุณแน่ใจหรือไม่ที่จะลบกลุ่มเรียนนี้?</p>
+          <div class="p-4 bg-red-50 rounded-xl border border-red-100 mb-4 text-center">
+            <span class="block font-bold text-red-800 text-lg">{{ deletingSection?.section_name }}</span>
+            <span class="text-sm text-red-600">เทอม {{ deletingSection?.term }}</span>
+          </div>
+          <UAlert
+            icon="i-heroicons-exclamation-triangle"
+            color="error"
+            variant="soft"
+            title="คำเตือนสำคัญ"
+            description="การลบกลุ่มเรียนจะทำให้ข้อมูลตารางเรียนทั้งหมดของกลุ่มนี้ถูกลบถาวร"
+          />
         </div>
       </template>
+
       <template #footer>
-        <UButton
-          label="ยกเลิก"
-          color="neutral"
-          @click="deleteModalOpen = false"
-        />
-        <UButton
-          label="ลบ"
-          color="error"
-          :loading="deleting"
-          @click="deleteSection"
-        />
+         <div class="flex justify-end gap-2">
+            <UButton label="ยกเลิก" color="error" variant="ghost" @click="openDeleteModal = false" />
+            <UButton label="ยืนยันการลบ" color="error" :loading="deleting" @click="handleDeleteSection" />
+         </div>
       </template>
     </UModal>
   </div>
 </template>
 
 <script setup>
-const { data: sections, pending, refresh } = await useFetch('/api/sections')
+const toast = useToast()
+
+// Data fetching
 const { data: terms } = await useFetch('/api/terms')
 
-// Filter
-const selectedTerm = ref(null)
+// State
+const openAddModal = ref(false)
+const openEditModal = ref(false) // New state for Edit Modal
+const openDeleteModal = ref(false) // New state for Delete Modal
+const adding = ref(false)
+const editing = ref(false)
+const deleting = ref(false)
+const selectedTerm = ref('')
 
-const termOptions = computed(() => {
-  if (!terms.value) return [{ label: 'ทุกเทอม', value: null }]
-  return [
-    { label: 'ทุกเทอม', value: null },
-    ...terms.value.map(t => ({
-      label: `เทอม ${t.term}/${t.academic_year}`,
-      value: `${t.term}/${t.academic_year}`
-    }))
-  ]
-})
-
-const filteredSections = computed(() => {
-  if (!sections.value) return []
-  if (!selectedTerm.value) return sections.value
-  return sections.value.filter(s => s.term === selectedTerm.value)
-})
-
-// Modal
-const modalOpen = ref(false)
-const editingSection = ref(null)
-const saving = ref(false)
-
-const formData = ref({
-  section_name: '',
-  term: null,
+const newSection = ref({
+  name: '',
+  term: '',
   description: ''
 })
 
-const openAddModal = () => {
-  editingSection.value = null
-  formData.value = {
-    section_name: '',
-    term: null,
-    description: ''
+const editingSection = ref({ // State for editing
+  id: null,
+  name: '',
+  term: '',
+  description: ''
+})
+
+const deletingSection = ref(null) // State for deleting
+
+// Fetch sections based on selected term
+const { data: sections, pending, refresh } = await useFetch('/api/sections', {
+  query: computed(() => ({ term: selectedTerm.value })),
+  watch: [selectedTerm]
+})
+
+// Options
+const termOptions = computed(() => {
+  if (!terms.value) return []
+  return terms.value.map(t => ({
+    label: `เทอม ${t.term}/${t.academic_year}`,
+    value: `${t.term}/${t.academic_year}`
+  }))
+})
+
+const filterTermOptions = computed(() => {
+  return [
+    { label: 'ทั้งหมด', value: null },
+    ...termOptions.value
+  ]
+})
+
+// Set default term and selected filter
+watch(termOptions, (opts) => {
+  if (opts.length > 0) {
+     // Default for new section
+    if (!newSection.value.term) {
+       newSection.value.term = opts[0].value
+    }
+    // Default filter (first term)
+    if (!selectedTerm.value) {
+       selectedTerm.value = opts[0].value
+    }
   }
-  modalOpen.value = true
-}
+}, { immediate: true })
 
-const openEditModal = (section) => {
-  editingSection.value = section
-  formData.value = {
-    section_name: section.section_name,
-    term: section.term,
-    description: section.description || ''
-  }
-  modalOpen.value = true
-}
+// Actions for Dropdown
+const getActionItems = (section) => [
+  [{
+    label: 'จัดการตารางเรียน',
+    icon: 'i-heroicons-calendar',
+    click: () => navigateTo(`/sections/${section.id_section}?term=${section.term}`)
+  }],
+  [{
+    label: 'แก้ไข',
+    icon: 'i-heroicons-pencil-square',
+    click: () => openEditSectionModal(section)
+  }, {
+    label: 'ลบ',
+    icon: 'i-heroicons-trash',
+    click: () => confirmDeleteSection(section)
+  }]
+]
 
-const toast = useToast()
-
-const saveSection = async () => {
-  if (!formData.value.section_name || !formData.value.term) {
-    toast.add({
-      title: 'ข้อมูลไม่ครบ',
-      description: 'กรุณากรอกชื่อกลุ่มและเลือกเทอม',
-      color: 'error'
-    })
+// Handlers
+const handleAddSection = async () => {
+  if (!newSection.value.name || !newSection.value.term) {
+    toast.add({ title: 'กรุณากรอกข้อมูลให้ครบถ้วน', color: 'red' })
     return
   }
 
-  saving.value = true
-
+  adding.value = true
   try {
-    if (editingSection.value) {
-      // แก้ไข
-      await $fetch(`/api/sections/${editingSection.value.id_section}`, {
-        method: 'PUT',
-        body: formData.value
-      })
-      toast.add({
-        title: 'สำเร็จ',
-        description: 'แก้ไขกลุ่มเรียนเรียบร้อยแล้ว',
-        color: 'primary'
-      })
-    } else {
-      // เพิ่มใหม่
-      await $fetch('/api/sections', {
-        method: 'POST',
-        body: formData.value
-      })
-      toast.add({
-        title: 'สำเร็จ',
-        description: 'เพิ่มกลุ่มเรียนเรียบร้อยแล้ว',
-        color: 'primary'
-      })
-    }
+    await $fetch('/api/sections', {
+      method: 'POST',
+      body: {
+        section_name: newSection.value.name,
+        term: newSection.value.term,
+        description: newSection.value.description
+      }
+    })
 
-    await refresh()
-    modalOpen.value = false
+    toast.add({ title: 'เพิ่มกลุ่มเรียนสำเร็จ', color: 'green' })
+    openAddModal.value = false
+    newSection.value.name = ''
+    newSection.value.description = ''
+    refresh()
   } catch (error) {
     console.error(error)
-    const message = error.statusCode === 409
-      ? 'ชื่อกลุ่มนี้มีอยู่ในเทอมนี้แล้ว'
-      : 'เกิดข้อผิดพลาด'
     toast.add({
-      title: 'ผิดพลาด',
-      description: message,
-      color: 'error'
+      title: 'เกิดข้อผิดพลาด',
+      description: error.data?.statusMessage || error.message,
+      color: 'red'
     })
   } finally {
-    saving.value = false
+    adding.value = false
   }
 }
 
-// Delete
-const deleteModalOpen = ref(false)
-const sectionToDelete = ref(null)
-const deleting = ref(false)
-
-const confirmDelete = (section) => {
-  sectionToDelete.value = section
-  deleteModalOpen.value = true
+// Edit Section Handlers
+const openEditSectionModal = (section) => {
+  editingSection.value = {
+    id: section.id_section,
+    name: section.section_name,
+    term: section.term,
+    description: section.description
+  }
+  openEditModal.value = true
 }
 
-const deleteSection = async () => {
-  if (!sectionToDelete.value) return
+const handleEditSection = async () => {
+  if (!editingSection.value.name) {
+    toast.add({ title: 'กรุณากรอกชื่อกลุ่มเรียน', color: 'red' })
+    return
+  }
 
-  deleting.value = true
-
+  editing.value = true
   try {
-    await $fetch(`/api/sections/${sectionToDelete.value.id_section}`, {
-      method: 'DELETE'
+    await $fetch(`/api/sections/${editingSection.value.id}`, {
+      method: 'PUT',
+      body: {
+        section_name: editingSection.value.name,
+        description: editingSection.value.description
+      }
     })
 
-    toast.add({
-      title: 'สำเร็จ',
-      description: 'ลบกลุ่มเรียนเรียบร้อยแล้ว',
-      color: 'primary'
-    })
-
-    await refresh()
-    deleteModalOpen.value = false
-    sectionToDelete.value = null
+    toast.add({ title: 'แก้ไขข้อมูลสำเร็จ', color: 'green' })
+    openEditModal.value = false
+    refresh()
   } catch (error) {
     console.error(error)
     toast.add({
-      title: 'ผิดพลาด',
-      description: 'ไม่สามารถลบกลุ่มเรียนได้',
-      color: 'error'
+      title: 'เกิดข้อผิดพลาด',
+      description: error.data?.statusMessage || error.message,
+      color: 'red'
+    })
+  } finally {
+    editing.value = false
+  }
+}
+
+// Delete Section Handlers
+const confirmDeleteSection = (section) => {
+  deletingSection.value = section
+  openDeleteModal.value = true
+}
+
+const handleDeleteSection = async () => {
+  if (!deletingSection.value) return
+
+  deleting.value = true
+  try {
+    await $fetch(`/api/sections/${deletingSection.value.id_section}`, {
+      method: 'DELETE'
+    })
+
+    toast.add({ title: 'ลบกลุ่มเรียนสำเร็จ', color: 'green' })
+    openDeleteModal.value = false
+    deletingSection.value = null
+    refresh()
+  } catch (error) {
+    console.error(error)
+    toast.add({
+      title: 'เกิดข้อผิดพลาด',
+      description: error.data?.statusMessage || error.message,
+      color: 'red'
     })
   } finally {
     deleting.value = false

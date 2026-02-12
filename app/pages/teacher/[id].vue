@@ -39,6 +39,14 @@
                   ชื่อวิชา
                 </h3>
                 <UInput v-model="subjectName" />
+                <h3 class="text-xl mb-2 mt-4">
+                  กลุ่มเรียน (Section)
+                </h3>
+                <USelect
+                  v-model="selectedSection"
+                  placeholder="เลือกกลุ่มเรียน"
+                  :items="sectionOptions"
+                />
               </template>
               <template #footer="{ close }">
                 <UButton
@@ -104,14 +112,14 @@
 
               <!-- แสดงรายวิชาที่สอนโดยอาจารย์ท่านนี้ -->
               <div
-                v-for="(subject, index) in subjects"
+                v-for="subject in subjects"
                 v-else
-                :key="index"
+                :key="subject.id_subject"
                 class="w-full px-4 py-3 rounded-lg text-left bg-slate-700 text-slate-200 flex justify-between items-center"
               >
                 <div class="flex flex-col gap-1 items-start">
                   <span class="text-lg font-bold">
-                    {{ subject.name_subject }}
+                    {{ subject.name_subject }} <span class="text-sm font-normal text-gray-400">({{ subject.section_name || 'ไม่ระบุกลุ่ม' }})</span>
                   </span>
                   <p class="text-sm">
                     ID: {{ subject.id_subject }}
@@ -155,10 +163,14 @@
           placeholder="เลือกภาคการศึกษา"
           color="primary"
           variant="outline"
-          :options="termOptions"
+          :items="termOptions"
           class="w-1/4 my-4"
-          @change="loadSchedule"
         />
+      </div>
+
+      <!-- Debug -->
+      <div class="bg-blue-500 text-white p-2 mb-2 rounded text-sm">
+        Debug: เทอมที่เลือก = "{{ selectedTerm }}" | มีเทอมทั้งหมด {{ termOptions.length }} เทอม
       </div>
 
       <div
@@ -171,84 +183,84 @@
       <!-- ตารางสอน -->
       <div
         v-else
-        class="mt-4"
+        class="mt-4 overflow-x-auto pb-4"
       >
-        <div class="grid grid-cols-14 text-center">
-          <!-- แสดงเวลา -->
-          <div
-            class="shrink-0 px-4 py-3 bg-slate-700 font-bold border-r border-slate-600 flex items-center justify-center text-white"
-          >
-            วัน/เวลา
-          </div>
-          <div
-            v-for="time in timeSlots"
-            :key="time"
-            class="flex-1 px-1 py-3 bg-slate-700 text-center text-sm border-r border-slate-600 last:border-r-0 text-white"
-          >
-            {{ time }}
-          </div>
-
-          <!-- ลูปทุกวัน -->
-          <template
-            v-for="(day, dayIndex) in days"
-            :key="dayIndex"
-          >
+        <div class="min-w-[1500px]">
+          <div class="grid grid-cols-14 text-center border-b border-slate-600">
+            <!-- แสดงเวลา -->
             <div
-              class="border-r border-t border-slate-600 p-1 text-center bg-slate-700/50 text-white flex items-center justify-center w-full"
+              class="shrink-0 px-4 py-3 bg-slate-700 font-bold border-r border-slate-600 flex items-center justify-center text-white sticky left-0 z-10"
             >
-              {{ day }}
+              วัน/เวลา
+            </div>
+            <div
+              v-for="time in timeSlots"
+              :key="time"
+              class="flex-1 px-1 py-3 bg-slate-700 text-center text-sm border-r border-slate-600 last:border-r-0 text-white"
+            >
+              {{ time }}
             </div>
 
-            <!-- ช่วงเวลาทั้งหมด 12 ช่อง (ไม่รวมพักเที่ยง) -->
+            <!-- ลูปทุกวัน -->
             <template
-              v-for="(slot, slotIndex) in scheduleSlots[dayIndex]"
-              :key="`${dayIndex}-${slotIndex}`"
+              v-for="(day, dayIndex) in days"
+              :key="dayIndex"
             >
-              <!-- ช่วงเช้า 0-3 -->
               <div
-                v-if="slotIndex < 4"
-                class="border-r border-t border-slate-600 text-center bg-slate-800 w-full"
+                class="border-r border-t border-slate-600 p-1 text-center bg-slate-700/50 text-white flex items-center justify-center w-full sticky left-0 z-10 font-bold"
               >
-                <USelect
-                  v-model="slot.value"
-                  placeholder="ว่าง"
-                  :options="subjectOptions"
-                  value-key="id_subject"
-                  label-key="name_subject"
-                  variant="none"
-                  class="w-full h-20 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-sm rounded-none text-amber-200"
-                />
+                {{ day }}
               </div>
 
-              <!-- ช่อง พักกลางวัน (แสดงแค่ครั้งเดียวหลังช่วงเช้า) -->
-              <div
-                v-if="slotIndex === 4"
-                class="border-r border-t border-slate-600 p-1 text-center bg-slate-800 text-white flex items-center justify-center"
+              <!-- ช่วงเวลาทั้งหมด 13 ช่อง (ไม่รวมพักเที่ยง) -->
+              <template
+                v-for="(slot, slotIndex) in (scheduleSlots[dayIndex] || [])"
+                :key="`${dayIndex}-${slotIndex}`"
               >
-                พักกลางวัน
-              </div>
+                <!-- ช่วงเช้า 0-3 -->
+                <div
+                  v-if="slotIndex < 4"
+                  class="border-r border-t border-slate-600 text-center bg-slate-800 w-full"
+                >
+                  <USelect
+                    v-model="slot.value"
+                    placeholder="ว่าง"
+                    :items="subjectOptions"
+                    variant="none"
+                    class="w-full h-20 transition-colors flex items-center justify-center cursor-pointer bg-slate-800 hover:bg-slate-700 text-sm rounded-none text-amber-200"
+                    :ui="{ placeholder: 'text-slate-500' }"
+                  />
+                </div>
 
-              <!-- ช่วงบ่าย 4-11 -->
-              <div
-                v-if="slotIndex >= 4"
-                class="border-r border-t border-slate-600 text-center bg-slate-800 w-full"
-              >
-                <USelect
-                  v-model="slot.value"
-                  placeholder="ว่าง"
-                  :options="subjectOptions"
-                  value-key="id_subject"
-                  label-key="name_subject"
-                  variant="none"
-                  class="w-full h-20 transition-colors flex items-center justify-center cursor-pointer bg-gray-500 hover:bg-gray-600 text-sm rounded-none text-amber-200"
-                />
-              </div>
+                <!-- ช่อง พักกลางวัน (Index 4) -->
+                <div
+                  v-else-if="slotIndex === 4"
+                  class="border-r border-t border-slate-600 p-1 text-center bg-slate-800 text-white flex items-center justify-center select-none"
+                >
+                  พักกลางวัน
+                </div>
+
+                <!-- ช่วงบ่าย 5-12 -->
+                <div
+                  v-else
+                  class="border-r border-t border-slate-600 text-center bg-slate-800 w-full"
+                >
+                  <USelect
+                    v-model="slot.value"
+                    placeholder="ว่าง"
+                    :items="subjectOptions"
+                    variant="none"
+                    class="w-full h-20 transition-colors flex items-center justify-center cursor-pointer bg-slate-800 hover:bg-slate-700 text-sm rounded-none text-amber-200"
+                    :ui="{ placeholder: 'text-slate-500' }"
+                  />
+                </div>
+              </template>
             </template>
-          </template>
+          </div>
         </div>
 
         <!-- ปุ่มบันทึกตารางสอน -->
-        <div class="flex gap-3 mt-6">
+        <div class="flex gap-3 mt-6 sticky left-0">
           <UButton
             label="บันทึกตารางสอน"
             color="primary"
@@ -279,10 +291,15 @@ const id = route.params.id
 const { data: subjects, refresh: refreshSubjects } = await useFetch('/api/Subjects', {
   query: {
     id_teacher: id
-  }
+  },
+  watch: false
 })
 const { data: teachers, pending } = await useFetch('/api/teachers')
 const { data: terms } = await useFetch('/api/terms')
+const { data: sections } = await useFetch('/api/sections')
+
+// เพิ่ม toast
+const toast = useToast()
 
 // ข้อมูลวันเวลา
 const timeSlots = [
@@ -307,22 +324,50 @@ const currentEditSubject = ref(null)
 
 // function เพิ่มวิชา
 const subjectName = ref('')
+const selectedSection = ref(null)
+
+// ตัวเลือก Section
+const sectionOptions = computed(() => {
+  if (!sections.value) return []
+  return sections.value.map(s => ({
+    value: s.id_section,
+    label: `${s.section_name} (${s.term})`
+  }))
+})
+
 const addSubject = async () => {
-  if (!subjectName.value.trim()) return
+  if (!subjectName.value.trim() || !selectedSection.value) {
+    alert('กรุณากรอกชื่อวิชาและเลือกกลุ่มเรียน')
+    return
+  }
 
   try {
-    const newSubject = await $fetch('/api/Subjects', {
+    await $fetch('/api/Subjects', {
       method: 'POST',
       body: {
         name_subject: subjectName.value,
-        id_teacher: id
+        id_teacher: id,
+        id_section: selectedSection.value
       }
     })
 
     subjectName.value = ''
+    selectedSection.value = null
+    // รีเฟรชข้อมูลวิชา
     await refreshSubjects()
+
+    toast.add({
+      title: 'สำเร็จ',
+      description: 'เพิ่มรายวิชาเรียบร้อยแล้ว',
+      color: 'primary'
+    })
   } catch (err) {
     console.log(err)
+    toast.add({
+      title: 'ผิดพลาด',
+      description: 'ไม่สามารถเพิ่มรายวิชาได้',
+      color: 'error'
+    })
   }
 }
 
@@ -335,6 +380,7 @@ const deleteSubject = async (subjectId) => {
       method: 'DELETE'
     })
 
+    // รีเฟรชข้อมูลวิชา
     await refreshSubjects()
 
     // ลบข้อมูลในตารางสอน
@@ -345,8 +391,19 @@ const deleteSubject = async (subjectId) => {
         }
       })
     })
+
+    toast.add({
+      title: 'สำเร็จ',
+      description: 'ลบรายวิชาเรียบร้อยแล้ว',
+      color: 'primary'
+    })
   } catch (err) {
     console.log(err)
+    toast.add({
+      title: 'ผิดพลาด',
+      description: 'ไม่สามารถลบรายวิชาได้',
+      color: 'error'
+    })
   }
 }
 
@@ -369,32 +426,72 @@ const updateSubject = async () => {
       }
     })
 
+    // รีเฟรชข้อมูลวิชา
     await refreshSubjects()
 
     editSubjectName.value = ''
     currentEditSubject.value = null
     editOpen.value = false
+
+    toast.add({
+      title: 'สำเร็จ',
+      description: 'แก้ไขรายวิชาเรียบร้อยแล้ว',
+      color: 'primary'
+    })
   } catch (err) {
     console.log(err)
+    toast.add({
+      title: 'ผิดพลาด',
+      description: 'ไม่สามารถแก้ไขรายวิชาได้',
+      color: 'error'
+    })
   }
 }
 
 // ตัวเลือกเทอม
 const termOptions = computed(() => {
-  if (!terms.value) return []
+  if (!terms.value || terms.value.length === 0) return []
   return terms.value.map(t => ({
     label: `เทอม ${t.term}/${t.academic_year}`,
     value: `${t.term}/${t.academic_year}`
   }))
 })
 
-// เทอมที่เลือก
+// เทอมที่เลือก - เลือกเทอมแรกอัตโนมัติ
 const selectedTerm = ref(null)
 
-// ข้อมูลในตารางแบบ array 2d (7 วัน x 12 ช่วงเวลา)
+// เมื่อโหลดเทอมเสร็จ ให้เลือกเทอมแรกอัตโนมัติ
+watch(terms, (newTerms) => {
+  if (newTerms && newTerms.length > 0 && !selectedTerm.value) {
+    selectedTerm.value = `${newTerms[0].term}/${newTerms[0].academic_year}`
+  }
+}, { immediate: true })
+
+// ข้อมูลในตารางแบบ array 2d (7 วัน x 13 ช่วงเวลา)
 const scheduleSlots = ref(Array.from({ length: 7 }, () =>
-  Array.from({ length: 12 }, () => ({ value: null }))
+  Array.from({ length: 13 }, () => ({ value: null }))
 ))
+
+// ตรวจสอบและซ่อมแซมข้อมูลตาราง
+const normalizeSchedule = (data) => {
+  if (!Array.isArray(data)) return Array.from({ length: 7 }, () => Array.from({ length: 13 }, () => ({ value: null })))
+  
+  // ตรวจสอบจำนวนวัน (ต้องมี 7 วัน)
+  while (data.length < 7) {
+    data.push(Array.from({ length: 13 }, () => ({ value: null })))
+  }
+  
+  // ตรวจสอบแต่ละวัน (ต้องมี 13 ช่อง)
+  data = data.map(day => {
+    if (!Array.isArray(day)) return Array.from({ length: 13 }, () => ({ value: null }))
+    while (day.length < 13) {
+      day.push({ value: null })
+    }
+    return day
+  })
+
+  return data
+}
 
 // โหลดตารางสอนจาก database
 const loadSchedule = async () => {
@@ -409,7 +506,8 @@ const loadSchedule = async () => {
     })
 
     if (schedule && schedule.scheduleData) {
-      scheduleSlots.value = schedule.scheduleData
+      // ใช้ normalizeSchedule เพื่อป้องกัน layout พัง
+      scheduleSlots.value = normalizeSchedule(schedule.scheduleData)
     } else {
       // ถ้าไม่มีข้อมูล ให้เคลียร์ตาราง
       clearSchedule()
@@ -452,15 +550,22 @@ const saveSchedule = async () => {
 // ล้างตาราง
 const clearSchedule = () => {
   scheduleSlots.value = Array.from({ length: 7 }, () =>
-    Array.from({ length: 12 }, () => ({ value: null }))
+    Array.from({ length: 13 }, () => ({ value: null }))
   )
 }
 
-// วิชาสำหรับ select
+// วิชาสำหรับ select - ใช้ format ที่ Nuxt UI ต้องการ
 const subjectOptions = computed(() => {
+  if (!subjects.value) {
+    return [{ value: null, label: 'ว่าง' }]
+  }
+
   return [
-    { id_subject: null, name_subject: 'ว่าง' },
-    ...(subjects.value || [])
+    { value: null, label: 'ว่าง' },
+    ...subjects.value.map(s => ({
+      value: s.id_subject,
+      label: `${s.name_subject} (${s.section_name || '?'})`
+    }))
   ]
 })
 

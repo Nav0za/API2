@@ -21,9 +21,11 @@
     "@iconify-json/simple-icons": "^1.2.53",
     "@nuxt/ui": "^4.3.0",
     "better-sqlite3": "^12.4.1",
+    "dayjs": "^1.11.19",
     "nuxt": "^4.1.2"
   },
   "devDependencies": {
+    "@iconify-json/heroicons": "^1.2.3",
     "@nuxt/eslint": "^1.9.0",
     "eslint": "^9.36.0",
     "typescript": "^5.9.2",

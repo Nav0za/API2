@@ -6,10 +6,11 @@ export default defineEventHandler(async (event) => {
 
   // ถ้ามีการส่ง id_teacher และ term มา
   if (id_teacher && term) {
+    const tId = Number(id_teacher)
     const stmt = db.prepare(
       'SELECT * FROM schedules WHERE id_teacher = ? AND term = ?'
     )
-    const schedule = stmt.get(id_teacher, term)
+    const schedule = stmt.get(tId, term)
 
     if (schedule) {
       // Parse JSON กลับมาเป็น array
@@ -21,8 +22,9 @@ export default defineEventHandler(async (event) => {
 
   // ถ้าส่งแค่ id_teacher
   if (id_teacher) {
+    const tId = Number(id_teacher)
     const stmt = db.prepare('SELECT * FROM schedules WHERE id_teacher = ?')
-    const schedules = stmt.all(id_teacher)
+    const schedules = stmt.all(tId)
 
     return schedules.map(s => ({
       ...s,

@@ -31,10 +31,16 @@ useHead({
 
       <template #right>
         <UButton
-          to="/teacherTable"
+          to="/sections"
           variant="ghost"
           color="primary"
-          label="add teacher"
+          label="Add section"
+        />
+        <UButton
+          to="/rooms"
+          variant="ghost"
+          color="primary"
+          label="Add room"
         />
       </template>
     </UHeader>
