@@ -15,7 +15,9 @@ export default defineEventHandler(async (event) => {
       end: e.end,
       backgroundColor: e.background_color,
       borderColor: e.border_color,
+      allDay: !!e.all_day,
       extendedProps: {
+        eventType: e.event_type,
         teacherId: e.teacher_id,
         teacherName: e.teacher_name,
         description: e.description
@@ -29,8 +31,8 @@ export default defineEventHandler(async (event) => {
 
     const result = db.prepare(`
       INSERT INTO calendar_events 
-      (title, start, end, background_color, border_color, teacher_id, teacher_name, description)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      (title, start, end, background_color, border_color, teacher_id, teacher_name, description, event_type, all_day)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       body.title,
       body.start,
@@ -39,7 +41,9 @@ export default defineEventHandler(async (event) => {
       body.borderColor,
       body.extendedProps?.teacherId || null,
       body.extendedProps?.teacherName || null,
-      body.extendedProps?.description || null
+      body.extendedProps?.description || null,
+      body.extendedProps?.eventType || 'normal',
+      body.allDay ? 1 : 0
     )
 
     return {

@@ -10,12 +10,36 @@
     />
     <div class="container mx-auto py-2 pb-10">
       <!-- แสดงรายละเอียดอาจารย์ตาม id -->
-      <h1 class="text-4xl mb-10">
-        รายละเอียดอาจารย์
-      </h1>
-      <p class="text-2xl mb-4">
-        ชื่ออาจารย์ : <b v-if="pending">กำลังโหลดข้อมูล</b><b v-else>{{ teacherName }}</b>
-      </p>
+      <div class="flex flex-col md:flex-row gap-6 mb-8">
+        <!-- Profile Card -->
+        <div class="flex-1 bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl flex items-center gap-6">
+          <UAvatar
+            :alt="teacherName.toUpperCase()"
+            size="xl"
+            class="bg-amber-100 text-slate-800 font-bold text-2xl"
+          />
+          <div>
+            <h1 class="text-3xl font-bold text-white">{{ teacherName }}</h1>
+            <p class="text-slate-400 mt-1">อาจารย์ผู้สอน</p>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="flex-[2] grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm">
+             <p class="text-slate-400 text-sm font-medium">วิชาที่สอน</p>
+             <p class="text-2xl font-bold text-blue-400 mt-1">{{ subjects.length }} วิชา</p>
+          </div>
+          <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm">
+             <p class="text-slate-400 text-sm font-medium">ชั่วโมงสอน/สัปดาห์</p>
+             <p class="text-2xl font-bold text-green-400 mt-1">{{ hoursPerWeek }} ชม.</p>
+          </div>
+          <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm">
+             <p class="text-slate-400 text-sm font-medium">เทอมที่แสดง</p>
+             <p class="text-xl font-bold text-amber-400 mt-1">{{ selectedTerm || 'ยังไม่เลือก' }}</p>
+          </div>
+        </div>
+      </div>
 
       <!-- แสดงรายวิชาที่สอนโดยอาจารย์ท่านนี้ -->
       <div class="w-3/7 shrink-0">
@@ -153,25 +177,29 @@
         </div>
       </div>
 
-      <!-- เลือกเทอมและดูตารางสอน -->
-      <div class="flex justify-between items-center mt-8">
-        <p class="text-xl font-bold">
-          ตารางสอน
-        </p>
-        <USelect
-          v-model="selectedTerm"
-          placeholder="เลือกภาคการศึกษา"
-          color="primary"
-          variant="outline"
-          :items="termOptions"
-          class="w-1/4 my-4"
-        />
+      <!-- ตารางสอน Section Header -->
+      <div class="flex flex-col md:flex-row justify-between items-end mt-12 mb-6 gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+            <UIcon name="i-heroicons-calendar-days" class="text-blue-400" />
+            ตารางสอน
+          </h2>
+          <p class="text-slate-400 text-sm mt-1">จัดการคาบสอนหลักของอาจารย์ในแต่ละเทอม</p>
+        </div>
+        <div class="w-full md:w-64">
+           <label class="block text-xs font-medium text-slate-500 mb-1 ml-1">เปลี่ยนภาคการศึกษา</label>
+           <USelect
+            v-model="selectedTerm"
+            placeholder="เลือกภาคการศึกษา"
+            color="primary"
+            variant="subtle"
+            :items="termOptions"
+            class="w-full"
+            icon="i-heroicons-academic-cap"
+          />
+        </div>
       </div>
 
-      <!-- Debug -->
-      <div class="bg-blue-500 text-white p-2 mb-2 rounded text-sm">
-        Debug: เทอมที่เลือก = "{{ selectedTerm }}" | มีเทอมทั้งหมด {{ termOptions.length }} เทอม
-      </div>
 
       <div
         v-if="!selectedTerm"
@@ -298,8 +326,17 @@ const { data: teachers, pending } = await useFetch('/api/teachers')
 const { data: terms } = await useFetch('/api/terms')
 const { data: sections } = await useFetch('/api/sections')
 
-// เพิ่ม toast
-const toast = useToast()
+// Stat Calculation
+const hoursPerWeek = computed(() => {
+    if (!scheduleSlots.value) return 0
+    let count = 0
+    scheduleSlots.value.forEach(day => {
+        day.forEach(slot => {
+            if (slot.value) count++
+        })
+    })
+    return count
+})
 
 // ข้อมูลวันเวลา
 const timeSlots = [

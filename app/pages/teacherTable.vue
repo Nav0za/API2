@@ -179,7 +179,16 @@
                       :key="slotIndex"
                       class="relative flex-1 min-w-16 sm:min-w-20 border-r border-slate-600 last:border-r-0"
                     >
+                      <!-- พักกลางวัน (Index 4) -->
                       <div
+                        v-if="slotIndex === 4"
+                        class="h-full px-1 sm:px-2 py-4 sm:py-8 bg-slate-900/50 text-slate-500 font-medium flex items-center justify-center select-none text-xs sm:text-sm"
+                      >
+                        พักกลางวัน
+                      </div>
+
+                      <div
+                        v-else
                         :class="[
                           'h-full px-1 sm:px-2 py-4 sm:py-8 transition-colors flex items-center justify-center cursor-pointer',
                           slot ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-500 hover:bg-gray-600'
@@ -194,7 +203,7 @@
                       <!-- เมนู Dropdown -->
                       <Transition name="dropdown">
                         <div
-                          v-if="activeDropdown.row === rowIndex && activeDropdown.slot === slotIndex"
+                          v-if="! (slotIndex === 4) && activeDropdown.row === rowIndex && activeDropdown.slot === slotIndex"
                           class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-56 sm:w-64 bg-slate-800 rounded-lg shadow-2xl border border-slate-600 overflow-hidden z-50"
                           @click.stop
                         >

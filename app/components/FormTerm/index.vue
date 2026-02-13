@@ -157,7 +157,7 @@ async function onSubmit(_event: FormSubmitEvent<FormState>) {
     state.academic_year = undefined
     modelValue.value = {
       start: today(getLocalTimeZone()),
-      end: today(getLocalTimeZone()).add({ days: 90 })
+      end: today(getLocalTimeZone()).add({ days: 120 }) // ปรับเป็นประมาณ 4 เดือน
     }
   } catch (error) {
     console.error('Error adding term:', error)
@@ -243,15 +243,17 @@ function clearForm() {
 
     <!-- วันที่เริ่มต้น - สิ้นสุด -->
     <UFormField
-      label="วันที่เริ่มต้น - สิ้นสุดเทอม"
+      label="ช่วงวันเรียน (เริ่มต้น - สิ้นสุด)"
       name="start_date"
       required
+      help="กำหนดวันแรกและวันสุดท้ายของเทอมเพื่อใช้คำนวณวันหยุด"
     >
       <UInputDate
         ref="inputDate"
         v-model="modelValue"
         range
         :disabled="isSubmitting"
+        class="rounded-xl overflow-hidden shadow-inner"
       >
         <template #trailing>
           <UPopover :reference="inputDate?.inputsRef[0]?.$el">
@@ -280,37 +282,49 @@ function clearForm() {
 
     <!-- แสดงข้อมูลที่จะบันทึก -->
     <div
-      v-if="state.term && state.academic_year"
-      class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm"
+      v-if="state.term || state.academic_year"
+      class="p-4 bg-slate-900 border border-slate-700/50 rounded-2xl relative overflow-hidden group/preview"
     >
-      <p class="font-medium text-blue-900 mb-1">
-        ข้อมูลที่จะบันทึก:
-      </p>
-      <p class="text-blue-700">
-        เทอม {{ state.term }}/{{ state.academic_year }}
-      </p>
-      <p class="text-blue-600 text-xs mt-1">
-        {{ formatDateToISO(state.start_date) }} ถึง {{ formatDateToISO(state.end_date) }}
-      </p>
+      <div class="absolute inset-0 bg-blue-500/5 opacity-0 group-hover/preview:opacity-100 transition-opacity duration-500"></div>
+      <div class="relative z-10">
+        <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">แสดงตัวอย่าง (Preview)</p>
+        <div class="space-y-1">
+          <p class="text-xl font-black text-white">
+            <span v-if="state.term">เทอม {{ state.term }}</span>
+            <span v-if="state.term && state.academic_year"> / </span>
+            <span v-if="state.academic_year">{{ state.academic_year }}</span>
+            <span v-if="!state.term && !state.academic_year" class="text-slate-600 font-normal italic text-sm">รอกรอกข้อมูล...</span>
+          </p>
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-400">
+            <UIcon name="i-heroicons-calendar-days" class="text-slate-600" />
+            {{ formatDateToISO(state.start_date) }} <UIcon name="i-heroicons-arrow-right" class="text-slate-700" /> {{ formatDateToISO(state.end_date) }}
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="flex gap-2">
+    <div class="flex flex-col gap-3 pt-4">
       <UButton
-        label="เพิ่มเทอม"
+        label="สร้างเทอมการศึกษาใหม่"
         type="submit"
         color="primary"
-        icon="i-lucide-plus"
+        size="xl"
+        block
+        icon="i-heroicons-rocket-launch"
+        class="rounded-2xl py-4 shadow-lg shadow-blue-500/20 font-bold"
         :loading="isSubmitting"
         :disabled="!state.term || !state.academic_year"
       />
 
       <UButton
         v-if="state.term || state.academic_year"
-        label="ล้างฟอร์ม"
+        label="รีเซ็ตฟอร์ม"
         type="button"
         color="neutral"
-        variant="outline"
-        icon="i-lucide-x"
+        variant="ghost"
+        block
+        size="sm"
+        class="rounded-xl text-slate-500 hover:text-white"
         :disabled="isSubmitting"
         @click="clearForm"
       />

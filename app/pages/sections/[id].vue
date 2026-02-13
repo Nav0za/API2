@@ -88,7 +88,17 @@
                   :key="slotIndex"
                   class="relative flex-1 min-w-[80px] border-r border-slate-700 last:border-r-0"
                 >
+                  <!-- พักกลางวัน (Index 4) -->
+                  <div
+                    v-if="slotIndex === 4"
+                    class="h-full min-h-[60px] p-1 flex items-center justify-center text-center bg-slate-900/50 text-slate-500 select-none text-xs"
+                  >
+                    พักกลางวัน
+                  </div>
+
+                  <!-- ช่วงเวลาปกติ -->
                    <div
+                    v-else
                     class="h-full min-h-[60px] p-1 cursor-pointer transition-colors flex flex-col items-center justify-center text-center gap-1"
                     :class="[
                       slot.value ? 'bg-blue-600/20 hover:bg-blue-600/30' : 'hover:bg-slate-700/50',
@@ -106,7 +116,7 @@
 
                    <!-- Dropdown -->
                    <div
-                    v-if="isActiveBox(dayIndex, slotIndex)"
+                    v-if="! (slotIndex === 4) && isActiveBox(dayIndex, slotIndex)"
                     class="absolute z-10 top-full left-1/2 -translate-x-1/2 mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg shadow-xl overflow-hidden"
                   >
                      <div class="max-h-60 overflow-y-auto custom-scrollbar">

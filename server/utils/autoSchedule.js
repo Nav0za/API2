@@ -165,9 +165,12 @@ function getClassesOnDate(schedule, dateStr) {
     const slot = daySchedule[i]
     const slotValue = slot?.value
 
-    if (slotValue) {
+    // แปลงเป็น String เพื่อความชัวร์ในการเปรียบเทียบ (null/undefined จะกลายเป็น "null"/"undefined")
+    const valStr = slotValue ? String(slotValue) : null
+
+    if (valStr) {
       // ถ้าเป็นวิชาเดิม
-      if (slotValue === currentSubject) {
+      if (valStr === currentSubject) {
         duration++
       } else {
         // จบวิชาก่อนหน้า
@@ -176,7 +179,7 @@ function getClassesOnDate(schedule, dateStr) {
         }
 
         // เริ่มวิชาใหม่
-        currentSubject = slotValue
+        currentSubject = valStr
         startSlot = i
         duration = 1
       }
@@ -239,6 +242,13 @@ function findSlotsForClass(teacherId, sectionId, duration, dayOfWeek, dateStr, t
     // เช็คต่อเนื่อง j ชั่วโมง
     for (let j = 0; j < duration; j++) {
       const slotIdx = i + j
+
+      // ยกเว้นเวลาพักกลางวัน (คาบที่ 5, index 4)
+      if (slotIdx === 4) {
+        checkPass = false
+        break
+      }
+
       // 1. เช็คอาจารย์
       const teacherSlot = teacherSchedule[dayIndex][slotIdx]
       if (!isSlotFree(teacherSlot)) {
@@ -252,9 +262,6 @@ function findSlotsForClass(teacherId, sectionId, duration, dayOfWeek, dateStr, t
         checkPass = false
         break
       }
-
-      // 3. หลีกเลี่ยงพักเที่ยง? (สมมติคาบ 4 = 12:00-13:00)
-      // ถ้าอยากบังคับพักเที่ยงก็เช็คตรงนี้
     }
 
     if (checkPass) {
@@ -324,9 +331,9 @@ function getSectionName(sectionId) {
  */
 function getTimeFromSlot(slotIndex) {
   const times = [
-    '08:00', '09:00', '10:00', '11:00', // เช้า
-    '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', // บ่าย
-    '19:00', '20:00', '21:00'
+    '08:00', '09:00', '10:00', '11:00', '12:00',
+    '13:00', '14:00', '15:00', '16:00', '17:00',
+    '18:00', '19:00', '20:00', '21:00'
   ]
 
   if (slotIndex < 0 || slotIndex >= times.length) return '??:??'
@@ -349,4 +356,160 @@ function formatDate(date) {
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
+}
+
+/**
+ * หาช่วงว่างสำหรับสอนชดเชยหลายวิชาพร้อมกัน
+ * @param {number} teacherId - ID ของอาจารย์
+ * @param {string} missedDate - วันที่ขาดสอน (YYYY-MM-DD)
+ * @param {string} term - เทอม
+ * @param {Array} classes - รายการวิชา [{subjectId, sectionId, duration}, ...]
+ * @returns {Array} รายการช่วงว่างที่แนะนำ
+ */
+export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate, term, classes) {
+  if (!classes || classes.length === 0) {
+    return []
+  }
+
+  const totalDuration = classes.reduce((sum, c) => sum + c.duration, 0)
+  const allSectionIds = [...new Set(classes.map(c => c.sectionId).filter(Boolean))]
+
+  // เตรียมข้อมูลวันหยุดและวันลาของอาจารย์
+  const startDate = new Date(missedDate)
+  startDate.setDate(startDate.getDate() + 1)
+
+  const endDate = new Date(startDate)
+  endDate.setDate(endDate.getDate() + 30)
+
+  const startStr = formatDate(startDate)
+  const endStr = formatDate(endDate)
+
+  // ดึง Events ที่เกี่ยวข้อง
+  const events = db.prepare(`
+    SELECT start, end, event_type, teacher_id 
+    FROM calendar_events 
+    WHERE (start BETWEEN ? AND ?) 
+      AND (
+        event_type = 'holiday' 
+        OR (event_type = 'teacher_absence' AND teacher_id = ?)
+      )
+  `).all(startStr, endStr, teacherId)
+
+  const busyDates = new Set()
+  for (const event of events) {
+    busyDates.add(event.start)
+    if (event.start !== event.end) {
+      let curr = new Date(event.start)
+      const end = new Date(event.end)
+      while (curr <= end) {
+        busyDates.add(formatDate(curr))
+        curr.setDate(curr.getDate() + 1)
+      }
+    }
+  }
+
+  const suggestions = []
+
+  // ค้นหาสูงสุด 14 วัน
+  for (let i = 0; i < 14; i++) {
+    const checkDate = new Date(startDate)
+    checkDate.setDate(checkDate.getDate() + i)
+
+    const dateStr = formatDate(checkDate)
+
+    // Check if Holiday or Teacher Absence
+    if (busyDates.has(dateStr)) {
+      continue
+    }
+
+    const dayOfWeek = checkDate.getDay()
+    const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+
+    // หาช่วงว่างที่ยาว totalDuration ชั่วโมง
+    const slots = findContinuousFreeSlots(
+      teacherId,
+      allSectionIds,
+      totalDuration,
+      dayIndex,
+      dateStr,
+      term
+    )
+
+    suggestions.push(...slots.map(slot => ({
+      ...slot,
+      missedDate,
+      classes: classes.map(c => ({
+        subjectId: c.subjectId,
+        subjectName: getSubjectName(c.subjectId),
+        sectionId: c.sectionId,
+        sectionName: getSectionName(c.sectionId),
+        duration: c.duration
+      }))
+    })))
+
+    if (suggestions.length >= 10) break
+  }
+
+  return suggestions
+}
+
+/**
+ * หาช่วงว่างติดกันที่ยาวพอสำหรับหลายวิชา
+ */
+function findContinuousFreeSlots(teacherId, sectionIds, duration, dayIndex, dateStr, term) {
+  const teacherSchedule = getTeacherSchedule(teacherId, term)
+  if (!teacherSchedule || !teacherSchedule[dayIndex]) return []
+
+  const sectionSchedules = sectionIds.map(id => getSectionSchedule(id, term)).filter(Boolean)
+
+  const availableSlots = []
+  const maxSlots = 13
+
+  for (let i = 0; i <= maxSlots - duration; i++) {
+    let allFree = true
+
+    // เช็คทุกช่วงเวลาติดกัน
+    for (let j = 0; j < duration; j++) {
+      const slotIdx = i + j
+
+      // ยกเว้นเวลาพักกลางวัน (คาบที่ 5, index 4)
+      if (slotIdx === 4) {
+        allFree = false
+        break
+      }
+
+      // เช็คอาจารย์
+      const teacherSlot = teacherSchedule[dayIndex][slotIdx]
+      if (!isSlotFree(teacherSlot)) {
+        allFree = false
+        break
+      }
+
+      // เช็คทุก section
+      for (const secSchedule of sectionSchedules) {
+        if (!secSchedule[dayIndex]) continue
+        const sectionSlot = secSchedule[dayIndex][slotIdx]
+        if (!isSlotFree(sectionSlot)) {
+          allFree = false
+          break
+        }
+      }
+
+      if (!allFree) break
+    }
+
+    if (allFree) {
+      const dayOfWeek = dayIndex === 6 ? 0 : dayIndex + 1
+      availableSlots.push({
+        date: dateStr,
+        dayOfWeek: getDayName(dayOfWeek),
+        startSlot: i,
+        duration,
+        timeStart: getTimeFromSlot(i),
+        timeEnd: getTimeFromSlot(i + duration)
+      })
+    }
+  }
+
+  return availableSlots
 }
