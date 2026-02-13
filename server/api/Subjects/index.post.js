@@ -3,14 +3,14 @@ import db from '../../utils/db.js'
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
-    if (!body.name_subject) {
+    if (!body.name_subject || !body.id_section) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'name subject is required'
+        statusMessage: 'name subject and section are required'
       })
     }
-    const stmt = db.prepare('INSERT INTO Subjects (name_subject, id_teacher) VALUES (?, ?)')
-    const result = stmt.run(body.name_subject, body.id_teacher)
+    const stmt = db.prepare('INSERT INTO Subjects (name_subject, id_teacher, id_section) VALUES (?, ?, ?)')
+    const result = stmt.run(body.name_subject, body.id_teacher, body.id_section)
     return {
       id_subject: result.lastInsertRowid,
       name_subject: body.name_subject,

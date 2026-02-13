@@ -19,9 +19,24 @@ db.exec(`
     name_subject TEXT UNIQUE,
     term TEXT,
     id_teacher INTEGER,
+    id_section INTEGER,
     FOREIGN KEY (id_teacher) REFERENCES teachers(id_teacher)
-      ON DELETE CASCADE
+      ON DELETE CASCADE,
+    FOREIGN KEY (id_section) REFERENCES sections(id_section)
+      ON DELETE SET NULL
   );`)
+
+// Migration: Add id_section if not exists (สำหรับเครื่องที่สร้างตารางไปแล้ว)
+try {
+  const tableInfo = db.prepare('PRAGMA table_info(Subjects)').all()
+  const hasIdSection = tableInfo.some(col => col.name === 'id_section')
+  if (!hasIdSection) {
+    db.exec('ALTER TABLE Subjects ADD COLUMN id_section INTEGER REFERENCES sections(id_section) ON DELETE SET NULL')
+    console.log('Migrated Subjects table: added id_section')
+  }
+} catch (err) {
+  console.error('Migration error:', err)
+}
 
 // schedules
 db.exec(`
@@ -51,11 +66,13 @@ db.exec(`
     title TEXT NOT NULL,
     start TEXT NOT NULL,
     end TEXT NOT NULL,
+    event_type TEXT DEFAULT 'normal',
     background_color TEXT DEFAULT '#3b82f6',
     border_color TEXT DEFAULT '#3b82f6',
     teacher_id INTEGER,
     teacher_name TEXT,
     description TEXT,
+    all_day INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (teacher_id) REFERENCES teachers(id_teacher)
@@ -70,5 +87,109 @@ db.exec(`
 db.exec(`
   CREATE INDEX IF NOT EXISTS idx_calendar_events_teacher 
   ON calendar_events(teacher_id);`)
+
+// Migration: Add event_type and all_day to calendar_events if not exists
+try {
+  const tableInfo = db.prepare('PRAGMA table_info(calendar_events)').all()
+
+  const hasEventType = tableInfo.some(col => col.name === 'event_type')
+  if (!hasEventType) {
+    db.exec("ALTER TABLE calendar_events ADD COLUMN event_type TEXT DEFAULT 'normal'")
+    console.log('Migrated calendar_events table: added event_type')
+  }
+
+  const hasAllDay = tableInfo.some(col => col.name === 'all_day')
+  if (!hasAllDay) {
+    db.exec("ALTER TABLE calendar_events ADD COLUMN all_day INTEGER DEFAULT 0")
+    console.log('Migrated calendar_events table: added all_day')
+  }
+} catch (err) {
+  console.error('Migration error (calendar_events):', err)
+}
+
+// sections - กลุ่มเรียนนักศึกษา
+db.exec(`
+  CREATE TABLE IF NOT EXISTS sections (
+    id_section INTEGER PRIMARY KEY AUTOINCREMENT,
+    section_name TEXT NOT NULL,
+    term TEXT NOT NULL,
+    description TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(section_name, term)
+  );`)
+
+// section_schedules - ตารางเรียนของกลุ่ม
+db.exec(`
+  CREATE TABLE IF NOT EXISTS section_schedules (
+    id_section_schedule INTEGER PRIMARY KEY AUTOINCREMENT,
+    scheduleData TEXT NOT NULL,
+    term TEXT NOT NULL,
+    id_section INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_section) REFERENCES sections(id_section)
+      ON DELETE CASCADE,
+    UNIQUE(id_section, term)
+  );`)
+
+// สร้าง indexes สำหรับ sections
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_sections_term 
+  ON sections(term);`)
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_section_schedules_section 
+  ON section_schedules(id_section);`)
+
+// rooms - ห้องเรียน
+db.exec(`
+  CREATE TABLE IF NOT EXISTS rooms (
+    id_room INTEGER PRIMARY KEY AUTOINCREMENT,
+    room_name TEXT NOT NULL UNIQUE,
+    building TEXT,
+    capacity INTEGER,
+    description TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );`)
+
+// makeup_classes - คลาสสอนชดเชย
+db.exec(`
+  CREATE TABLE IF NOT EXISTS makeup_classes (
+    id_makeup INTEGER PRIMARY KEY AUTOINCREMENT,
+    original_date TEXT NOT NULL,
+    original_time_slot TEXT NOT NULL,
+    makeup_date TEXT NOT NULL,
+    makeup_time_start TEXT NOT NULL,
+    makeup_time_end TEXT NOT NULL,
+    teacher_id INTEGER NOT NULL,
+    section_id INTEGER,
+    subject_id INTEGER,
+    room_id INTEGER,
+    status TEXT DEFAULT 'suggested',
+    notes TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (teacher_id) REFERENCES teachers(id_teacher) ON DELETE CASCADE,
+    FOREIGN KEY (section_id) REFERENCES sections(id_section) ON DELETE SET NULL,
+    FOREIGN KEY (subject_id) REFERENCES Subjects(id_subject) ON DELETE SET NULL,
+    FOREIGN KEY (room_id) REFERENCES rooms(id_room) ON DELETE SET NULL
+  );`)
+
+// สร้าง indexes สำหรับ makeup_classes
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_makeup_original_date 
+  ON makeup_classes(original_date);`)
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_makeup_makeup_date 
+  ON makeup_classes(makeup_date);`)
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_makeup_teacher 
+  ON makeup_classes(teacher_id);`)
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_makeup_status 
+  ON makeup_classes(status);`)
 
 export default db
