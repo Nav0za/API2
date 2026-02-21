@@ -20,13 +20,17 @@ function isSlotFree(slot) {
  * @returns {Array} รายการช่วงว่างที่แนะนำ
  */
 export async function findAvailableSlots(teacherId, missedDate, term) {
+  console.log(`[DEBUG] findAvailableSlots called with: teacherId=${teacherId}, missedDate=${missedDate}, term=${term}`)
   // 1. ดึงตารางสอนของอาจารย์ในวันที่ขาด
   const teacherSchedule = getTeacherSchedule(teacherId, term)
+  console.log(`[DEBUG] getTeacherSchedule result:`, teacherSchedule ? 'Found' : 'Not Found')
   if (!teacherSchedule) return []
 
   const missedClasses = getClassesOnDate(teacherSchedule, missedDate)
+  console.log(`[DEBUG] missedClasses count: ${missedClasses.length}`)
 
   if (missedClasses.length === 0) {
+    console.log('[DEBUG] No missed classes found on this date.')
     return [] // ไม่มีคลาสที่ขาด
   }
 
@@ -54,18 +58,24 @@ export async function findAvailableSlots(teacherId, missedDate, term) {
   // Map วันที่ไม่ว่าง (YYYY-MM-DD)
   const busyDates = new Set()
   for (const event of events) {
+    const sDate = event.start.split('T')[0]
+    const eDate = event.end ? event.end.split('T')[0] : sDate
+
     // กรณีวันเดียว
-    busyDates.add(event.start)
-    // กรณีหลายวัน (ถ้ามี)
-    if (event.start !== event.end) {
-      let curr = new Date(event.start)
-      const end = new Date(event.end)
+    busyDates.add(sDate)
+
+    // กรณีหลายวัน
+    if (sDate !== eDate) {
+      let curr = new Date(sDate)
+      const end = new Date(eDate)
       while (curr <= end) {
         busyDates.add(formatDate(curr))
         curr.setDate(curr.getDate() + 1)
       }
     }
   }
+
+  console.log(`[DEBUG] busyDates size: ${busyDates.size}`)
 
   // 2. หาวันถัดไปที่ทั้งอาจารย์และนักศึกษาว่าง
   const suggestions = []
@@ -79,6 +89,7 @@ export async function findAvailableSlots(teacherId, missedDate, term) {
 
     // Check if Holiday or Teacher Absence
     if (busyDates.has(dateStr)) {
+      console.log(`[DEBUG] Date ${dateStr} is busy (Holiday/Absence)`)
       continue // ข้ามวันนี้ไปเลย
     }
 
@@ -89,24 +100,25 @@ export async function findAvailableSlots(teacherId, missedDate, term) {
 
     // เช็คแต่ละคลาสที่ขาด
     for (const missedClass of missedClasses) {
-      if (!missedClass.sectionId) continue; // ถ้าไม่รู้นักเรียนกลุ่มไหน ก็หาไม่ได้
+      if (!missedClass.sectionIds || missedClass.sectionIds.length === 0) continue;
 
       const slots = findSlotsForClass(
         teacherId,
-        missedClass.sectionId,
+        missedClass.sectionIds,
         missedClass.duration,
         dayOfWeek,
         dateStr,
         term
       )
+      console.log(`[DEBUG] findSlotsForClass (${dateStr}): Found ${slots.length} slots for subject ${missedClass.subjectName}`)
 
       suggestions.push(...slots.map(slot => ({
         ...slot,
         missedDate,
         missedClass: missedClass.subjectName,
-        sectionName: missedClass.sectionName,
+        sectionNames: missedClass.sectionNames,
         subjectId: missedClass.subjectId,
-        sectionId: missedClass.sectionId
+        sectionIds: missedClass.sectionIds
       })))
     }
 
@@ -201,12 +213,12 @@ function getClassesOnDate(schedule, dateStr) {
 }
 
 function createClassObj(subjectId, startSlot, duration) {
-  const sectionId = getSectionForSubject(subjectId)
+  const sectionIds = getSectionsForSubject(subjectId)
   return {
     subjectId,
     subjectName: getSubjectName(subjectId),
-    sectionId,
-    sectionName: getSectionName(sectionId),
+    sectionIds,
+    sectionNames: sectionIds.map(id => getSectionName(id)).join(', '),
     startSlot,
     duration,
     timeStart: getTimeFromSlot(startSlot),
@@ -217,19 +229,38 @@ function createClassObj(subjectId, startSlot, duration) {
 /**
  * หาช่วงว่างสำหรับคลาสที่ต้องชดเชย
  */
-function findSlotsForClass(teacherId, sectionId, duration, dayOfWeek, dateStr, term) {
+function findSlotsForClass(teacherId, sectionIds, duration, dayOfWeek, dateStr, term) {
   const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1
+  if (!Array.isArray(sectionIds)) sectionIds = [sectionIds]
 
   // 1. ดึงตารางอาจารย์
   const teacherSchedule = getTeacherSchedule(teacherId, term)
   if (!teacherSchedule || !teacherSchedule[dayIndex]) return []
 
-  // 2. ดึงตารางนักศึกษา
-  const sectionSchedule = getSectionSchedule(sectionId, term)
-  // ถ้าไม่มีตารางนักศึกษา ให้ถือว่าว่าง? หรือถือว่าไม่ว่าง? 
-  // ปกติถ้าไม่มีตารางแปลว่ายังไม่ได้จัด ควร assume ว่าว่างไปก่อน หรือ return []
-  // เพื่อความชัวร์ ถ้าไม่มีตาราง section ให้ assume ว่าว่าง แต่แจ้งเตือน
-  const secDaySchedule = sectionSchedule ? sectionSchedule[dayIndex] : Array(13).fill({ value: null })
+  // 2. ดึงตารางนักศึกษาทุกกลุ่ม
+  const sectionSchedules = sectionIds.map(id => getSectionSchedule(id, term)).filter(Boolean)
+
+  // 3. ดึงคลาสชดเชยที่มีอยู่แล้วในวันที่กำหนด (เพื่อเลียงการจัดซ้ำซ้อน)
+  const existingMakeups = db.prepare(`
+    SELECT makeup_time_start, makeup_time_end, teacher_id, section_id
+    FROM makeup_classes
+    WHERE makeup_date = ? AND status != 'cancelled'
+  `).all(dateStr)
+
+  // Map ช่วงเวลาที่ไม่ว่างจากคลาสชดเชย
+  const busyTeacherSlots = new Set()
+  const busySectionSlots = new Set()
+
+  existingMakeups.forEach(m => {
+    const slots = getSlotsFromTimes(m.makeup_time_start, m.makeup_time_end)
+    if (Number(m.teacher_id) === Number(teacherId)) {
+      slots.forEach(s => busyTeacherSlots.add(s))
+    }
+    // ถ้ามีกลุ่มใดกลุ่มหนึ่งไม่ว่าง ก็ถือว่าช่วงเวลานั้นใช้ไม่ได้
+    if (sectionIds.includes(Number(m.section_id))) {
+      slots.forEach(s => busySectionSlots.add(s))
+    }
+  })
 
   const availableSlots = []
   const maxSlots = 13 // สมมติมี 13 คาบ (0-12)
@@ -256,9 +287,18 @@ function findSlotsForClass(teacherId, sectionId, duration, dayOfWeek, dateStr, t
         break
       }
 
-      // 2. เช็คนักเรียน
-      const sectionSlot = secDaySchedule[slotIdx]
-      if (!isSlotFree(sectionSlot)) {
+      // 2. เช็คนักเรียนทุกกลุ่ม
+      for (const sectionSchedule of sectionSchedules) {
+        const sectionSlot = sectionSchedule[dayIndex][slotIdx]
+        if (!isSlotFree(sectionSlot)) {
+          checkPass = false
+          break
+        }
+      }
+      if (!checkPass) break
+
+      // 3. เช็คคลาสชดเชยที่จัดไปแล้ว (Overlap Check)
+      if (busyTeacherSlots.has(slotIdx) || busySectionSlots.has(slotIdx)) {
         checkPass = false
         break
       }
@@ -307,12 +347,12 @@ function getSubjectName(subjectId) {
 }
 
 /**
- * หา section ที่เรียนวิชานี้
+ * หา section ที่เรียนวิชานี้ (ส่งกลับหลาย ID)
  */
-function getSectionForSubject(subjectId) {
-  const stmt = db.prepare('SELECT id_section FROM Subjects WHERE id_subject = ?')
-  const result = stmt.get(subjectId)
-  return result?.id_section || null
+function getSectionsForSubject(subjectId) {
+  const stmt = db.prepare('SELECT id_section FROM SubjectSections WHERE id_subject = ?')
+  const results = stmt.all(subjectId)
+  return results.map(r => r.id_section)
 }
 
 /**
@@ -346,6 +386,25 @@ function getTimeFromSlot(slotIndex) {
 function getDayName(dayOfWeek) {
   const days = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์']
   return days[dayOfWeek] || '??'
+}
+
+/**
+ * แปลงช่วงเวลาเป็นรายการ slot index
+ */
+function getSlotsFromTimes(startStr, endStr) {
+  const times = [
+    '08:00', '09:00', '10:00', '11:00', '12:00',
+    '13:00', '14:00', '15:00', '16:00', '17:00',
+    '18:00', '19:00', '20:00', '21:00'
+  ]
+  const startIndex = times.indexOf(startStr)
+  const endIndex = times.indexOf(endStr)
+  if (startIndex === -1 || endIndex === -1) return []
+  const slots = []
+  for (let i = startIndex; i < endIndex; i++) {
+    slots.push(i)
+  }
+  return slots
 }
 
 /**
@@ -397,10 +456,13 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
 
   const busyDates = new Set()
   for (const event of events) {
-    busyDates.add(event.start)
-    if (event.start !== event.end) {
-      let curr = new Date(event.start)
-      const end = new Date(event.end)
+    const sDate = event.start.split('T')[0]
+    const eDate = event.end ? event.end.split('T')[0] : sDate
+
+    busyDates.add(sDate)
+    if (sDate !== eDate) {
+      let curr = new Date(sDate)
+      const end = new Date(eDate)
       while (curr <= end) {
         busyDates.add(formatDate(curr))
         curr.setDate(curr.getDate() + 1)
@@ -462,6 +524,30 @@ function findContinuousFreeSlots(teacherId, sectionIds, duration, dayIndex, date
 
   const sectionSchedules = sectionIds.map(id => getSectionSchedule(id, term)).filter(Boolean)
 
+  // ดึงคลาสชดเชยที่มีอยู่แล้วในวันที่กำหนด
+  const existingMakeups = db.prepare(`
+    SELECT makeup_time_start, makeup_time_end, teacher_id, section_id
+    FROM makeup_classes
+    WHERE makeup_date = ? AND status != 'cancelled'
+  `).all(dateStr)
+
+  const busyTeacherSlots = new Set()
+  const busySectionSlots = new Map() // Section ID -> Set of busy slots
+
+  existingMakeups.forEach(m => {
+    const slots = getSlotsFromTimes(m.makeup_time_start, m.makeup_time_end)
+    if (Number(m.teacher_id) === Number(teacherId)) {
+      slots.forEach(s => busyTeacherSlots.add(s))
+    }
+
+    if (sectionIds.includes(Number(m.section_id))) {
+      if (!busySectionSlots.has(m.section_id)) {
+        busySectionSlots.set(m.section_id, new Set())
+      }
+      slots.forEach(s => busySectionSlots.get(m.section_id).add(s))
+    }
+  })
+
   const availableSlots = []
   const maxSlots = 13
 
@@ -496,6 +582,19 @@ function findContinuousFreeSlots(teacherId, sectionIds, duration, dayIndex, date
       }
 
       if (!allFree) break
+
+      // เช็คคลาสชดเชยที่จัดไปแล้ว
+      if (busyTeacherSlots.has(slotIdx)) {
+        allFree = false
+        break
+      }
+
+      for (const sectId of sectionIds) {
+        if (busySectionSlots.get(sectId)?.has(slotIdx)) {
+          allFree = false
+          break
+        }
+      }
     }
 
     if (allFree) {

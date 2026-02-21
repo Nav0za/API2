@@ -12,28 +12,86 @@ db.exec(`
     subject TEXT
   );`)
 
-// Subjects
+// Subjects - Note: UNIQUE constraint removed to allow duplicate subject names with different sections
 db.exec(`
   CREATE TABLE IF NOT EXISTS Subjects (
     id_subject INTEGER PRIMARY KEY AUTOINCREMENT,
-    name_subject TEXT UNIQUE,
+    name_subject TEXT NOT NULL,
     term TEXT,
     id_teacher INTEGER,
     id_section INTEGER,
+    id_room INTEGER,
     FOREIGN KEY (id_teacher) REFERENCES teachers(id_teacher)
       ON DELETE CASCADE,
     FOREIGN KEY (id_section) REFERENCES sections(id_section)
+      ON DELETE SET NULL,
+    FOREIGN KEY (id_room) REFERENCES rooms(id_room)
       ON DELETE SET NULL
   );`)
 
-// Migration: Add id_section if not exists (สำหรับเครื่องที่สร้างตารางไปแล้ว)
+// Indexes for Subjects table
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_subjects_teacher 
+  ON Subjects(id_teacher);`)
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_subjects_term 
+  ON Subjects(term);`)
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_subjects_section 
+  ON Subjects(id_section);`)
+
+// Migrations
 try {
   const tableInfo = db.prepare('PRAGMA table_info(Subjects)').all()
+
+  // Migration: Add id_section if not exists
   const hasIdSection = tableInfo.some(col => col.name === 'id_section')
   if (!hasIdSection) {
     db.exec('ALTER TABLE Subjects ADD COLUMN id_section INTEGER REFERENCES sections(id_section) ON DELETE SET NULL')
     console.log('Migrated Subjects table: added id_section')
   }
+
+  // Migration: Add id_room if not exists
+  const hasIdRoom = tableInfo.some(col => col.name === 'id_room')
+  if (!hasIdRoom) {
+    db.exec('ALTER TABLE Subjects ADD COLUMN id_room INTEGER REFERENCES rooms(id_room) ON DELETE SET NULL')
+    console.log('Migrated Subjects table: added id_room')
+  }
+
+  // Create index for id_room after migration
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_subjects_room 
+    ON Subjects(id_room);`)
+
+  // Create SubjectSections join table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS SubjectSections (
+      id_subject INTEGER,
+      id_section INTEGER,
+      PRIMARY KEY (id_subject, id_section),
+      FOREIGN KEY (id_subject) REFERENCES Subjects(id_subject) ON DELETE CASCADE,
+      FOREIGN KEY (id_section) REFERENCES sections(id_section) ON DELETE CASCADE
+    );
+  `)
+
+  // Migration: Move id_section from Subjects to SubjectSections
+  const subjectsWithSection = db.prepare('SELECT id_subject, id_section FROM Subjects WHERE id_section IS NOT NULL').all()
+  if (subjectsWithSection.length > 0) {
+    const insertSection = db.prepare('INSERT OR IGNORE INTO SubjectSections (id_subject, id_section) VALUES (?, ?)')
+    const transaction = db.transaction((data) => {
+      for (const item of data) {
+        insertSection.run(item.id_subject, item.id_section)
+      }
+    })
+    transaction(subjectsWithSection)
+    console.log(`Migrated ${subjectsWithSection.length} subjects to SubjectSections`)
+
+    // Optional: Clear id_section in Subjects once migrated to avoid confusion
+    // db.exec('UPDATE Subjects SET id_section = NULL')
+  }
+
 } catch (err) {
   console.error('Migration error:', err)
 }
@@ -73,6 +131,8 @@ db.exec(`
     teacher_name TEXT,
     description TEXT,
     all_day INTEGER DEFAULT 0,
+    original_date TEXT,
+    makeup_class_ids TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (teacher_id) REFERENCES teachers(id_teacher)
@@ -88,7 +148,7 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_calendar_events_teacher 
   ON calendar_events(teacher_id);`)
 
-// Migration: Add event_type and all_day to calendar_events if not exists
+// Migration: Add event_type, all_day, original_date, and makeup_class_ids to calendar_events if not exists
 try {
   const tableInfo = db.prepare('PRAGMA table_info(calendar_events)').all()
 
@@ -102,6 +162,18 @@ try {
   if (!hasAllDay) {
     db.exec("ALTER TABLE calendar_events ADD COLUMN all_day INTEGER DEFAULT 0")
     console.log('Migrated calendar_events table: added all_day')
+  }
+
+  const hasOriginalDate = tableInfo.some(col => col.name === 'original_date')
+  if (!hasOriginalDate) {
+    db.exec("ALTER TABLE calendar_events ADD COLUMN original_date TEXT")
+    console.log('Migrated calendar_events table: added original_date')
+  }
+
+  const hasMakeupClassIds = tableInfo.some(col => col.name === 'makeup_class_ids')
+  if (!hasMakeupClassIds) {
+    db.exec("ALTER TABLE calendar_events ADD COLUMN makeup_class_ids TEXT")
+    console.log('Migrated calendar_events table: added makeup_class_ids')
   }
 } catch (err) {
   console.error('Migration error (calendar_events):', err)
