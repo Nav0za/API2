@@ -108,42 +108,45 @@
     <!-- Modal ยืนยันการลบ -->
     <UModal v-model:open="confirmDeleteTerm" :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
       <template #content>
-        <div class="p-8">
-          <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
-            <UIcon name="i-heroicons-exclamation-triangle" class="text-4xl text-red-500" />
-          </div>
-          
-          <h3 class="text-2xl font-bold text-white text-center mb-2">ยืนยันการลบเทอมการศึกษา</h3>
-          <p class="text-slate-400 text-center mb-8">การดำเนินการนี้จะลบข้อมูลตารางเรียนและข้อมูลที่เกี่ยวข้องทั้งหมดในเทอมนี้อย่างถาวร ไม่สามารถย้อนคืนได้</p>
+        <div class="flex flex-col max-h-[85vh]">
+          <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+            <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+              <UIcon name="i-heroicons-exclamation-triangle" class="text-4xl text-red-500" />
+            </div>
+            
+            <h3 class="text-2xl font-bold text-white text-center mb-2">ยืนยันการลบเทอมการศึกษา</h3>
+            <p class="text-slate-400 text-center mb-8">การดำเนินการนี้จะลบข้อมูลตารางเรียนและข้อมูลที่เกี่ยวข้องทั้งหมดในเทอมนี้อย่างถาวร ไม่สามารถย้อนคืนได้</p>
 
-          <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-2xl mb-8 text-center relative overflow-hidden">
-             <div class="relative z-10">
-                <p class="text-xs font-black uppercase tracking-widest text-red-400/80 mb-1">เทอมที่เลือก</p>
-                <p class="text-3xl font-black text-white">
-                  {{ selectedTermForDelete?.term }} / {{ selectedTermForDelete?.academic_year }}
-                </p>
-             </div>
+            <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-2xl text-center relative overflow-hidden">
+               <div class="relative z-10">
+                  <p class="text-xs font-black uppercase tracking-widest text-red-400/80 mb-1">เทอมที่เลือก</p>
+                  <p class="text-3xl font-black text-white">
+                    {{ selectedTermForDelete?.term }} / {{ selectedTermForDelete?.academic_year }}
+                  </p>
+               </div>
+            </div>
           </div>
-
-          <div class="flex flex-col sm:flex-row gap-3">
-            <UButton
-              label="ยกเลิก"
-              color="neutral"
-              variant="outline"
-              size="xl"
-              block
-              class="rounded-2xl border-slate-700 py-4 flex-1"
-              @click="confirmDeleteTerm = false"
-            />
-            <UButton
-              label="ยืนยันการลบถาวร"
-              color="error"
-              size="xl"
-              block
-              class="rounded-2xl py-4 flex-1 shadow-lg shadow-red-500/20"
-              :loading="deletingTermId === selectedTermForDelete?.id_term"
-              @click="deleteTerm(selectedTermForDelete?.id_term)"
-            />
+          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <UButton
+                label="ยกเลิก"
+                color="neutral"
+                variant="outline"
+                size="xl"
+                block
+                class="rounded-2xl border-slate-700 py-4 flex-1"
+                @click="confirmDeleteTerm = false"
+              />
+              <UButton
+                label="ยืนยันการลบถาวร"
+                color="error"
+                size="xl"
+                block
+                class="rounded-2xl py-4 flex-1 shadow-lg shadow-red-500/20"
+                :loading="deletingTermId === selectedTermForDelete?.id_term"
+                @click="deleteTerm(selectedTermForDelete?.id_term)"
+              />
+            </div>
           </div>
         </div>
       </template>
@@ -157,6 +160,14 @@ const { data } = await useFetch('/api/terms', {
 })
 const terms = ref(data.value)
 const deletingTermId = ref(null)
+const confirmDeleteTerm = ref(false)
+const selectedTermForDelete = ref(null)
+
+const onAddedTerm = (newTerm) => {
+  if (newTerm) {
+    terms.value.push(newTerm)
+  }
+}
 
 const latestYear = computed(() => {
   if (!terms.value || terms.value.length === 0) return '-'

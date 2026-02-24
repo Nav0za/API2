@@ -32,14 +32,18 @@
             :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
             <UButton label="เพิ่มในตาราง" icon="i-heroicons-plus" color="blue" variant="soft" class="cursor-pointer" />
             <template #content>
-              <div class="p-8">
-                <div
-                  class="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-500/20">
-                  <UIcon name="i-heroicons-calendar-days" class="text-3xl text-blue-400" />
+              <div class="flex flex-col max-h-[90vh]">
+                <!-- Header -->
+                <div class="p-8 pb-4">
+                  <div
+                    class="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-500/20">
+                    <UIcon name="i-heroicons-calendar-days" class="text-3xl text-blue-400" />
+                  </div>
+                  <h3 class="text-2xl font-bold text-white text-center mb-4">เพิ่มรายวิชาในตารางเรียน</h3>
                 </div>
-                <h3 class="text-2xl font-bold text-white text-center mb-6">เพิ่มรายวิชาในตารางเรียน</h3>
 
-                <div class="space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar px-1">
+                <!-- Scrollable Form Content -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar px-8 space-y-6 pb-4">
                   <div>
                     <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">เลือกวิชา</h3>
                     <USelect v-model="quickAddSubject" placeholder="เลือกรายวิชา" :items="subjectOptions" size="xl"
@@ -108,7 +112,8 @@
                   </div>
                 </div>
 
-                <div class="flex gap-3 mt-8">
+                <!-- Sticky Footer Buttons -->
+                <div class="p-6 pt-4 border-t border-slate-800 bg-slate-900 flex gap-3">
                   <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block class="rounded-2xl py-4 flex-1"
                     @click="quickAddOpen = false" />
                   <UButton label="เพิ่มลงตาราง" color="primary" size="xl" block
@@ -450,14 +455,23 @@ const addToSchedule = async () => {
   const subjectId = quickAddSubject.value
   const roomId = quickAddRoom.value
 
-  for (let i = 0; i < duration; i++) {
-    const slotIdx = startIdx + i
-    if (slotIdx >= 13) break
-    if (slotIdx === 4) continue // ข้ามพักเที่ยง
+  let slotsAdded = 0
+  let currentIdx = startIdx
 
-    scheduleSlots.value[dayIdx][slotIdx].value = subjectId
-    scheduleSlots.value[dayIdx][slotIdx].room_id = roomId
-    scheduleSlots.value[dayIdx][slotIdx].section_ids = [...quickAddSelectedSections.value]
+  while (slotsAdded < duration) {
+    if (currentIdx >= 13) break // หมดวัน
+
+    if (currentIdx === 4) {
+      currentIdx++
+      continue // ข้ามพักเที่ยง (ไม่นับรวมในจำนวนชั่วโมง)
+    }
+
+    scheduleSlots.value[dayIdx][currentIdx].value = subjectId
+    scheduleSlots.value[dayIdx][currentIdx].room_id = roomId
+    scheduleSlots.value[dayIdx][currentIdx].section_ids = [...quickAddSelectedSections.value]
+
+    slotsAdded++
+    currentIdx++
   }
 
   // Reset

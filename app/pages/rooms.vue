@@ -138,79 +138,48 @@
       :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }"
     >
       <template #content>
-        <div class="p-8">
-          <div class="flex items-center gap-4 mb-8">
-            <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20">
-              <UIcon :name="editingRoom ? 'i-heroicons-pencil-square' : 'i-heroicons-plus-circle'" class="text-2xl text-blue-500" />
+        <div class="flex flex-col max-h-[85vh]">
+          <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+            <div class="flex items-center gap-4 mb-8">
+              <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20">
+                <UIcon :name="editingRoom ? 'i-heroicons-pencil-square' : 'i-heroicons-plus-circle'" class="text-2xl text-blue-500" />
+              </div>
+              <div>
+                <h3 class="text-2xl font-bold text-white">{{ editingRoom ? 'แก้ไขข้อมูลห้องเรียน' : 'เพิ่มห้องเรียนใหม่' }}</h3>
+                <p class="text-slate-400 text-sm">ระบุรายละเอียดของห้องเรียนเพื่อให้ระบุในตารางสอนชดเชย</p>
+              </div>
             </div>
-            <div>
-              <h3 class="text-2xl font-bold text-white">{{ editingRoom ? 'แก้ไขข้อมูลห้องเรียน' : 'เพิ่มห้องเรียนใหม่' }}</h3>
-              <p class="text-slate-400 text-sm">ระบุรายละเอียดของห้องเรียนเพื่อให้ระบุในตารางสอนชดเชย</p>
-            </div>
-          </div>
 
-          <div class="space-y-6">
-            <UFormField label="ชื่อห้อง (Room Name) *" help="เช่น EN101, LabCom 1">
-              <UInput
-                v-model="formData.room_name"
-                placeholder="ระบุชื่อห้อง..."
-                size="xl"
-                class="rounded-xl"
-              />
-            </UFormField>
-
-            <div class="grid grid-cols-2 gap-4">
-              <UFormField label="อาคาร (Building)">
-                <UInput
-                  v-model="formData.building"
-                  placeholder="เช่น อาคาร EN"
-                  size="xl"
-                  class="rounded-xl"
-                />
+            <div class="space-y-6">
+              <UFormField label="ชื่อห้อง (Room Name) *" help="เช่น EN101, LabCom 1">
+                <UInput v-model="formData.room_name" placeholder="ระบุชื่อห้อง..." size="xl" class="rounded-xl" />
               </UFormField>
 
-              <UFormField label="ความจุ (Capacity)">
-                <UInput
-                  v-model.number="formData.capacity"
-                  type="number"
-                  placeholder="จำนวนที่นั่ง"
-                  size="xl"
-                  class="rounded-xl"
-                  icon="i-heroicons-users"
-                />
+              <div class="grid grid-cols-2 gap-4">
+                <UFormField label="อาคาร (Building)">
+                  <UInput v-model="formData.building" placeholder="เช่น อาคาร EN" size="xl" class="rounded-xl" />
+                </UFormField>
+
+                <UFormField label="ความจุ (Capacity)">
+                  <UInput v-model.number="formData.capacity" type="number" placeholder="จำนวนที่นั่ง" size="xl"
+                    class="rounded-xl" icon="i-heroicons-users" />
+                </UFormField>
+              </div>
+
+              <UFormField label="คำอธิบายเพิ่มเติม">
+                <UTextarea v-model="formData.description" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)..." :rows="3"
+                  size="xl" class="rounded-xl" />
               </UFormField>
             </div>
-
-            <UFormField label="คำอธิบายเพิ่มเติม">
-              <UTextarea
-                v-model="formData.description"
-                placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)..."
-                :rows="3"
-                size="xl"
-                class="rounded-xl"
-              />
-            </UFormField>
           </div>
-
-          <div class="flex gap-3 mt-10">
-            <UButton
-              label="ยกเลิก"
-              color="neutral"
-              variant="soft"
-              size="xl"
-              block
-              class="rounded-2xl py-4 flex-1 font-bold"
-              @click="modalOpen = false"
-            />
-            <UButton
-              :label="editingRoom ? 'บันทึกการแก้ไข' : 'สร้างห้องเรียน'"
-              color="primary"
-              size="xl"
-              block
-              class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold"
-              :loading="saving"
-              @click="saveRoom"
-            />
+          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+            <div class="flex gap-3">
+              <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
+                class="rounded-2xl py-4 flex-1 font-bold" @click="modalOpen = false" />
+              <UButton :label="editingRoom ? 'บันทึกการแก้ไข' : 'สร้างห้องเรียน'" color="primary" size="xl" block
+                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold" :loading="saving"
+                @click="saveRoom" />
+            </div>
           </div>
         </div>
       </template>
@@ -223,45 +192,48 @@
       :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }"
     >
       <template #content>
-        <div class="p-8">
-          <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
-            <UIcon name="i-heroicons-exclamation-triangle" class="text-4xl text-red-500" />
+        <div class="flex flex-col max-h-[85vh]">
+          <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+            <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+              <UIcon name="i-heroicons-exclamation-triangle" class="text-4xl text-red-500" />
+            </div>
+            
+            <h3 class="text-2xl font-bold text-white text-center mb-2">ยืนยันการลบห้องเรียน</h3>
+            <p class="text-slate-400 text-center mb-8">คุณแน่ใจหรือไม่ที่จะลบห้องเรียนนี้ออกจากระบบ? การดำเนินการนี้ไม่สามารถย้อนคืนได้ค่ะ</p>
+
+            <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-2xl mb-8 text-center relative overflow-hidden">
+               <div class="relative z-10">
+                  <p class="text-xs font-black uppercase tracking-widest text-red-400/80 mb-1">ห้องที่เลือก</p>
+                  <p class="text-3xl font-black text-white">{{ roomToDelete?.room_name }}</p>
+                  <p class="text-sm text-slate-500 mt-2">{{ roomToDelete?.building }}</p>
+               </div>
+            </div>
+
+            <p class="text-xs text-red-500/60 text-center mb-2 bg-red-500/5 py-2 rounded-lg border border-red-500/10">
+              ⚠️ หมายเหตุ: การลบห้องจะไม่ส่งผลกระทบต่อข้อมูลคลาสชดเชยที่เคยใช้ห้องนี้ไปแล้ว
+            </p>
           </div>
-          
-          <h3 class="text-2xl font-bold text-white text-center mb-2">ยืนยันการลบห้องเรียน</h3>
-          <p class="text-slate-400 text-center mb-8">คุณแน่ใจหรือไม่ที่จะลบห้องเรียนนี้ออกจากระบบ? การดำเนินการนี้ไม่สามารถย้อนคืนได้ค่ะ</p>
-
-          <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-2xl mb-8 text-center relative overflow-hidden">
-             <div class="relative z-10">
-                <p class="text-xs font-black uppercase tracking-widest text-red-400/80 mb-1">ห้องที่เลือก</p>
-                <p class="text-3xl font-black text-white">{{ roomToDelete?.room_name }}</p>
-                <p class="text-sm text-slate-500 mt-2">{{ roomToDelete?.building }}</p>
-             </div>
-          </div>
-
-          <p class="text-xs text-red-500/60 text-center mb-8 bg-red-500/5 py-2 rounded-lg border border-red-500/10">
-            ⚠️ หมายเหตุ: การลบห้องจะไม่ส่งผลกระทบต่อข้อมูลคลาสชดเชยที่เคยใช้ห้องนี้ไปแล้ว
-          </p>
-
-          <div class="flex flex-col sm:flex-row gap-3">
-            <UButton
-              label="ยกเลิก"
-              color="neutral"
-              variant="outline"
-              size="xl"
-              block
-              class="rounded-2xl border-slate-700 py-4 flex-1 font-bold"
-              @click="deleteModalOpen = false"
-            />
-            <UButton
-              label="ยืนยันการลบถาวร"
-              color="error"
-              size="xl"
-              block
-              class="rounded-2xl py-4 flex-1 shadow-lg shadow-red-500/20 font-bold"
-              :loading="deleting"
-              @click="deleteRoom"
-            />
+          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <UButton
+                label="ยกเลิก"
+                color="neutral"
+                variant="outline"
+                size="xl"
+                block
+                class="rounded-2xl border-slate-700 py-4 flex-1 font-bold"
+                @click="deleteModalOpen = false"
+              />
+              <UButton
+                label="ยืนยันการลบถาวร"
+                color="error"
+                size="xl"
+                block
+                class="rounded-2xl py-4 flex-1 shadow-lg shadow-red-500/20 font-bold"
+                :loading="deleting"
+                @click="deleteRoom"
+              />
+            </div>
           </div>
         </div>
       </template>

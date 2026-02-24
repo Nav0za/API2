@@ -280,24 +280,23 @@ function clearForm() {
       </UInputDate>
     </UFormField>
 
-    <!-- แสดงข้อมูลที่จะบันทึก -->
     <div
       v-if="state.term || state.academic_year"
-      class="p-4 bg-slate-900 border border-slate-700/50 rounded-2xl relative overflow-hidden group/preview"
+      class="p-4 bg-slate-800 border border-slate-700 rounded-2xl relative overflow-hidden group/preview shadow-inner"
     >
-      <div class="absolute inset-0 bg-blue-500/5 opacity-0 group-hover/preview:opacity-100 transition-opacity duration-500"></div>
+      <div class="absolute inset-0 bg-blue-500/10 opacity-0 group-hover/preview:opacity-100 transition-opacity duration-500"></div>
       <div class="relative z-10">
-        <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">แสดงตัวอย่าง (Preview)</p>
+        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">แสดงตัวอย่าง (Preview)</p>
         <div class="space-y-1">
-          <p class="text-xl font-black text-white">
-            <span v-if="state.term">เทอม {{ state.term }}</span>
-            <span v-if="state.term && state.academic_year"> / </span>
+          <p class="text-xl font-black text-amber-400">
+            <span v-if="state.term" class="text-white">เทอม {{ state.term }}</span>
+            <span v-if="state.term && state.academic_year" class="text-slate-500"> / </span>
             <span v-if="state.academic_year">{{ state.academic_year }}</span>
-            <span v-if="!state.term && !state.academic_year" class="text-slate-600 font-normal italic text-sm">รอกรอกข้อมูล...</span>
+            <span v-if="!state.term && !state.academic_year" class="text-slate-500 font-normal italic text-sm">รอกรอกข้อมูล...</span>
           </p>
-          <div class="flex items-center gap-2 text-xs font-medium text-slate-400">
-            <UIcon name="i-heroicons-calendar-days" class="text-slate-600" />
-            {{ formatDateToISO(state.start_date) }} <UIcon name="i-heroicons-arrow-right" class="text-slate-700" /> {{ formatDateToISO(state.end_date) }}
+          <div class="flex items-center gap-2 text-xs font-medium text-slate-300">
+            <UIcon name="i-heroicons-calendar-days" class="text-slate-400" />
+            {{ formatDateToISO(state.start_date) }} <UIcon name="i-heroicons-arrow-right" class="text-slate-500" /> {{ formatDateToISO(state.end_date) }}
           </div>
         </div>
       </div>

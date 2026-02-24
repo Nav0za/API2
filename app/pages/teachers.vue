@@ -35,7 +35,8 @@
       <div class="mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
         <div class="relative w-full md:w-96 group">
           <UInput v-model="searchQuery" icon="i-heroicons-magnifying-glass" placeholder="ค้นหาชื่ออาจารย์..." size="xl"
-            class="rounded-2xl bg-slate-800/50 w-full text-white" variant="none" />
+            class="rounded-2xl bg-slate-800/50 w-full" variant="none"
+            :ui="{ base: 'text-white placeholder-slate-400' }" />
           <div
             class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 transform scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300">
           </div>
@@ -115,34 +116,36 @@
     <UModal v-model:open="deleteTeacherModalOpen"
       :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
       <template #content>
-        <div class="p-8">
-          <div
-            class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
-            <UIcon name="i-heroicons-exclamation-triangle" class="text-4xl text-red-500" />
-          </div>
+        <div class="flex flex-col max-h-[85vh]">
+          <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+            <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+              <UIcon name="i-heroicons-exclamation-triangle" class="text-4xl text-red-500" />
+            </div>
 
-          <h3 class="text-2xl font-bold text-white text-center mb-2">ยืนยันการลบอาจารย์</h3>
-          <p class="text-slate-400 text-center mb-8 truncate-2-lines">คุณแน่ใจหรือไม่ที่จะลบรายชื่ออาจารย์ท่านนี้?
-            การลบจะทำให้ข้อมูลตารางสอนทั้งหมดหายไปด้วยนะคะ</p>
+            <h3 class="text-2xl font-bold text-white text-center mb-2">ยืนยันการลบอาจารย์</h3>
+            <p class="text-slate-400 text-center mb-8 truncate-2-lines">คุณแน่ใจหรือไม่ที่จะลบรายชื่ออาจารย์ท่านนี้?
+              การลบจะทำให้ข้อมูลตารางสอนทั้งหมดหายไปด้วยนะคะ</p>
 
-          <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-2xl mb-8 text-center relative overflow-hidden">
-            <div class="relative z-10">
-              <p class="text-xs font-black uppercase tracking-widest text-red-400/80 mb-2">อาจารย์ที่เลือก</p>
-              <div class="flex items-center justify-center gap-3">
-                <UAvatar :alt="selectedTeacherForDelete?.name.toUpperCase()" size="lg"
-                  :ui="{ background: 'bg-red-500/20 text-red-500 font-black' }" />
-                <p class="text-2xl font-black text-white">{{ selectedTeacherForDelete?.name }}</p>
+            <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-2xl text-center relative overflow-hidden">
+              <div class="relative z-10">
+                <p class="text-xs font-black uppercase tracking-widest text-red-400/80 mb-2">อาจารย์ที่เลือก</p>
+                <div class="flex items-center justify-center gap-3">
+                  <UAvatar :alt="selectedTeacherForDelete?.name.toUpperCase()" size="lg"
+                    :ui="{ background: 'bg-red-500/20 text-red-500 font-black' }" />
+                  <p class="text-2xl font-black text-white">{{ selectedTeacherForDelete?.name }}</p>
+                </div>
               </div>
             </div>
           </div>
-
-          <div class="flex flex-col sm:flex-row gap-3">
-            <UButton label="ยกเลิก" color="neutral" variant="outline" size="xl" block
-              class="rounded-2xl border-slate-700 py-4 flex-1 font-bold" @click="deleteTeacherModalOpen = false" />
-            <UButton label="ยืนยันการลบถาวร" color="error" size="xl" block
-              class="rounded-2xl py-4 flex-1 shadow-lg shadow-red-500/20 font-bold"
-              :loading="deletingTeacherId === selectedTeacherForDelete?.id_teacher"
-              @click="delTeacher(selectedTeacherForDelete?.id_teacher)" />
+          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <UButton label="ยกเลิก" color="neutral" variant="outline" size="xl" block
+                class="rounded-2xl border-slate-700 py-4 flex-1 font-bold" @click="deleteTeacherModalOpen = false" />
+              <UButton label="ยืนยันการลบถาวร" color="error" size="xl" block
+                class="rounded-2xl py-4 flex-1 shadow-lg shadow-red-500/20 font-bold"
+                :loading="deletingTeacherId === selectedTeacherForDelete?.id_teacher"
+                @click="delTeacher(selectedTeacherForDelete?.id_teacher)" />
+            </div>
           </div>
         </div>
       </template>
@@ -152,39 +155,41 @@
     <UModal v-model:open="editModalopen"
       :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
       <template #content>
-        <div class="p-8">
-          <div class="flex items-center gap-4 mb-8">
-            <div
-              class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20">
-              <UIcon name="i-heroicons-pencil-square" class="text-2xl text-amber-500" />
+        <div class="flex flex-col max-h-[85vh]">
+          <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+            <div class="flex items-center gap-4 mb-8">
+              <div class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20">
+                <UIcon name="i-heroicons-pencil-square" class="text-2xl text-amber-500" />
+              </div>
+              <div>
+                <h3 class="text-2xl font-bold text-white">แก้ไขชื่ออาจารย์</h3>
+                <p class="text-slate-400 text-sm">การเปลี่ยนชื่อจะไม่ส่งผลต่อประวัติการสอนชดเชย</p>
+              </div>
             </div>
-            <div>
-              <h3 class="text-2xl font-bold text-white">แก้ไขชื่ออาจารย์</h3>
-              <p class="text-slate-400 text-sm">การเปลี่ยนชื่อจะไม่ส่งผลต่อประวัติการสอนชดเชย</p>
+
+            <div class="space-y-6">
+              <div>
+                <label class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">ชื่อปัจจุบัน</label>
+                <div class="p-4 bg-slate-800 rounded-2xl text-slate-300 border border-slate-700 font-bold italic">{{
+                  seletedTeacher?.name }}</div>
+              </div>
+
+              <UFormField label="ชื่อที่ต้องการเปลี่ยนแปลง *">
+                <UInput v-model="newName" placeholder="ระบุชื่อใหม่..." size="xl" class="rounded-xl" autofocus
+                  @keyup.enter="updateTeacher(seletedTeacher?.id_teacher)" />
+              </UFormField>
             </div>
           </div>
-
-          <div class="space-y-6">
-            <div>
-              <label
-                class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">ชื่อปัจจุบัน</label>
-              <div class="p-4 bg-slate-800 rounded-2xl text-slate-300 border border-slate-700 font-bold italic">{{
-                seletedTeacher?.name }}</div>
+          
+          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+            <div class="flex gap-3">
+              <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
+                class="rounded-2xl py-4 flex-1 font-bold font-heading" @click="editModalopen = false" />
+              <UButton label="บันทึกข้อมูล" color="primary" size="xl" block
+                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold font-heading"
+                :disabled="!newName.trim() || newName === seletedTeacher?.name" :loading="updatingTeacher"
+                @click="updateTeacher(seletedTeacher?.id_teacher)" />
             </div>
-
-            <UFormField label="ชื่อที่ต้องการเปลี่ยนแปลง *">
-              <UInput v-model="newName" placeholder="ระบุชื่อใหม่..." size="xl" class="rounded-xl" autofocus
-                @keyup.enter="updateTeacher(seletedTeacher?.id_teacher)" />
-            </UFormField>
-          </div>
-
-          <div class="flex gap-3 mt-10">
-            <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
-              class="rounded-2xl py-4 flex-1 font-bold font-heading" @click="editModalopen = false" />
-            <UButton label="บันทึกข้อมูล" color="primary" size="xl" block
-              class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold font-heading"
-              :disabled="!newName.trim() || newName === seletedTeacher?.name" :loading="updatingTeacher"
-              @click="updateTeacher(seletedTeacher?.id_teacher)" />
           </div>
         </div>
       </template>

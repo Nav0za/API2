@@ -76,9 +76,36 @@ export default defineEventHandler(async (event) => {
           `).run(eventDetails.teacher_id, eventDetails.original_date)
         }
       }
+    } else if (eventDetails.event_type === 'teacher_absence') {
+      // ลบคลาสชดเชยทั้งหมดที่เกี่ยวข้องกับการลานี้ (สำหรับครูคนนี้ ในวันที่ลานี้)
+      const targetDate = eventDetails.start.includes('T') ? eventDetails.start.split('T')[0] : eventDetails.start
+
+      const makeupEvents = db.prepare(`
+        SELECT id_event, makeup_class_ids FROM calendar_events 
+        WHERE teacher_id = ? AND original_date = ? AND event_type = 'makeup_class'
+      `).all(eventDetails.teacher_id, targetDate)
+
+      if (makeupEvents.length > 0) {
+        for (const wev of makeupEvents) {
+          // ลบจากตาราง makeup_classes ก่อน
+          if (wev.makeup_class_ids) {
+            try {
+              const ids = JSON.parse(wev.makeup_class_ids)
+              if (Array.isArray(ids) && ids.length > 0) {
+                const placeholders = ids.map(() => '?').join(',')
+                db.prepare(`DELETE FROM makeup_classes WHERE id_makeup IN (${placeholders})`).run(...ids)
+              }
+            } catch (e) {
+              console.error('Error parsing makeup_class_ids on absence deletion:', e)
+            }
+          }
+          // ลบตัว calendar_events ของคลาสชดเชยนี้
+          db.prepare('DELETE FROM calendar_events WHERE id_event = ?').run(wev.id_event)
+        }
+      }
     }
 
-    // ลบกิจกรรมหลัก
+    // ลบกิจกรรมหลัก (รวมถึง teacher_absence)
     db.prepare(`
       DELETE FROM calendar_events WHERE id_event = ?
     `).run(id)

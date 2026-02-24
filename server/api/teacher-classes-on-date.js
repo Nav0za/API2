@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
             } else {
                 // จบวิชาก่อนหน้า
                 if (currentSubject) {
-                    classes.push(createClassObj(currentSubject, startSlot, duration))
+                    classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date))
                 }
 
                 // เริ่มวิชาใหม่
@@ -82,7 +82,7 @@ export default defineEventHandler(async (event) => {
         } else {
             // เจอช่องว่าง
             if (currentSubject) {
-                classes.push(createClassObj(currentSubject, startSlot, duration))
+                classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date))
                 currentSubject = null
             }
         }
@@ -90,24 +90,37 @@ export default defineEventHandler(async (event) => {
 
     // เก็บตกตัวสุดท้าย
     if (currentSubject) {
-        classes.push(createClassObj(currentSubject, startSlot, duration))
+        classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date))
     }
 
     console.log('[teacher-classes-on-date] Merged classes:', classes)
     return classes
 })
 
-function createClassObj(subjectId, startSlot, duration) {
+function createClassObj(subjectId, startSlot, duration, teacherId, date) {
     const sectionId = getSectionForSubject(subjectId)
+
+    let hasMakeup = false
+    if (teacherId && date) {
+        const makeupStmt = db.prepare(`
+            SELECT id_makeup FROM makeup_classes 
+            WHERE teacher_id = ? AND subject_id = ? AND original_date = ? AND status != 'cancelled'
+            LIMIT 1
+        `)
+        const makeupRecord = makeupStmt.get(teacherId, subjectId, date)
+        hasMakeup = !!makeupRecord
+    }
+
     return {
         subjectId,
         subjectName: getSubjectName(subjectId),
         sectionId,
-        sectionName: getSectionName(sectionId),
+        sectionName: getSectionName(sectionId, subjectId),
         startSlot,
         duration,
         timeStart: getTimeFromSlot(startSlot),
-        timeEnd: getTimeFromSlot(startSlot + duration)
+        timeEnd: getTimeFromSlot(startSlot + duration),
+        hasMakeup
     }
 }
 
@@ -118,12 +131,29 @@ function getSubjectName(subjectId) {
 }
 
 function getSectionForSubject(subjectId) {
-    const stmt = db.prepare('SELECT id_section FROM Subjects WHERE id_subject = ?')
+    const stmt = db.prepare('SELECT id_section FROM SubjectSections WHERE id_subject = ? LIMIT 1')
     const result = stmt.get(subjectId)
-    return result?.id_section || null
+    if (result) return result.id_section
+
+    const fallbackStmt = db.prepare('SELECT id_section FROM Subjects WHERE id_subject = ?')
+    const fallbackResult = fallbackStmt.get(subjectId)
+    return fallbackResult?.id_section || null
 }
 
-function getSectionName(sectionId) {
+function getSectionName(sectionId, subjectId) {
+    if (subjectId) {
+        const stmt = db.prepare(`
+            SELECT s.section_name 
+            FROM sections s
+            JOIN SubjectSections ss ON s.id_section = ss.id_section
+            WHERE ss.id_subject = ?
+        `)
+        const results = stmt.all(subjectId)
+        if (results && results.length > 0) {
+            return results.map(r => r.section_name).join(', ')
+        }
+    }
+
     if (!sectionId) return 'ไม่ระบุกลุ่ม'
 
     const stmt = db.prepare('SELECT section_name FROM sections WHERE id_section = ?')
