@@ -331,11 +331,6 @@
               </div>
 
               <div class="grid grid-cols-1 gap-6">
-                <UFormField label="ห้องเรียน *" :ui="{ label: 'text-white font-bold mb-2 ml-1' }">
-                  <USelect v-model="makeupForm.roomId" :items="roomOptions" placeholder="เลือกห้องเรียน" size="xl"
-                    class="rounded-xl" :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
-                </UFormField>
-
                 <UFormField label="หมายเหตุ (ถ้ามี)" :ui="{ label: 'text-white font-bold mb-2 ml-1' }">
                   <UTextarea v-model="makeupForm.notes" placeholder="ระบุรายละเอียดเพิ่มเติม..." :rows="2" size="xl"
                     class="rounded-xl" :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
@@ -630,11 +625,12 @@ watch(absenceModalOpen, (isOpen) => {
 })
 
 const roomOptions = computed(() => {
-  if (!rooms.value) return []
-  return rooms.value.map(r => ({
+  if (!rooms.value) return [{ label: 'ไม่ระบุห้องเรียน', value: null }]
+  const opts = rooms.value.map(r => ({
     label: `${r.room_name}${r.building ? ` (${r.building})` : ''}`,
     value: r.id_room
   }))
+  return [{ label: 'ไม่ระบุห้องเรียน', value: null }, ...opts]
 })
 
 // Filters

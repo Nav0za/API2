@@ -213,6 +213,24 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_section_schedules_section 
   ON section_schedules(id_section);`)
 
+// external_subjects - วิชานอกสาขาที่นักศึกษาเพิ่มเอง
+ db.exec(`
+  CREATE TABLE IF NOT EXISTS external_subjects (
+    id_ext_subject   INTEGER PRIMARY KEY AUTOINCREMENT,
+    name_subject     TEXT NOT NULL,
+    id_section       INTEGER NOT NULL,
+    term             TEXT NOT NULL,
+    instructor_name  TEXT,
+    created_at       DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_section) REFERENCES sections(id_section) ON DELETE CASCADE
+  );
+`)
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_ext_subjects_section
+  ON external_subjects(id_section, term);
+`)
+
 // rooms - ห้องเรียน
 db.exec(`
   CREATE TABLE IF NOT EXISTS rooms (

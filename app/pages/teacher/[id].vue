@@ -87,7 +87,8 @@
                     </div>
                   </div>
 
-                  <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10 w-full">
+                  <div
+                    class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10 w-full">
                     <div class="flex gap-3">
                       <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
                         class="rounded-2xl py-4 flex-1 font-bold" @click="open = false" />
@@ -138,7 +139,8 @@
                     </div>
                   </div>
 
-                  <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10 w-full">
+                  <div
+                    class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10 w-full">
                     <div class="flex gap-3">
                       <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
                         class="rounded-2xl py-4 flex-1 font-bold" @click="editOpen = false" />
@@ -204,7 +206,7 @@
             </h1>
             <UModal v-model:open="quickAddOpen"
               :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
-              <UButton label="เพิ่มในตาราง" icon="i-heroicons-plus" class="cursor-pointer" />
+              <UButton label="เพิ่มรายวิชาในตาราง" icon="i-heroicons-plus" class="cursor-pointer" />
               <template #content>
                 <div class="flex flex-col max-h-[90vh]">
                   <!-- Header -->
@@ -334,7 +336,7 @@
             class="grid grid-cols-[80px_repeat(13,minmax(85px,1fr))] text-center border border-slate-600 rounded-lg overflow-hidden shadow-2xl">
             <!-- แสดงเวลา Header -->
             <div
-              class="bg-slate-700 font-bold border-r border-b border-slate-600 flex items-center justify-center text-white sticky left-0 z-10 p-2 text-xs">
+              class="bg-slate-700 font-bold border-r border-b border-slate-600 flex items-center justify-center text-white sticky left-0 z-40 p-2 text-xs">
               วัน/เวลา
             </div>
             <div v-for="time in timeSlots" :key="time"
@@ -345,7 +347,7 @@
             <!-- ลูปทุกวัน -->
             <template v-for="(day, dayIndex) in days" :key="dayIndex">
               <div
-                class="border-r border-b border-slate-600 p-2 text-center bg-slate-700/80 text-white flex items-center justify-center font-bold sticky left-0 z-10">
+                class="border-r border-b border-slate-600 p-2 text-center bg-slate-700/80 text-white flex items-center justify-center font-bold sticky left-0 z-40">
                 {{ day }}
               </div>
 
@@ -353,7 +355,7 @@
               <template v-for="(slot, gIndex) in displaySlots[dayIndex]" :key="`${dayIndex}-${slot.originalIndex}`">
                 <!-- ช่วงปกติ (ข้ามคาบที่ 5/index 4 พักเที่ยง) -->
                 <div v-if="!slot.isLunch" class="relative border-r border-b border-slate-600 last:border-r-0"
-                  :style="`grid-column: span ${slot.span}`">
+                  :style="{ gridColumn: `span ${slot.span}`, minWidth: `${slot.span * 80}px` }">
                   <div
                     class="h-full min-h-[80px] p-1 cursor-pointer transition-colors flex flex-col items-center justify-center text-center gap-1"
                     :class="[
@@ -370,7 +372,11 @@
 
                   <!-- Dropdown -->
                   <div v-if="isActiveBox(dayIndex, slot.originalIndex)"
-                    class="absolute z-60 top-full left-1/2 -translate-x-1/2 mt-1 w-52 bg-slate-800 border border-slate-600 rounded-lg shadow-2xl overflow-hidden">
+                    class="absolute z-20 w-52 bg-slate-800 border border-slate-600 rounded-lg shadow-2xl overflow-hidden"
+                    :class="[
+                      dayIndex >= 4 ? 'bottom-full mb-1' : 'top-full mt-1',
+                      slot.originalIndex <= 1 ? 'left-0' : slot.originalIndex >= 10 ? 'right-0' : 'left-1/2 -translate-x-1/2'
+                    ]">
                     <div class="max-h-72 overflow-y-auto custom-scrollbar">
                       <button
                         class="w-full text-left px-3 py-2 hover:bg-slate-700 text-slate-300 text-xs border-b border-slate-700 flex items-center gap-2"
@@ -569,7 +575,11 @@ const durationOptions = [
   { value: 5, label: '5 ชั่วโมง' },
   { value: 6, label: '6 ชั่วโมง' },
   { value: 7, label: '7 ชั่วโมง' },
-  { value: 8, label: '8 ชั่วโมง' }
+  { value: 8, label: '8 ชั่วโมง' },
+  { value: 9, label: '9 ชั่วโมง' },
+  { value: 10, label: '10 ชั่วโมง' },
+  { value: 11, label: '11 ชั่วโมง' },
+  { value: 12, label: '12 ชั่วโมง' }
 ]
 
 const quickAddPreview = computed(() => {

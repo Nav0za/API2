@@ -263,23 +263,14 @@ function findSlotsForClass(teacherId, sectionIds, duration, dayOfWeek, dateStr, 
   })
 
   const availableSlots = []
-  const maxSlots = 13 // สมมติมี 13 คาบ (0-12)
+  const teachableIndices = [0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12]
 
-  // วนลูปหาช่วงว่างที่ยาวพอ (duration)
-  // i คือ slot เริ่มต้น
-  for (let i = 0; i <= maxSlots - duration; i++) {
+  // วนลูปหาช่วงว่างที่ยาวพอ (duration) แบบข้ามพักเที่ยง
+  for (let i = 0; i <= teachableIndices.length - duration; i++) {
     let checkPass = true
+    const checkingIndices = teachableIndices.slice(i, i + duration)
 
-    // เช็คต่อเนื่อง j ชั่วโมง
-    for (let j = 0; j < duration; j++) {
-      const slotIdx = i + j
-
-      // ยกเว้นเวลาพักกลางวัน (คาบที่ 5, index 4)
-      if (slotIdx === 4) {
-        checkPass = false
-        break
-      }
-
+    for (const slotIdx of checkingIndices) {
       // 1. เช็คอาจารย์
       const teacherSlot = teacherSchedule[dayIndex][slotIdx]
       if (!isSlotFree(teacherSlot)) {
@@ -305,13 +296,15 @@ function findSlotsForClass(teacherId, sectionIds, duration, dayOfWeek, dateStr, 
     }
 
     if (checkPass) {
+      const startSlot = checkingIndices[0]
+      const lastSlot = checkingIndices[checkingIndices.length - 1]
       availableSlots.push({
         date: dateStr,
         dayOfWeek: getDayName(dayOfWeek),
-        startSlot: i,
+        startSlot,
         duration,
-        timeStart: getTimeFromSlot(i),
-        timeEnd: getTimeFromSlot(i + duration)
+        timeStart: getTimeFromSlot(startSlot),
+        timeEnd: getTimeFromSlot(lastSlot + 1)
       })
     }
   }
@@ -549,21 +542,14 @@ function findContinuousFreeSlots(teacherId, sectionIds, duration, dayIndex, date
   })
 
   const availableSlots = []
-  const maxSlots = 13
+  const teachableIndices = [0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12]
 
-  for (let i = 0; i <= maxSlots - duration; i++) {
+  for (let i = 0; i <= teachableIndices.length - duration; i++) {
     let allFree = true
+    const checkingIndices = teachableIndices.slice(i, i + duration)
 
     // เช็คทุกช่วงเวลาติดกัน
-    for (let j = 0; j < duration; j++) {
-      const slotIdx = i + j
-
-      // ยกเว้นเวลาพักกลางวัน (คาบที่ 5, index 4)
-      if (slotIdx === 4) {
-        allFree = false
-        break
-      }
-
+    for (const slotIdx of checkingIndices) {
       // เช็คอาจารย์
       const teacherSlot = teacherSchedule[dayIndex][slotIdx]
       if (!isSlotFree(teacherSlot)) {
@@ -599,13 +585,15 @@ function findContinuousFreeSlots(teacherId, sectionIds, duration, dayIndex, date
 
     if (allFree) {
       const dayOfWeek = dayIndex === 6 ? 0 : dayIndex + 1
+      const startSlot = checkingIndices[0]
+      const lastSlot = checkingIndices[checkingIndices.length - 1]
       availableSlots.push({
         date: dateStr,
         dayOfWeek: getDayName(dayOfWeek),
-        startSlot: i,
+        startSlot,
         duration,
-        timeStart: getTimeFromSlot(i),
-        timeEnd: getTimeFromSlot(i + duration)
+        timeStart: getTimeFromSlot(startSlot),
+        timeEnd: getTimeFromSlot(lastSlot + 1)
       })
     }
   }

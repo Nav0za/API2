@@ -27,10 +27,83 @@
         </div>
 
         <div class="flex gap-2">
+          <!-- Manage External (Out-of-Department) Subjects -->
+          <UModal v-model:open="extSubjectModalOpen"
+            :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden max-w-lg' }">
+            <UButton label="วิชานอกสาขา" icon="i-heroicons-book-open" color="warning" variant="soft"
+              class="cursor-pointer" />
+            <template #content>
+              <div class="flex flex-col max-h-[85vh]">
+                <!-- Header -->
+                <div class="p-8 pb-4">
+                  <div
+                    class="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-500/20">
+                    <UIcon name="i-heroicons-book-open" class="text-3xl text-amber-400" />
+                  </div>
+                  <h3 class="text-2xl font-bold text-white text-center mb-1">วิชานอกสาขา</h3>
+                  <p class="text-slate-400 text-sm text-center">รายวิชาที่ไม่ได้เรียนกับอาจารย์ในสาขา</p>
+                </div>
+
+                <!-- Scrollable List -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar px-8 space-y-3 pb-4">
+                  <div v-if="!externalSubjects?.length" class="text-center text-slate-500 py-8">
+                    <UIcon name="i-heroicons-inbox" class="text-4xl mb-2" />
+                    <p>ยังไม่มีรายวิชานอกสาขา</p>
+                  </div>
+                  <div v-for="ext in externalSubjects" :key="ext.id_ext_subject"
+                    class="flex items-center gap-3 bg-slate-800/50 border border-slate-700 rounded-2xl p-4">
+                    <div class="flex-1 min-w-0">
+                      <p v-if="editingExtId !== ext.id_ext_subject" class="text-white font-semibold truncate">{{
+                        ext.name_subject }}</p>
+                      <p v-if="editingExtId !== ext.id_ext_subject && ext.instructor_name"
+                        class="text-slate-400 text-xs mt-0.5">อาจารย์: {{ ext.instructor_name }}</p>
+                      <template v-if="editingExtId === ext.id_ext_subject">
+                        <UInput v-model="editExtName" placeholder="ชื่อวิชา" size="sm" class="mb-1" />
+                        <UInput v-model="editExtInstructor" placeholder="ชื่ออาจารย์ (ไม่ทำก็ได้)" size="sm" />
+                      </template>
+                    </div>
+                    <div class="flex gap-2 shrink-0">
+                      <template v-if="editingExtId === ext.id_ext_subject">
+                        <UButton icon="i-heroicons-check" color="primary" size="sm" variant="soft"
+                          @click="saveEditExtSubject(ext)" />
+                        <UButton icon="i-heroicons-x-mark" color="neutral" size="sm" variant="soft"
+                          @click="editingExtId = null" />
+                      </template>
+                      <template v-else>
+                        <UButton icon="i-lucide-pencil" color="warning" size="sm" variant="soft"
+                          @click="startEditExtSubject(ext)" />
+                        <UButton icon="i-lucide-trash" color="error" size="sm" variant="soft"
+                          @click="deleteExtSubject(ext.id_ext_subject)" />
+                      </template>
+                    </div>
+                  </div>
+
+                  <!-- Add New External Subject -->
+                  <div class="bg-amber-500/5 border border-amber-500/15 rounded-2xl p-4 space-y-3">
+                    <p class="text-xs font-bold text-amber-400 uppercase tracking-widest">เพิ่มวิชาใหม่</p>
+                    <UInput v-model="newExtName" placeholder="ชื่อรายวิชา *"
+                      :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-xl' }" />
+                    <UInput v-model="newExtInstructor" placeholder="ชื่ออาจารย์ผู้สอน (ไม่ทำก็ได้)"
+                      :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-xl' }" />
+                    <UButton label="เพิ่มวิชานอกสาขา" icon="i-heroicons-plus" color="warning" block class="rounded-xl"
+                      @click="addExtSubject" :loading="addingExt" :disabled="!newExtName.trim()" />
+                  </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="p-6 border-t border-slate-800">
+                  <UButton label="ปิดหน้าต่าง" color="neutral" variant="soft" block class="rounded-2xl"
+                    @click="extSubjectModalOpen = false" />
+                </div>
+              </div>
+            </template>
+          </UModal>
+
           <!-- Quick Add Subject to Schedule -->
           <UModal v-model:open="quickAddOpen"
             :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
-            <UButton label="เพิ่มในตาราง" icon="i-heroicons-plus" color="blue" variant="soft" class="cursor-pointer" />
+            <UButton label="เพิ่มรายวิชาในตาราง(ทีละหลายชั่วโมงได้)" icon="i-heroicons-plus" color="secondary"
+              variant="soft" class="cursor-pointer" />
             <template #content>
               <div class="flex flex-col max-h-[90vh]">
                 <!-- Header -->
@@ -46,11 +119,11 @@
                 <div class="flex-1 overflow-y-auto custom-scrollbar px-8 space-y-6 pb-4">
                   <div>
                     <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">เลือกวิชา</h3>
-                    <USelect v-model="quickAddSubject" placeholder="เลือกรายวิชา" :items="subjectOptions" size="xl"
+                    <USelect v-model="quickAddSubject" placeholder="เลือกรายวิชา" :items="allSubjectOptions" size="xl"
                       class="w-full" :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
                   </div>
 
-                  <div v-if="quickAddSubject">
+                  <div v-if="quickAddSubject && typeof quickAddSubject === 'number'">
                     <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
                       กลุ่มเรียนที่เรียนด้วยกัน
                       (ถ้ามี)</h3>
@@ -125,9 +198,10 @@
               </div>
             </template>
           </UModal>
-          <UButton label="บันทึกตาราง" icon="i-heroicons-document-check" color="primary" :loading="saving"
-            @click="saveSchedule" />
-          <UButton label="ล้างตาราง" icon="i-lucide-trash" color="red" variant="soft" @click="clearSchedule" />
+          <UButton class="cursor-pointer" label="บันทึกตาราง" icon="i-heroicons-document-check" color="primary"
+            :loading="saving" @click="saveSchedule" />
+          <UButton class="cursor-pointer" label="ล้างตาราง" icon="i-lucide-trash" color="error" variant="soft"
+            @click="clearSchedule" />
         </div>
       </div>
 
@@ -137,7 +211,8 @@
           <div class="inline-block min-w-full">
             <!-- Header -->
             <div class="flex border-b border-slate-700 bg-slate-900/50 text-xs sm:text-sm">
-              <div class="w-20 shrink-0 p-3 font-bold text-center text-slate-300 border-r border-slate-700">
+              <div
+                class="w-20 shrink-0 p-3 font-bold text-center text-slate-300 border-r border-slate-700 sticky left-0 z-40 bg-slate-900/90">
                 วัน/เวลา
               </div>
               <div class="flex flex-1">
@@ -154,14 +229,15 @@
               class="flex border-b border-slate-700 last:border-b-0 text-xs sm:text-sm group hover:bg-slate-700/30 transition-colors">
               <!-- Day Header -->
               <div
-                class="w-20 shrink-0 flex items-center justify-center p-2 font-bold bg-slate-800/80 border-r border-slate-700 text-slate-300">
+                class="w-20 shrink-0 flex items-center justify-center p-2 font-bold bg-slate-800/90 border-r border-slate-700 text-slate-300 sticky left-0 z-40">
                 {{ day }}
               </div>
 
               <!-- Slots (แสดงแบบ Merge ตาม displaySlots) -->
               <div class="flex flex-1">
                 <div v-for="(slot, gIndex) in displaySlots[dayIndex]" :key="`${dayIndex}-${slot.originalIndex}`"
-                  class="relative border-r border-slate-700 last:border-r-0" :style="`flex: ${slot.span} 1 0%`">
+                  class="relative border-r border-slate-700 last:border-r-0"
+                  :style="{ flex: `${slot.span} 1 0%`, minWidth: `${slot.span * 80}px` }">
                   <!-- พักกลางวัน (Index 4) -->
                   <div v-if="slot.isLunch"
                     class="h-full min-h-[60px] p-1 flex items-center justify-center text-center bg-slate-900/50 text-slate-500 select-none text-xs">
@@ -185,7 +261,11 @@
 
                   <!-- Dropdown -->
                   <div v-if="!slot.isLunch && isActiveBox(dayIndex, slot.originalIndex)"
-                    class="absolute z-10 top-full left-1/2 -translate-x-1/2 mt-1 w-48 bg-slate-800 border border-slate-600 rounded-lg shadow-xl overflow-hidden">
+                    class="absolute z-20 w-48 bg-slate-800 border border-slate-600 rounded-lg shadow-xl overflow-hidden"
+                    :class="[
+                      dayIndex >= 4 ? 'bottom-full mb-1' : 'top-full mt-1',
+                      slot.originalIndex <= 1 ? 'left-0' : slot.originalIndex >= 10 ? 'right-0' : 'left-1/2 -translate-x-1/2'
+                    ]">
                     <div class="max-h-60 overflow-y-auto custom-scrollbar">
                       <button
                         class="w-full text-left px-3 py-2 hover:bg-slate-700 text-slate-300 text-xs border-b border-slate-700"
@@ -287,6 +367,16 @@ const quickAddDuration = ref(1)
 const quickAddRoom = ref(null)
 const quickAddSelectedSections = ref([])
 
+// External (Out-of-Department) Subjects states
+const extSubjectModalOpen = ref(false)
+const newExtName = ref('')
+const newExtInstructor = ref('')
+const addingExt = ref(false)
+const editingExtId = ref(null)
+const editExtName = ref('')
+const editExtInstructor = ref('')
+
+
 const { data: rooms } = await useFetch('/api/rooms')
 const roomOptions = computed(() => {
   const opts = rooms.value?.map(r => ({ value: r.id_room, label: `${r.room_name}${r.building ? ` (${r.building})` : ''}` })) || []
@@ -314,6 +404,24 @@ const subjectOptions = computed(() =>
   }))
 )
 
+// 2.5 Get External Subjects for this section
+const { data: externalSubjects, refresh: refreshExternalSubjects } = await useFetch('/api/external-subjects', { query: { id_section: sectionId, term } })
+const externalSubjectOptions = computed(() =>
+  externalSubjects.value?.map(ext => ({
+    value: `ext:${ext.id_ext_subject}`,
+    label: `${ext.name_subject} (นอกสาขา)`
+  })) || []
+)
+
+const allSubjectOptions = computed(() => {
+  return [
+    { label: '--- วิชาในสาขา ---', disabled: true },
+    ...subjectOptions.value,
+    ...(externalSubjectOptions.value.length ? [{ label: '--- วิชานอกสาขา ---', disabled: true }] : []),
+    ...externalSubjectOptions.value
+  ]
+})
+
 // Options for Quick Add
 const dayOptions = computed(() => days.map((day, index) => ({ value: index, label: day })))
 const timeSlotIndexOptions = computed(() => timeSlots.map((time, index) => ({ value: index, label: time })).filter(opt => opt.value !== 4))
@@ -325,12 +433,17 @@ const durationOptions = [
   { value: 5, label: '5 ชั่วโมง' },
   { value: 6, label: '6 ชั่วโมง' },
   { value: 7, label: '7 ชั่วโมง' },
-  { value: 8, label: '8 ชั่วโมง' }
+  { value: 8, label: '8 ชั่วโมง' },
+  { value: 9, label: '9 ชั่วโมง' },
+  { value: 10, label: '10 ชั่วโมง' },
+  { value: 11, label: '11 ชั่วโมง' },
+  { value: 12, label: '12 ชั่วโมง' }
 ]
 
 const quickAddPreview = computed(() => {
   if (!quickAddSubject.value || quickAddDay.value === null || quickAddStartTime.value === null || !quickAddDuration.value) return null
-  const subjectLabel = subjectOptions.value.find(s => s.value === quickAddSubject.value)?.label || '-'
+  const allOpts = [...subjectOptions.value, ...externalSubjectOptions.value]
+  const subjectLabel = allOpts.find(s => s.value === quickAddSubject.value)?.label || '-'
   const dayLabel = dayOptions.value.find(d => d.value === quickAddDay.value)?.label || '-'
   const startTimeLabel = timeSlotIndexOptions.value.find(t => t.value === quickAddStartTime.value)?.label || '-'
   const roomLabel = quickAddRoom.value ? roomOptions.value.find(r => r.value === quickAddRoom.value)?.label : 'ไม่ระบุ'
@@ -339,7 +452,7 @@ const quickAddPreview = computed(() => {
 
 // Watch subject change in Quick Add
 watch(quickAddSubject, (newVal) => {
-  if (newVal) {
+  if (newVal && typeof newVal === 'number') {
     const subj = allSubjects.value?.find(s => s.id_subject == newVal)
     quickAddSelectedSections.value = subj ? subj.sections.map(s => s.id_section) : []
   } else {
@@ -399,6 +512,66 @@ const displaySlots = computed(() => {
   })
 })
 
+// --- External Subjects CRUD ---
+const addExtSubject = async () => {
+  if (!newExtName.value.trim()) return
+  addingExt.value = true
+  try {
+    await $fetch('/api/external-subjects', {
+      method: 'POST',
+      body: {
+        id_section: sectionId,
+        term,
+        name_subject: newExtName.value,
+        instructor_name: newExtInstructor.value
+      }
+    })
+    newExtName.value = ''
+    newExtInstructor.value = ''
+    toast.add({ title: 'สำเร็จ', description: 'เพิ่มวิชานอกสาขาแล้ว', color: 'green' })
+    refreshExternalSubjects()
+  } catch (e) {
+    toast.add({ title: 'เกิดข้อผิดพลาด', description: e.message, color: 'red' })
+  } finally {
+    addingExt.value = false
+  }
+}
+
+const startEditExtSubject = (ext) => {
+  editingExtId.value = ext.id_ext_subject
+  editExtName.value = ext.name_subject
+  editExtInstructor.value = ext.instructor_name || ''
+}
+
+const saveEditExtSubject = async (ext) => {
+  if (!editExtName.value.trim()) return
+  try {
+    await $fetch(`/api/external-subjects/${ext.id_ext_subject}`, {
+      method: 'PUT',
+      body: {
+        name_subject: editExtName.value,
+        instructor_name: editExtInstructor.value
+      }
+    })
+    editingExtId.value = null
+    toast.add({ title: 'สำเร็จ', description: 'บันทึกวิชานอกสาขาแล้ว', color: 'green' })
+    refreshExternalSubjects()
+  } catch (e) {
+    toast.add({ title: 'เกิดข้อผิดพลาด', description: e.message, color: 'red' })
+  }
+}
+
+const deleteExtSubject = async (id) => {
+  if (!confirm('ยืนยันลบวิชานอกสาขา? (หากมีในตารางจะกลายเป็นสถานะ Unknown)')) return
+  try {
+    await $fetch(`/api/external-subjects/${id}`, { method: 'DELETE' })
+    toast.add({ title: 'สำเร็จ', description: 'ลบวิชานอกสาขาแล้ว', color: 'green' })
+    refreshExternalSubjects()
+  } catch (e) {
+    toast.add({ title: 'เกิดข้อผิดพลาด', description: e.message, color: 'red' })
+  }
+}
+
 // Methods
 const isActiveBox = (d, s) => activeBox.value.day === d && activeBox.value.slot === s
 
@@ -411,15 +584,15 @@ const toggleDropdown = (d, s) => {
 }
 
 const setSlotValue = (d, s, val, span = 1) => {
-  const subj = allSubjects.value?.find(sub => sub.id_subject == val)
-  // Default to ALL sections of the subject if it's a new assignment
+  const isExternal = typeof val === 'string' && val.startsWith('ext:')
+  const subj = !isExternal ? allSubjects.value?.find(sub => sub.id_subject == val) : null
   const defaultSections = subj ? subj.sections.map(sec => sec.id_section) : []
 
   for (let i = 0; i < span; i++) {
     scheduleSlots.value[d][s + i].value = val
-    if (!val) {
+    if (!val || isExternal) {
       scheduleSlots.value[d][s + i].room_id = null
-      scheduleSlots.value[d][s + i].section_ids = []
+      scheduleSlots.value[d][s + i].section_ids = isExternal ? [Number(sectionId)] : []
     } else {
       scheduleSlots.value[d][s + i].section_ids = [...defaultSections]
     }
@@ -468,7 +641,9 @@ const addToSchedule = async () => {
 
     scheduleSlots.value[dayIdx][currentIdx].value = subjectId
     scheduleSlots.value[dayIdx][currentIdx].room_id = roomId
-    scheduleSlots.value[dayIdx][currentIdx].section_ids = [...quickAddSelectedSections.value]
+
+    const isExternal = typeof subjectId === 'string' && subjectId.startsWith('ext:')
+    scheduleSlots.value[dayIdx][currentIdx].section_ids = isExternal ? [Number(sectionId)] : [...quickAddSelectedSections.value]
 
     slotsAdded++
     currentIdx++
@@ -485,6 +660,14 @@ const addToSchedule = async () => {
 const getSubjectLabel = (val, roomId = null, sectionIds = null) => {
   const staticOpt = staticOptions.find(o => o.value === val)
   if (staticOpt) return staticOpt.label
+
+  if (typeof val === 'string' && val.startsWith('ext:')) {
+    const extId = Number(val.split(':')[1])
+    const extSubj = externalSubjects.value?.find(e => e.id_ext_subject === extId)
+    const roomText = roomId ? ` [${rooms.value?.find(r => r.id_room == roomId)?.room_name || ''}]` : ''
+    if (!extSubj) return `Unknown (ถูกลบ)${roomText}`
+    return `${extSubj.name_subject} [นอกสาขา]${roomText}`
+  }
 
   const subj = allSubjects.value?.find(s => s.id_subject == val)
   if (!subj) return 'Unknown'

@@ -5,11 +5,16 @@ export default defineEventHandler(async (event) => {
     const { room_id, date, start_time, end_time, term, current_makeup_id } = query
 
     // Validate parameters
-    if (!room_id || !date || !start_time || !end_time || !term) {
+    if (!date || !start_time || !end_time || !term) {
         throw createError({
             statusCode: 400,
-            statusMessage: 'room_id, date, start_time, end_time, and term are required'
+            statusMessage: 'date, start_time, end_time, and term are required'
         })
+    }
+
+    // If no room is selected, it's always available
+    if (!room_id || room_id === 'null' || room_id === 'undefined') {
+        return { available: true }
     }
 
     try {
