@@ -424,7 +424,7 @@ const allSubjectOptions = computed(() => {
 
 // Options for Quick Add
 const dayOptions = computed(() => days.map((day, index) => ({ value: index, label: day })))
-const timeSlotIndexOptions = computed(() => timeSlots.map((time, index) => ({ value: index, label: time })).filter(opt => opt.value !== 4))
+const timeSlotIndexOptions = computed(() => timeSlots.map((time, index) => ({ value: index, label: `เริ่ม ${time.split(' - ')[0]}` })).filter(opt => opt.value !== 4))
 const durationOptions = [
   { value: 1, label: '1 ชั่วโมง' },
   { value: 2, label: '2 ชั่วโมง' },

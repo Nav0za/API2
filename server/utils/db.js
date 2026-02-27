@@ -214,7 +214,7 @@ db.exec(`
   ON section_schedules(id_section);`)
 
 // external_subjects - วิชานอกสาขาที่นักศึกษาเพิ่มเอง
- db.exec(`
+db.exec(`
   CREATE TABLE IF NOT EXISTS external_subjects (
     id_ext_subject   INTEGER PRIMARY KEY AUTOINCREMENT,
     name_subject     TEXT NOT NULL,
@@ -248,7 +248,7 @@ db.exec(`
     id_makeup INTEGER PRIMARY KEY AUTOINCREMENT,
     original_date TEXT NOT NULL,
     original_time_slot TEXT NOT NULL,
-    makeup_date TEXT NOT NULL,
+    makeup_date TEXT,
     makeup_time_start TEXT NOT NULL,
     makeup_time_end TEXT NOT NULL,
     teacher_id INTEGER NOT NULL,

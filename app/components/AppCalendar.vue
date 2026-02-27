@@ -225,36 +225,51 @@
               <div v-for="(slot, index) in availableSlots" :key="index"
                 class="bg-slate-800/50 border border-slate-700 rounded-2xl p-5 hover:border-blue-500/50 transition-all group shadow-sm hover:shadow-blue-500/5">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div class="flex-1">
+                  <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-3 mb-3">
                       <span
-                        class="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-lg text-xs font-black uppercase tracking-widest border border-blue-500/10">
+                        class="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-blue-500/10 flex-shrink-0">
                         {{ slot.dayOfWeek }}
                       </span>
-                      <span class="text-xl font-black text-white">
+                      <span class="text-xl font-black text-white truncate">
                         {{ formatDateThai(slot.date) }}
                       </span>
                     </div>
 
                     <div class="flex items-center gap-4 text-slate-300">
-                      <div class="flex items-center gap-1.5">
-                        <UIcon name="i-heroicons-clock" class="text-slate-500" />
-                        <span class="font-bold">{{ slot.timeStart }} - {{ slot.timeEnd }}</span>
-                        <span class="text-xs text-slate-500">({{ slot.duration }} ชม.)</span>
+                      <div class="flex items-center gap-1.5 overflow-hidden">
+                        <UIcon name="i-heroicons-clock" class="text-slate-500 flex-shrink-0" />
+                        <span class="font-bold whitespace-nowrap">{{ slot.timeStart }} - {{ slot.timeEnd }}</span>
+                        <span class="text-xs text-slate-500 whitespace-nowrap">({{ slot.duration }} ชม.)</span>
                       </div>
                     </div>
 
                     <!-- แสดงรายการวิชาทั้งหมด (ถ้ามี) -->
                     <div v-if="slot.classes && slot.classes.length > 0"
-                      class="mt-4 pt-3 border-t border-slate-700/50 space-y-2">
-                      <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">วิชาที่จะสอนชดเชย:</p>
-                      <div v-for="cls in slot.classes" :key="cls.subjectId" class="flex items-center gap-2 group/item">
-                        <div class="w-1.5 h-1.5 rounded-full bg-blue-500/50 group-hover/item:bg-blue-400"></div>
-                        <span class="text-sm font-medium text-slate-300">
-                          {{ cls.subjectName }}
-                          <span v-if="cls.sectionName" class="text-slate-500 font-normal">({{ cls.sectionName }})</span>
-                          <span class="ml-1 text-slate-500 text-xs">[{{ cls.duration }} ชม.]</span>
-                        </span>
+                      class="mt-4 pt-3 border-t border-slate-700/50 space-y-3 overflow-hidden">
+                      <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">สถานะความพร้อม:</p>
+
+                      <div
+                        class="flex flex-col gap-2 bg-slate-900/50 p-3 rounded-xl border border-slate-700/50 overflow-hidden">
+                        <div class="flex items-center gap-2 text-green-400 text-sm font-medium">
+                          <UIcon name="i-heroicons-check-circle" class="w-5 h-5 flex-shrink-0" />
+                          <span class="truncate">อาจารย์และนักศึกษาทุกกลุ่มว่างตรงกัน</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 mt-1">
+                          <div v-for="cls in slot.classes" :key="cls.subjectId"
+                            class="flex items-center gap-1.5 bg-slate-800 px-2 py-1.5 rounded-lg border border-slate-700/80 text-xs text-slate-300 max-w-full overflow-hidden">
+                            <UIcon name="i-heroicons-book-open" class="text-blue-400 flex-shrink-0" />
+                            <span class="truncate max-w-[100px]">{{ cls.subjectName }}</span>
+                            <span v-if="cls.sectionName" class="text-slate-500 text-[10px] truncate">({{ cls.sectionName
+                            }})</span>
+
+                            <UIcon name="i-heroicons-map-pin" class="text-green-400 ml-1 flex-shrink-0" />
+                            <span class="text-green-400 font-medium truncate">
+                              {{rooms?.find(r => Number(r.id_room) === Number(cls.roomId))?.room_name || 'ไม่ระบุห้อง'
+                              }} (ห้องว่าง)
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -307,7 +322,7 @@
                     <div class="flex flex-col">
                       <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">ช่วงเวลา</span>
                       <span class="text-xl font-black text-white">{{ selectedSlot.timeStart }} - {{ selectedSlot.timeEnd
-                        }}</span>
+                      }}</span>
                     </div>
                   </div>
 
@@ -545,11 +560,13 @@ const totalDuration = computed(() =>
     .reduce((sum, c) => sum + c.duration, 0)
 )
 
-// โหลดรายการวิชาเมื่อข้อมูลในฟอร์มเปลี่ยน
+// โหลดรายการวิชาเมื่อข้อมูลในฟอร์มเปลี่ยน (ข้ามเมื่ออยู่ใน reschedule mode)
 watch(
   () => [absenceForm.value.teacherId, absenceForm.value.date, absenceForm.value.term],
   () => {
-    loadMissedClasses()
+    if (!isRescheduling.value) {
+      loadMissedClasses()
+    }
   }
 )
 
@@ -883,19 +900,23 @@ const saveAbsenceAndFindSlots = async () => {
     slotsModalOpen.value = true
 
     // เช็คคลาสสอนชดเชยที่ทับซ้อน (Conflict Resolution) เพื่อนำวิชามาจัดใหม่พร้อมกัน
-    const conflictingEvents = events.value.filter(e =>
-      e.extendedProps?.eventType === 'makeup_class' &&
-      e.extendedProps?.teacherId === absenceForm.value.teacherId &&
-      e.start && e.start.split('T')[0] === absenceForm.value.date
-    )
+    const conflictingEvents = events.value.filter(e => {
+      if (e.extendedProps?.eventType !== 'makeup_class') return false
+      if (Number(e.extendedProps?.teacherId) !== Number(absenceForm.value.teacherId)) return false
+      const eventDate = e.start
+        ? (typeof e.start === 'string' ? e.start.split('T')[0] : dayjs(e.start).format('YYYY-MM-DD'))
+        : null
+      return eventDate === absenceForm.value.date
+    })
 
     let rescheduledClasses = []
     for (const conflict of conflictingEvents) {
       try {
-        if (conflict.extendedProps?.makeup_class_ids) {
-          let makeupIds = typeof conflict.extendedProps.makeup_class_ids === 'string'
-            ? JSON.parse(conflict.extendedProps.makeup_class_ids)
-            : conflict.extendedProps.makeup_class_ids
+        const rawIds = conflict.extendedProps?.makeupClassIds || conflict.extendedProps?.makeup_class_ids
+        if (rawIds) {
+          let makeupIds = typeof rawIds === 'string'
+            ? JSON.parse(rawIds)
+            : rawIds
 
           if (Array.isArray(makeupIds)) {
             // Fetch the full records to get originalDate, duration, etc.
@@ -929,24 +950,83 @@ const saveAbsenceAndFindSlots = async () => {
       term: absenceForm.value.term
     }
 
-    let allClassesToSchedule = []
+    // Phase 1: if conflict exists → save pendingNewAbsence (Day2 data), reschedule old makeup first
+    if (conflictingEvents.length > 0 && rescheduledClasses.length > 0) {
+      // Store Day2 data before overriding
+      pendingNewAbsence.value = {
+        form: { ...absenceForm.value },
+        classes: selectedClasses.map(c => ({
+          subjectId: c.subjectId,
+          sectionId: c.sectionId,
+          duration: c.duration,
+          subjectName: c.subjectName
+        }))
+      }
 
-    if (rescheduledClasses.length > 0) {
-      // If there are conflicts, we ONLY search slots for the old classes!
-      allClassesToSchedule = rescheduledClasses
-    } else {
-      // No conflicts, search slots for the new absence
-      allClassesToSchedule = selectedClasses.map(c => ({
-        subjectId: c.subjectId,
-        sectionId: c.sectionId,
-        duration: c.duration,
-        subjectName: c.subjectName
-      }))
+      // Mark old makeup as pending
+      for (const cls of rescheduledClasses) {
+        if (cls.makeupId) {
+          await $fetch(`/api/makeup-classes/${cls.makeupId}`, {
+            method: 'PUT',
+            body: { status: 'pending', makeup_date: null, makeup_time_start: null, makeup_time_end: null }
+          })
+        }
+      }
+
+      toast.add({
+        title: 'ลำดับการจัดชดเชย',
+        description: 'รายการชดเชยเดิมถูกย้ายออกเป็นค้าง เลือกเวลาชดเชยใหม่สำหรับวิชานี้ก่อน',
+        color: 'warning',
+        timeout: 8000
+      })
+
+      await refreshEvents()
+
+      // Switch context to reschedule the old makeup (Day1 subjects)
+      isRescheduling.value = true
+      absenceForm.value = {
+        teacherId: absenceForm.value.teacherId,
+        date: rescheduledClasses[0].originalDate,
+        term: absenceForm.value.term,
+        reason: 'การจัดชดเชยใหม่เนื่องจากติดราชการซ้อน'
+      }
+      // Manually set missedClasses to old makeup's classes (watch is guarded by isRescheduling)
+      missedClasses.value = rescheduledClasses.map(c => ({ ...c, selected: true }))
+
+      // Find slots for the old makeup (Day1 subjects)
+      const queryParamsPhase1 = {
+        teacher_id: absenceForm.value.teacherId,
+        missed_date: rescheduledClasses[0].originalDate,
+        term: absenceForm.value.term,
+        classes: JSON.stringify(rescheduledClasses.map(c => ({
+          subjectId: c.subjectId,
+          sectionId: c.sectionId,
+          duration: c.duration,
+          subjectName: c.subjectName
+        })))
+      }
+
+      const slotsPhase1 = await $fetch('/api/find-slots', { query: queryParamsPhase1 })
+      availableSlots.value = slotsPhase1.suggestions || []
+      loadingSlots.value = false
+      absenceModalOpen.value = false
+      toast.add({
+        title: 'เลือกเวลาชดเชยสำหรับวิชาเดิม',
+        description: 'กรุณาเลือกวัน/เวลาชดเชยใหม่สำหรับวิชาเดิม',
+        color: 'primary'
+      })
+      return
     }
 
-    if (allClassesToSchedule.length > 0) {
-      queryParams.classes = JSON.stringify(allClassesToSchedule)
-    }
+    // Normal flow (no conflict)
+    const allClassesToSchedule = selectedClasses.map(c => ({
+      subjectId: c.subjectId,
+      sectionId: c.sectionId,
+      duration: c.duration,
+      subjectName: c.subjectName
+    }))
+
+    queryParams.classes = JSON.stringify(allClassesToSchedule)
 
     if (allClassesToSchedule.length === 0) {
       toast.add({
@@ -967,58 +1047,8 @@ const saveAbsenceAndFindSlots = async () => {
     loadingSlots.value = false
 
     if (suggestions.length > 0) {
-      if (conflictingEvents.length > 0) {
-        // พบช่วงว่าง แต่มีคลาสชดเชยเก่าทับอยู่ (User chose a date that already has a makeup class)
-        // 1. เปลี่ยนคลาสเก่าให้เป็น pending
-        for (const cls of rescheduledClasses) {
-          if (cls.makeupId) {
-            await $fetch(`/api/makeup-classes/${cls.makeupId}`, {
-              method: 'PUT',
-              body: { status: 'pending', makeup_date: null, makeup_time_start: null, makeup_time_end: null }
-            })
-          }
-        }
-
-        // 2. แจ้งเตือนผู้ใช้
-        toast.add({
-          title: 'พบการทับซ้อน',
-          description: `คลาสชดเชยเดิมในวันที่ ${absenceForm.value.date} ถูกยกเลิก กรุณาจัดเวลาชดเชยใหม่ให้กับคลาสเดิมก่อน แล้วค่อยกลับมาจัดของวันที่ติดราชการนี้`,
-          color: 'warning',
-          timeout: 8000
-        })
-
-        await refreshEvents()
-
-        // 3. ปล่อย Modal Suggested Slots เปิดไว้ แต่เตรียมข้อมูลเป็นคลาสของเก่าให้เลือก
-        // To precisely resume flow for the *old* absence, we should use the first old absence form
-        // But since AppCalendar slotsModalOpen reads from absenceForm / selectedClasses, 
-        // we override those variables temporarily for the reschedule flow.
-
-        // Override for reschedule
-        absenceForm.value = {
-          teacherId: absenceForm.value.teacherId,
-          date: rescheduledClasses[0]?.originalDate || absenceForm.value.date,
-          term: absenceForm.value.term, // Assumes term is the same
-          reason: 'จัดใหม่เนื่องจากติดราชการซ้อน'
-        }
-
-        selectedClasses.value = rescheduledClasses.map(c => ({
-          makeupId: c.makeupId,
-          subjectId: c.subjectId,
-          sectionId: c.sectionId,
-          duration: c.duration,
-          subjectName: c.subjectName,
-          originalDate: c.originalDate
-        }))
-
-        isRescheduling.value = true // Explicitly set to true so we don't recreate another absence event
-
-        return // Break the current flow so user schedules the old classes first
-      }
-
       await refreshEvents()
-      absenceModalOpen.value = false // Close the form modal when showing suggestions
-      // ปล่อยให้ระบบแสดง modal slotsModalOpen ไว้ ให้ผู้ใช้เลือกเวลาเอง
+      absenceModalOpen.value = false
       toast.add({
         title: 'พบช่วงเวลายืดหยุ่น',
         description: 'กรุณาเลือกช่วงเวลาที่คุณต้องการใช้สอนชดเชย',
@@ -1061,18 +1091,7 @@ const saveAbsenceAndFindSlots = async () => {
 const confirmMakeupClass = (slot) => {
   selectedSlot.value = slot
 
-  // พยายามหาห้องเริ่มต้นจากวิชาที่เลือก
-  let defaultRoomId = null
-  if (slot.classes && slot.classes.length > 0) {
-    const firstSubjectId = slot.classes[0].subjectId
-    const subject = allSubjects.value?.find(s => s.id_subject === firstSubjectId)
-    if (subject && subject.id_room) {
-      defaultRoomId = subject.id_room
-    }
-  }
-
   makeupForm.value = {
-    roomId: defaultRoomId,
     notes: ''
   }
   slotsModalOpen.value = false
@@ -1094,7 +1113,6 @@ const saveMakeupClass = async () => {
 
   try {
     const teacher = props.teachers.find(t => t.id_teacher === absenceForm.value.teacherId)
-    const room = rooms.value?.find(r => r.id_room === makeupForm.value.roomId)
 
     // 0. บันทึก "อาจารย์ติดราชการ" (สีแดง) ถ้ายังไม่มี และไม่ใช่การ reschedule (เพราะ reschedule มีตัวเดิมอยู่แล้ว)
     if (!isRescheduling.value) {
@@ -1133,7 +1151,19 @@ const saveMakeupClass = async () => {
     if (classes.length > 0) {
       let currentTime = selectedSlot.value.timeStart
       for (const cls of classes) {
-        const endTime = addHours(currentTime, cls.duration)
+        // ถ้าเวลาเริ่มคือ 12:00 ให้กระโดดไป 13:00
+        if (currentTime === '12:00') currentTime = '13:00'
+
+        let endTime = addHours(currentTime, cls.duration)
+
+        // ถ้าเวลาจบคร่อม 12:00 (หมายถึงช่วง 12:00-13:00) ให้บวกเพิ่มอีก 1 ชม. เพื่อข้ามพักเที่ยง
+        // เช่น เริ่ม 11:00 เรียน 2 ชม. ปกติจบ 13:00 แต่ต้องจบ 14:00 เพราะพัก 12:00-13:00
+        const startHour = parseInt(currentTime.split(':')[0])
+        const endHour = parseInt(endTime.split(':')[0])
+        if (startHour < 12 && endHour > 12) {
+          endTime = addHours(endTime, 1)
+        }
+
         const res = await $fetch('/api/makeup-classes', {
           method: 'POST',
           body: {
@@ -1145,7 +1175,7 @@ const saveMakeupClass = async () => {
             teacher_id: absenceForm.value.teacherId,
             section_id: cls.sectionId,
             subject_id: cls.subjectId,
-            room_id: makeupForm.value.roomId,
+            room_id: null,
             status: 'confirmed',
             notes: makeupForm.value.notes
           }
@@ -1163,7 +1193,7 @@ const saveMakeupClass = async () => {
           makeup_time_start: selectedSlot.value.timeStart,
           makeup_time_end: selectedSlot.value.timeEnd,
           teacher_id: absenceForm.value.teacherId,
-          room_id: makeupForm.value.roomId,
+          room_id: null,
           status: 'confirmed',
           notes: makeupForm.value.notes
         }
@@ -1177,7 +1207,15 @@ const saveMakeupClass = async () => {
       for (let i = 0; i < classes.length; i++) {
         const cls = classes[i]
         const idMakeup = createdIds[i]
-        const endTime = addHours(currentTime, cls.duration)
+
+        if (currentTime === '12:00') currentTime = '13:00'
+
+        let endTime = addHours(currentTime, cls.duration)
+        const startHour = parseInt(currentTime.split(':')[0])
+        const endHour = parseInt(endTime.split(':')[0])
+        if (startHour < 12 && endHour > 12) {
+          endTime = addHours(endTime, 1)
+        }
 
         await $fetch('/api/calendar-events', {
           method: 'POST',
@@ -1195,7 +1233,7 @@ const saveMakeupClass = async () => {
               term: absenceForm.value.term,
               classes: JSON.stringify([cls]),
               makeupClassIds: JSON.stringify([idMakeup]),
-              description: `วิชา: ${cls.subjectName}\nห้อง: ${room?.room_name || 'ไม่ระบุ'}${makeupForm.value.notes ? '\n' + makeupForm.value.notes : ''}`
+              description: `วิชา: ${cls.subjectName}${makeupForm.value.notes ? '\n' + makeupForm.value.notes : ''}`
             }
           }
         })
@@ -1220,7 +1258,7 @@ const saveMakeupClass = async () => {
             term: absenceForm.value.term,
             classes: JSON.stringify([]),
             makeupClassIds: JSON.stringify(createdIds),
-            description: `ห้อง: ${room?.room_name || 'ไม่ระบุ'}${makeupForm.value.notes ? '\n' + makeupForm.value.notes : ''}`
+            description: `${makeupForm.value.notes ? makeupForm.value.notes : ''}`
           }
         }
       })
@@ -1237,7 +1275,27 @@ const saveMakeupClass = async () => {
     selectedSlot.value = null
 
     // Reset rescheduling state
+    const wasRescheduling = isRescheduling.value
     isRescheduling.value = false
+
+    // ถ้าเพิ่งเสร็จการอ้างอิงโดย conflict resolution และมีการติดราชการใหม่ค้างอยู่ ให้เริ่มจัดชดเชยให้กับการติดราชการใหม่ทันที
+    if (wasRescheduling && pendingNewAbsence.value) {
+      const pending = pendingNewAbsence.value
+      pendingNewAbsence.value = null
+
+      toast.add({
+        title: 'จัดชดเชยเรียบร้อยแล้ว',
+        description: 'กำลังหาเวลาชดเชยสำหรับวันติดราชการใหม่...',
+        color: 'primary'
+      })
+
+      // ตั้งค่า form เป็นของการติดราชการใหม่
+      absenceForm.value = pending.form
+      missedClasses.value = pending.classes.map(c => ({ ...c, selected: true }))
+
+      // เริ่มจัดชดเชยให้กับการติดราชการใหม่
+      await saveAbsenceAndFindSlots()
+    }
   } catch (error) {
     console.error(error)
     toast.add({
@@ -1269,6 +1327,7 @@ const scheduleMakeupForAbsence = () => {
 
 // Reschedule Makeup Class
 const isRescheduling = ref(false)
+const pendingNewAbsence = ref(null) // เก็บข้อมูลการติดราชการใหม่ที่รอจัดชดเชยหลังจากแก้ไขการชนเสร็จ
 
 const confirmRescheduleMakeupClass = () => {
   if (!selectedEvent.value) return

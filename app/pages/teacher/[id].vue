@@ -563,7 +563,7 @@ const dayOptions = computed(() => {
 const timeSlotIndexOptions = computed(() => {
   return timeSlots.map((time, index) => ({
     value: index,
-    label: time
+    label: `เริ่ม ${time.split(' - ')[0]}`
   })).filter(opt => opt.value !== 4) // ข้ามพักเที่ยง
 })
 
