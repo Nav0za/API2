@@ -1,7 +1,16 @@
 import Database from 'better-sqlite3'
 import { resolve } from 'path'
+import { existsSync, mkdirSync } from 'fs'
 
-const dbPath = resolve('./server/data/data.db')
+// ใช้โปรเจกต์ root เสมอ
+const dbDir = resolve(process.cwd(), 'data')
+
+// ถ้าโฟลเดอร์ไม่มี ให้สร้าง
+if (!existsSync(dbDir)) {
+  mkdirSync(dbDir, { recursive: true })
+}
+
+const dbPath = resolve(dbDir, 'data.db')
 const db = new Database(dbPath)
 
 // teachers
