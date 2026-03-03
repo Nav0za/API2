@@ -561,10 +561,50 @@ const dayOptions = computed(() => {
 })
 
 const timeSlotIndexOptions = computed(() => {
-  return timeSlots.map((time, index) => ({
-    value: index,
-    label: `เริ่ม ${time.split(' - ')[0]}`
-  })).filter(opt => opt.value !== 4) // ข้ามพักเที่ยง
+  if (quickAddDay.value === null || !quickAddDuration.value) {
+    return timeSlots.map((time, index) => ({
+      value: index,
+      label: `เริ่ม ${time.split(' - ')[0]}`
+    })).filter(opt => opt.value !== 4)
+  }
+
+  const daySlots = scheduleSlots.value[quickAddDay.value]
+  const duration = quickAddDuration.value
+  const availableOptions = []
+
+  for (let startIdx = 0; startIdx < 13; startIdx++) {
+    if (startIdx === 4) continue // ข้ามการเริ่มที่พักเที่ยง
+
+    let canFit = true
+    let slotsNeeded = 0
+    let checkIdx = startIdx
+
+    while (slotsNeeded < duration) {
+      if (checkIdx >= 13) {
+        canFit = false // เลยเวลา
+        break
+      }
+      if (checkIdx === 4) {
+        checkIdx++ // ข้ามพักเที่ยง
+        continue
+      }
+      if (daySlots[checkIdx].value !== null) {
+        canFit = false // ชนวิชาอื่น
+        break
+      }
+      slotsNeeded++
+      checkIdx++
+    }
+
+    if (canFit) {
+      availableOptions.push({
+        value: startIdx,
+        label: `เริ่ม ${timeSlots[startIdx].split(' - ')[0]}`
+      })
+    }
+  }
+
+  return availableOptions
 })
 
 const durationOptions = [
@@ -774,9 +814,11 @@ const normalizeSchedule = (data) => {
   })
 }
 
-const clearSchedule = () => {
-  if (!confirm('ล้างตารางทั้งหมด?')) return
-  scheduleSlots.value = Array.from({ length: 7 }, () => Array.from({ length: 13 }, () => ({ value: null, room_id: null })))
+const clearSchedule = (noConfirm = false) => {
+  if (!noConfirm && !confirm('ล้างตารางทั้งหมด?')) return
+  scheduleSlots.value = Array.from({ length: 7 }, () =>
+    Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [] }))
+  )
 }
 
 const isActiveBox = (d, s) => activeBox.value.day === d && activeBox.value.slot === s
@@ -885,12 +927,21 @@ const addToSchedule = async () => {
     currentIdx++
   }
 
-  // Reset
+  // Reset fields for next add
   quickAddSubject.value = null
-  quickAddDay.value = null
   quickAddRoom.value = null
+  // Preserve day, but advance start time
+  if (currentIdx === 4) {
+    quickAddStartTime.value = 5 // Skip lunch
+  } else if (currentIdx >= 13) {
+    quickAddStartTime.value = null // End of day
+    quickAddOpen.value = false // Close if day is full
+  } else {
+    quickAddStartTime.value = currentIdx
+  }
+
   toast.add({ title: 'สำเร็จ', description: 'เพิ่มวิชาในตารางแล้ว' })
-  quickAddOpen.value = false
+  // quickAddOpen.value = false // Keep open for sequential add
 }
 
 // --- Data Synchronization ---
@@ -904,7 +955,7 @@ watch(scheduleData, (newData) => {
   if (newData?.scheduleData) {
     scheduleSlots.value = normalizeSchedule(newData.scheduleData)
   } else {
-    clearSchedule()
+    clearSchedule(true)
   }
 }, { immediate: true })
 
