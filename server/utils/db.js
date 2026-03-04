@@ -264,7 +264,7 @@ db.exec(`
     section_id INTEGER,
     subject_id INTEGER,
     room_id INTEGER,
-    status TEXT DEFAULT 'suggested',
+    status TEXT DEFAULT 'confirmed',
     notes TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,

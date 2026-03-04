@@ -13,15 +13,6 @@
             <p class="text-slate-400 text-sm">ติดตามและจัดการคำขอสอนชดเชยทั้งหมด</p>
           </div>
         </div>
-
-        <div class="flex flex-wrap gap-2 w-full md:w-auto">
-          <USelectMenu v-model="selectedTeacher" :options="teachers || []" option-attribute="name"
-            value-attribute="id_teacher" placeholder="อาจารย์" class="w-40" searchable icon="i-heroicons-user" />
-          <USelectMenu v-model="selectedStatus" :options="statusOptions" placeholder="สถานะ" class="w-40"
-            icon="i-heroicons-adjustments-horizontal" />
-          <UButton v-if="selectedTeacher || selectedStatus" icon="i-heroicons-x-mark" color="gray" variant="ghost"
-            @click="clearFilters" />
-        </div>
       </div>
     </div>
 
@@ -31,10 +22,6 @@
         <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm">
           <p class="text-slate-400 text-xs font-medium uppercase tracking-wider">ทั้งหมด</p>
           <p class="text-2xl font-bold text-white mt-1">{{ makeupClasses?.length || 0 }} รายการ</p>
-        </div>
-        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm">
-          <p class="text-slate-400 text-xs font-medium uppercase tracking-wider text-yellow-500">รอการยืนยัน</p>
-          <p class="text-2xl font-bold text-white mt-1">{{ stats.suggested }}</p>
         </div>
         <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm">
           <p class="text-slate-400 text-xs font-medium uppercase tracking-wider text-green-500">ยืนยันแล้ว</p>
@@ -93,13 +80,6 @@
               <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">เวลา</p>
               <p class="text-white text-sm font-medium">{{ group.makeup_time_start }} - {{ group.makeup_time_end }}</p>
             </div>
-            <div class="bg-slate-900/50 p-3 rounded-2xl border border-slate-700/50">
-              <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">ห้องเรียน</p>
-              <p class="text-white text-sm font-medium truncate"
-                :class="{ 'text-yellow-500 italic': !group.room_name }">
-                {{ group.room_name || 'ยังไม่กำหนด' }}
-              </p>
-            </div>
           </div>
 
           <div class="space-y-3 text-sm text-slate-300 mb-6">
@@ -123,15 +103,13 @@
             <div class="flex gap-1">
               <UButton v-if="group.status !== 'cancelled' && group.status !== 'completed'" size="sm" color="primary"
                 variant="ghost" icon="i-heroicons-pencil-square" square @click="openEditModal(group)" />
-              <UButton size="sm" color="neutral" variant="ghost" icon="i-heroicons-trash" square
+              <UButton size="sm" color="error" variant="ghost" icon="i-heroicons-trash" square
                 @click="confirmDelete(group)" />
             </div>
 
             <div class="flex gap-2">
               <UButton v-if="group.status !== 'cancelled' && group.status !== 'completed'" size="sm" color="error"
                 variant="subtle" label="ยกเลิก" class="rounded-full" @click="confirmCancel(group)" />
-              <UButton v-if="group.status === 'suggested'" size="sm" color="green" variant="solid" label="ยืนยันคาบสอน"
-                class="rounded-full shadow-lg shadow-green-500/20" @click="updateStatus(group, 'confirmed')" />
               <UButton v-if="group.status === 'confirmed'" size="sm" color="blue" variant="solid" label="สอนเสร็จสิ้น"
                 class="rounded-full shadow-lg shadow-blue-500/20" @click="updateStatus(group, 'completed')" />
             </div>
@@ -147,7 +125,8 @@
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
-            <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+            <div
+              class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
               <UIcon name="i-heroicons-x-circle" class="text-4xl text-red-500" />
             </div>
 
@@ -186,7 +165,8 @@
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
-            <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+            <div
+              class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
               <UIcon name="i-heroicons-trash" class="text-4xl text-red-500" />
             </div>
 
@@ -225,7 +205,8 @@
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
             <div class="flex items-center gap-4 mb-8">
-              <div class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20">
+              <div
+                class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20">
                 <UIcon name="i-heroicons-pencil-square" class="text-2xl text-amber-500" />
               </div>
               <div>
@@ -294,8 +275,8 @@ const { data: rooms } = await useFetch('/api/rooms')
 const selectedTeacher = ref(null)
 const selectedStatus = ref(null)
 const statusOptions = [
-  { label: 'แนะนำ (Suggested)', value: 'suggested' },
-  { label: 'ยืนยัน (Confirmed)', value: 'confirmed' },
+  { label: 'ทั้งหมด', value: null },
+  { label: 'ยืนยันแล้ว (Confirmed)', value: 'confirmed' },
   { label: 'เสร็จสิ้น (Completed)', value: 'completed' },
   { label: 'ยกเลิก (Cancelled)', value: 'cancelled' }
 ]
@@ -366,9 +347,8 @@ const groupedMakeupClasses = computed(() => {
 
 // Stats Calculation
 const stats = computed(() => {
-  if (!makeupClasses.value) return { suggested: 0, confirmed: 0, completed: 0 }
+  if (!makeupClasses.value) return { confirmed: 0, completed: 0 }
   return {
-    suggested: makeupClasses.value.filter(i => i.status === 'suggested').length,
     confirmed: makeupClasses.value.filter(i => i.status === 'confirmed').length,
     completed: makeupClasses.value.filter(i => i.status === 'completed').length
   }
@@ -389,7 +369,6 @@ const clearFilters = () => {
 
 const getStatusColor = (status) => {
   const map = {
-    suggested: 'bg-yellow-500',
     confirmed: 'bg-green-500',
     completed: 'bg-blue-500',
     cancelled: 'bg-red-500'
@@ -399,7 +378,6 @@ const getStatusColor = (status) => {
 
 const getStatusBadgeColor = (status) => {
   const map = {
-    suggested: 'yellow',
     confirmed: 'green',
     completed: 'blue',
     cancelled: 'red'
@@ -409,7 +387,6 @@ const getStatusBadgeColor = (status) => {
 
 const getStatusLabel = (status) => {
   const map = {
-    suggested: 'รอการยืนยัน',
     confirmed: 'ยืนยันแล้ว',
     completed: 'เสร็จสิ้น',
     cancelled: 'ยกเลิกแล้ว'

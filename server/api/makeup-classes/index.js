@@ -81,7 +81,7 @@ export default defineEventHandler(async (event) => {
       body.section_id || null,
       body.subject_id || null,
       body.room_id || null,
-      body.status || 'suggested',
+      body.status || 'confirmed',
       body.notes || null
     )
 

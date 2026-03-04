@@ -179,7 +179,8 @@
               <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
                 class="rounded-2xl py-4 flex-1 font-bold" @click="absenceModalOpen = false" />
               <UButton label="บันทึกและหาช่วงชดเชย" color="primary" size="xl" block
-                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold" :loading="saving"
+                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold"
+                :loading="saving || loadingMissedClasses" :disabled="loadingMissedClasses"
                 @click="saveAbsenceAndFindSlots" />
             </div>
           </div>
@@ -781,6 +782,7 @@ const openAbsenceModal = () => {
     reason: ''
   }
   missedClasses.value = []
+  isRescheduling.value = false // Reset state to prevent "Not found subjects" bug
   absenceModalOpen.value = true
 }
 
@@ -842,6 +844,15 @@ const saveHoliday = async () => {
 
 // บันทึกอาจารย์ติดราชการและหาช่วงว่าง
 const saveAbsenceAndFindSlots = async () => {
+  if (loadingMissedClasses.value) {
+    toast.add({
+      title: 'กำลังโหลดข้อมูล',
+      description: 'กรุณารอสักครู่ให้ระบบดึงข้อมูลวิชาสอนเสร็จสิ้น',
+      color: 'warning'
+    })
+    return
+  }
+
   if (!absenceForm.value.teacherId || !absenceForm.value.date || !absenceForm.value.term) {
     toast.add({
       title: 'ข้อมูลไม่ครบ',
@@ -1374,21 +1385,29 @@ const rescheduleMakeupClass = async () => {
     // Load classes info to pass to find-slots
     let selectedClassesList = []
     if (props.classes) {
-      selectedClassesList = JSON.parse(props.classes)
+      try {
+        selectedClassesList = typeof props.classes === 'string' ? JSON.parse(props.classes) : props.classes
+      } catch (e) {
+        selectedClassesList = []
+      }
     }
 
-    // Since we're bypassing loadMissedClasses (which queries the DB and would see they are gone since we deleted them)
-    // We just manually populate missedClasses and check them all
-    missedClasses.value = selectedClassesList.map(c => ({
-      ...c,
-      selected: true
-    }))
-
-    viewEventModalOpen.value = false // Close detail modal
-
-    // Auto-trigger finding slots
-    isRescheduling.value = true
-    await saveAbsenceAndFindSlots()
+    if (selectedClassesList && selectedClassesList.length > 0) {
+      // Modern event: has classes data
+      missedClasses.value = selectedClassesList.map(c => ({
+        ...c,
+        selected: true
+      }))
+      viewEventModalOpen.value = false // Close detail modal
+      isRescheduling.value = true
+      await saveAbsenceAndFindSlots()
+    } else {
+      // Legacy event: no classes data, fallback to normal absence flow
+      viewEventModalOpen.value = false // Close detail modal
+      isRescheduling.value = false
+      absenceModalOpen.value = true // Open modal to let user pick classes manually
+      // The watcher on absenceForm will trigger loadMissedClasses() automatically
+    }
 
   } catch (err) {
     console.error('Error rescheduling:', err)

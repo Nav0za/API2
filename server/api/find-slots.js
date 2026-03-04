@@ -18,6 +18,15 @@ export default defineEventHandler(async (event) => {
     // ถ้ามี classes parameter แปลว่าต้องการหาช่วงว่างสำหรับหลายวิชาพร้อมกัน
     if (classes) {
       const selectedClasses = JSON.parse(classes)
+      if (selectedClasses.length === 0) {
+        return {
+          success: true,
+          missedDate: missed_date,
+          teacherId: teacher_id,
+          term,
+          suggestions: []
+        }
+      }
       slots = await findAvailableSlotsForMultipleClasses(
         parseInt(teacher_id),
         missed_date,
