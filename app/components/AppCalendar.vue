@@ -262,7 +262,7 @@
                             <UIcon name="i-heroicons-book-open" class="text-blue-400 flex-shrink-0" />
                             <span class="truncate max-w-[100px]">{{ cls.subjectName }}</span>
                             <span v-if="cls.sectionName" class="text-slate-500 text-[10px] truncate">({{ cls.sectionName
-                            }})</span>
+                              }})</span>
 
                             <UIcon name="i-heroicons-map-pin" class="text-green-400 ml-1 flex-shrink-0" />
                             <span class="text-green-400 font-medium truncate">
@@ -323,7 +323,7 @@
                     <div class="flex flex-col">
                       <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">ช่วงเวลา</span>
                       <span class="text-xl font-black text-white">{{ selectedSlot.timeStart }} - {{ selectedSlot.timeEnd
-                      }}</span>
+                        }}</span>
                     </div>
                   </div>
 
@@ -942,9 +942,10 @@ const saveAbsenceAndFindSlots = async () => {
                   makeupId: makeupRecord.id_makeup,
                   subjectId: makeupRecord.subject_id,
                   sectionId: makeupRecord.section_id,
+                  roomId: makeupRecord.room_id,
                   duration: duration > 0 ? duration : 1, // Default to 1 if parsing fails
                   subjectName: makeupRecord.name_subject,
-                  originalDate: makeupRecord.original_date
+                  originalDate: makeupRecord.original_date || makeupRecord.makeup_date || absenceForm.value.date
                 })
               }
             }
@@ -969,6 +970,7 @@ const saveAbsenceAndFindSlots = async () => {
         classes: selectedClasses.map(c => ({
           subjectId: c.subjectId,
           sectionId: c.sectionId,
+          roomId: c.roomId,
           duration: c.duration,
           subjectName: c.subjectName
         }))
@@ -979,7 +981,7 @@ const saveAbsenceAndFindSlots = async () => {
         if (cls.makeupId) {
           await $fetch(`/api/makeup-classes/${cls.makeupId}`, {
             method: 'PUT',
-            body: { status: 'pending', makeup_date: null, makeup_time_start: null, makeup_time_end: null }
+            body: { status: 'pending', makeup_date: '', makeup_time_start: '', makeup_time_end: '' }
           })
         }
       }
@@ -1012,6 +1014,7 @@ const saveAbsenceAndFindSlots = async () => {
         classes: JSON.stringify(rescheduledClasses.map(c => ({
           subjectId: c.subjectId,
           sectionId: c.sectionId,
+          roomId: c.roomId,
           duration: c.duration,
           subjectName: c.subjectName
         })))
@@ -1033,6 +1036,7 @@ const saveAbsenceAndFindSlots = async () => {
     const allClassesToSchedule = selectedClasses.map(c => ({
       subjectId: c.subjectId,
       sectionId: c.sectionId,
+      roomId: c.roomId,
       duration: c.duration,
       subjectName: c.subjectName
     }))
@@ -1085,10 +1089,11 @@ const saveAbsenceAndFindSlots = async () => {
       }
     }
   } catch (error) {
-    console.error(error)
+    console.error('saveAbsenceAndFindSlots error:', error)
+    const msg = error?.data?.statusMessage || error?.message || 'ไม่สามารถประมวลผลได้'
     toast.add({
       title: 'ผิดพลาด',
-      description: 'ไม่สามารถประมวลผลได้',
+      description: msg,
       color: 'error'
     })
     loadingSlots.value = false
@@ -1186,9 +1191,11 @@ const saveMakeupClass = async () => {
             teacher_id: absenceForm.value.teacherId,
             section_id: cls.sectionId,
             subject_id: cls.subjectId,
-            room_id: null,
+            room_id: cls.roomId || null,
+            term: absenceForm.value.term,
             status: 'confirmed',
-            notes: makeupForm.value.notes
+            notes: makeupForm.value.notes,
+            exclude_makeup_ids: createdIds // ป้องกัน false-positive จากวิชาก่อนหน้าในกลุ่มเดียวกัน
           }
         })
         createdIds.push(res.id_makeup)
@@ -1204,7 +1211,8 @@ const saveMakeupClass = async () => {
           makeup_time_start: selectedSlot.value.timeStart,
           makeup_time_end: selectedSlot.value.timeEnd,
           teacher_id: absenceForm.value.teacherId,
-          room_id: null,
+          room_id: selectedSlot.value.roomId || null,
+          term: absenceForm.value.term,
           status: 'confirmed',
           notes: makeupForm.value.notes
         }
@@ -1244,7 +1252,9 @@ const saveMakeupClass = async () => {
               term: absenceForm.value.term,
               classes: JSON.stringify([cls]),
               makeupClassIds: JSON.stringify([idMakeup]),
-              description: `วิชา: ${cls.subjectName}${makeupForm.value.notes ? '\n' + makeupForm.value.notes : ''}`
+              roomId: cls.roomId,
+              roomName: props.rooms?.find(r => Number(r.id_room) === Number(cls.roomId))?.room_name || '',
+              description: `วิชา: ${cls.subjectName}${cls.roomId ? '\nห้อง: ' + (props.rooms?.find(r => Number(r.id_room) === Number(cls.roomId))?.room_name || cls.roomId) : ''}${makeupForm.value.notes ? '\n' + makeupForm.value.notes : ''}`
             }
           }
         })
@@ -1308,10 +1318,11 @@ const saveMakeupClass = async () => {
       await saveAbsenceAndFindSlots()
     }
   } catch (error) {
-    console.error(error)
+    console.error('saveMakeupClass error:', error)
+    const msg = error?.data?.statusMessage || error?.message || 'ไม่สามารถบันทึกได้'
     toast.add({
       title: 'ผิดพลาด',
-      description: 'ไม่สามารถบันทึกได้',
+      description: msg,
       color: 'error'
     })
   } finally {

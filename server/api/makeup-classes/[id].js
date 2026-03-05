@@ -1,4 +1,5 @@
 import db from '../../utils/db.js'
+import { getHolidayOnDate, checkRoomAvailability } from '../../utils/availability.js'
 
 export default defineEventHandler(async (event) => {
   const id = event.context.params.id
@@ -50,6 +51,50 @@ export default defineEventHandler(async (event) => {
         statusCode: 404,
         statusMessage: 'Makeup class not found'
       })
+    }
+
+    // 1. Check Holiday (if date is changing)
+    const newDate = body.makeup_date !== undefined ? body.makeup_date : oldData.makeup_date
+    if (newDate && newDate !== oldData.makeup_date) {
+      const holiday = getHolidayOnDate(newDate)
+      if (holiday) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: `ไม่สามารถจัดสอนชดเชยในวันหยุดราชการได้ (${holiday.title})`
+        })
+      }
+    }
+
+    // 2. Check Room Availability (if room, date, or time is changing)
+    const newRoomId = body.room_id !== undefined ? body.room_id : oldData.room_id
+    const newStart = body.makeup_time_start !== undefined ? body.makeup_time_start : oldData.makeup_time_start
+    const newEnd = body.makeup_time_end !== undefined ? body.makeup_time_end : oldData.makeup_time_end
+
+    if (newRoomId && newRoomId !== 'null' && newDate && newStart && newEnd) {
+      // We need term for room check
+      let term = body.term
+      if (!term) {
+        const teacherSchedule = db.prepare('SELECT term FROM schedules WHERE id_teacher = ? ORDER BY created_at DESC LIMIT 1').get(oldData.teacher_id)
+        term = teacherSchedule?.term
+      }
+
+      if (term) {
+        const availability = checkRoomAvailability({
+          room_id: newRoomId,
+          date: newDate,
+          start_time: newStart,
+          end_time: newEnd,
+          term,
+          exclude_makeup_ids: [parseInt(id)]
+        })
+
+        if (!availability.available) {
+          throw createError({
+            statusCode: 400,
+            statusMessage: `ห้องไม่ว่าง: ${availability.reason}`
+          })
+        }
+      }
     }
 
     // อัปเดต makeup_classes
@@ -128,7 +173,6 @@ export default defineEventHandler(async (event) => {
     }
 
     // ถ้ามีการเปลี่ยน วัน/เวลา/ห้อง/สถานะ ให้อัปเดตปฏิทิน
-    const newDate = body.makeup_date !== undefined ? body.makeup_date : oldData.makeup_date
     const dateChanged = newDate !== oldData.makeup_date
     const timeChanged = (body.makeup_time_start !== undefined && body.makeup_time_start !== oldData.makeup_time_start) ||
       (body.makeup_time_end !== undefined && body.makeup_time_end !== oldData.makeup_time_end)

@@ -12,6 +12,13 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  if (missed_date === 'undefined' || missed_date === 'null' || isNaN(new Date(missed_date).getTime())) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid missed_date format'
+    })
+  }
+
   try {
     let slots
 

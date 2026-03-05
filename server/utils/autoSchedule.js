@@ -1,4 +1,5 @@
 import db from './db.js'
+import { getHolidayOnDate } from './availability.js'
 
 /**
  * หาช่วงว่างสำหรับสอนชดเชย
@@ -105,8 +106,8 @@ export async function findAvailableSlots(teacherId, missedDate, term) {
 
     const dateStr = formatDate(checkDate)
 
-    // Check if Holiday or Teacher Absence
-    if (busyDates.has(dateStr)) {
+    // Check if Holiday (DB or Official) or Teacher Absence (DB)
+    if (getHolidayOnDate(dateStr) || busyDates.has(dateStr)) {
       console.log(`[DEBUG] Date ${dateStr} is busy (Holiday/Absence)`)
       continue // ข้ามวันนี้ไปเลย
     }
@@ -194,11 +195,13 @@ function getClassesOnDate(schedule, dateStr, subjectRoomMap, subjectNameMap) {
   let startSlot = 0
   let duration = 0
 
+  const LUNCH_SLOT = 4 // index 4 = 12:00-13:00
+
   for (let i = 0; i < daySchedule.length; i++) {
     const slot = daySchedule[i]
     const slotValue = slot?.value
 
-    // แปลงเป็น String เพื่อความชัวร์ในการเปรียบเทียบ (null/undefined จะกลายเป็น "null"/"undefined")
+    // แปลงเป็น String เพื่อความชัวร์ในการเปรียบเทียบ
     const valStr = slotValue ? String(slotValue) : null
 
     if (valStr) {
@@ -217,10 +220,18 @@ function getClassesOnDate(schedule, dateStr, subjectRoomMap, subjectNameMap) {
         duration = 1
       }
     } else {
-      // เจอช่องว่าง
+      // เจอช่องว่าง - ถ้าเป็น lunch slot ให้ดูว่าวิชาเดิมยังต่อเนื่องไหม
       if (currentSubject) {
+        if (i === LUNCH_SLOT) {
+          const nextSlot = daySchedule[i + 1]
+          const nextVal = nextSlot?.value ? String(nextSlot.value) : null
+          if (nextVal === currentSubject) {
+            continue // ข้าม lunch slot แล้ววิชายังต่อเนื่อง
+          }
+        }
         classes.push(createClassObj(currentSubject, startSlot, duration, subjectRoomMap, subjectNameMap))
         currentSubject = null
+        duration = 0
       }
     }
   }
@@ -230,7 +241,19 @@ function getClassesOnDate(schedule, dateStr, subjectRoomMap, subjectNameMap) {
     classes.push(createClassObj(currentSubject, startSlot, duration, subjectRoomMap, subjectNameMap))
   }
 
-  return classes
+  // รวมวิชาเดิมที่แยกเป็นหลาย block (กรณีสอนกระจาย)
+  const merged = []
+  for (const cls of classes) {
+    const existing = merged.find(m => String(m.subjectId) === String(cls.subjectId))
+    if (existing) {
+      existing.duration += cls.duration
+      existing.timeEnd = getTimeFromSlot(existing.startSlot + existing.duration)
+    } else {
+      merged.push({ ...cls })
+    }
+  }
+
+  return merged
 }
 
 function createClassObj(subjectId, startSlot, duration, subjectRoomMap, subjectNameMap) {
@@ -483,7 +506,7 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
   const startStr = formatDate(startDate)
   const endStr = formatDate(endDate)
 
-  // ดึง Events ที่เกี่ยวข้อง
+  // ดึง Events ที่เกี่ยวข้อง: วันหยุด (holiday) ของทั้งหมด และ วันลา (absence) ของอาจารย์คนนี้
   const events = db.prepare(`
     SELECT start, end, event_type, teacher_id 
     FROM calendar_events 
@@ -494,17 +517,28 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
       )
   `).all(startStr, endStr, teacherId)
 
+  // เตรียมชุดของวันที่ "ไม่ว่าง" (Busy) โดยเริ่มจากวันที่เป็นวันหยุดแน่นอน
+  const holidayDates = new Set()
   const busyDates = new Set()
+
   for (const event of events) {
     const sDate = event.start.split('T')[0]
     const eDate = event.end ? event.end.split('T')[0] : sDate
 
+    if (event.event_type === 'holiday') {
+      holidayDates.add(sDate)
+    }
     busyDates.add(sDate)
+
     if (sDate !== eDate) {
       let curr = new Date(sDate)
       const end = new Date(eDate)
       while (curr <= end) {
-        busyDates.add(formatDate(curr))
+        const dStr = formatDate(curr)
+        if (event.event_type === 'holiday') {
+          holidayDates.add(dStr)
+        }
+        busyDates.add(dStr)
         curr.setDate(curr.getDate() + 1)
       }
     }
@@ -519,7 +553,12 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
 
     const dateStr = formatDate(checkDate)
 
-    // Check if Holiday or Teacher Absence
+    // ข้ามวันที่เป็นวันหยุดราชการเด็ดขาด (ห้ามจัดชดเชย)
+    if (getHolidayOnDate(dateStr)) {
+      continue
+    }
+
+    // สำหรับวันนี้ที่ไม่ใช่วันหยุด แต่อาจารย์อาจจะ "ติดราชการ" (busy) ในช่วงเวลาอื่น
     if (busyDates.has(dateStr)) {
       continue
     }
@@ -535,7 +574,7 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
       dayIndex,
       dateStr,
       term,
-      classes.map(c => subjectRoomMap[c.subjectId]).filter(Boolean),
+      classes.map(c => c.roomId !== undefined ? c.roomId : subjectRoomMap[c.subjectId]).filter(Boolean),
       allTeacherSchedules,
       subjectRoomMap
     )
@@ -548,7 +587,7 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
         subjectName: subjectNameMap[c.subjectId] || getSubjectName(c.subjectId),
         sectionId: c.sectionId,
         sectionName: getSectionName(c.sectionId),
-        roomId: subjectRoomMap[c.subjectId] || null,
+        roomId: c.roomId !== undefined ? c.roomId : (subjectRoomMap[c.subjectId] || null),
         duration: c.duration
       }))
     })))

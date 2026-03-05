@@ -1,4 +1,5 @@
 import db from '../../utils/db.js'
+import { getHolidayOnDate, checkRoomAvailability } from '../../utils/availability.js'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -60,6 +61,44 @@ export default defineEventHandler(async (event) => {
         statusCode: 400,
         statusMessage: 'original_date, makeup_date, and teacher_id are required'
       })
+    }
+
+    // 1. Check Holiday
+    const holiday = getHolidayOnDate(body.makeup_date)
+    if (holiday) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: `ไม่สามารถจัดสอนชดเชยในวันหยุดราชการได้ (${holiday.title})`
+      })
+    }
+
+    // 2. Check Room Availability (if room_id is provided)
+    if (body.room_id && body.room_id !== 'null') {
+      // We need term for room check. If not provided, try to find teacher's current term.
+      let term = body.term
+      if (!term) {
+        const teacherSchedule = db.prepare('SELECT term FROM schedules WHERE id_teacher = ? ORDER BY created_at DESC LIMIT 1').get(body.teacher_id)
+        term = teacherSchedule?.term
+      }
+
+      if (term) {
+        const excludeIds = Array.isArray(body.exclude_makeup_ids) ? body.exclude_makeup_ids : []
+        const availability = checkRoomAvailability({
+          room_id: body.room_id,
+          date: body.makeup_date,
+          start_time: body.makeup_time_start,
+          end_time: body.makeup_time_end,
+          term,
+          exclude_makeup_ids: excludeIds
+        })
+
+        if (!availability.available) {
+          throw createError({
+            statusCode: 400,
+            statusMessage: `ห้องไม่ว่าง: ${availability.reason}`
+          })
+        }
+      }
     }
 
     const stmt = db.prepare(`

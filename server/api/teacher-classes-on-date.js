@@ -54,50 +54,54 @@ export default defineEventHandler(async (event) => {
 
     // นับจำนวนชั่วโมงติดต่อกันของแต่ละวิชา
     let currentSubject = null
+    let currentRoom = null
     let startSlot = 0
     let duration = 0
 
     for (let i = 0; i < daySchedule.length; i++) {
         const slot = daySchedule[i]
         const slotValue = slot?.value
+        const slotRoom = slot?.room_id || null
 
         // แปลงเป็น String เพื่อความชัวร์ในการเปรียบเทียบ (null/undefined จะกลายเป็น "null"/"undefined")
         const valStr = slotValue ? String(slotValue) : null
 
-        if (valStr) {
-            // ถ้าเป็นวิชาเดิม
-            if (valStr === currentSubject) {
+        if (valStr && valStr !== 'null') {
+            // ถ้าเป็นวิชาเดิมและห้องเดิม
+            if (valStr === currentSubject && slotRoom === currentRoom) {
                 duration++
             } else {
                 // จบวิชาก่อนหน้า
                 if (currentSubject) {
-                    classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date))
+                    classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date, currentRoom))
                 }
 
                 // เริ่มวิชาใหม่
                 currentSubject = valStr
+                currentRoom = slotRoom
                 startSlot = i
                 duration = 1
             }
         } else {
             // เจอช่องว่าง
             if (currentSubject) {
-                classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date))
+                classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date, currentRoom))
                 currentSubject = null
+                currentRoom = null
             }
         }
     }
 
     // เก็บตกตัวสุดท้าย
     if (currentSubject) {
-        classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date))
+        classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date, currentRoom))
     }
 
     console.log('[teacher-classes-on-date] Merged classes:', classes)
     return classes
 })
 
-function createClassObj(subjectId, startSlot, duration, teacherId, date) {
+function createClassObj(subjectId, startSlot, duration, teacherId, date, roomId) {
     const sectionId = getSectionForSubject(subjectId)
 
     let hasMakeup = false
@@ -111,17 +115,27 @@ function createClassObj(subjectId, startSlot, duration, teacherId, date) {
         hasMakeup = !!makeupRecord
     }
 
+    // Fallback to default subject room if no specific room is assigned
+    const finalRoomId = roomId ? Number(roomId) : getRoomForSubject(subjectId)
+
     return {
         subjectId,
         subjectName: getSubjectName(subjectId),
         sectionId,
         sectionName: getSectionName(sectionId, subjectId),
+        roomId: finalRoomId,
         startSlot,
         duration,
         timeStart: getTimeFromSlot(startSlot),
         timeEnd: getTimeFromSlot(startSlot + duration),
         hasMakeup
     }
+}
+
+function getRoomForSubject(subjectId) {
+    const stmt = db.prepare('SELECT id_room FROM Subjects WHERE id_subject = ?')
+    const result = stmt.get(subjectId)
+    return result?.id_room || null
 }
 
 function getSubjectName(subjectId) {

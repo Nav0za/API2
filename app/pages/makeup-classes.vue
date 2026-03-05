@@ -80,6 +80,13 @@
               <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">เวลา</p>
               <p class="text-white text-sm font-medium">{{ group.makeup_time_start }} - {{ group.makeup_time_end }}</p>
             </div>
+            <div class="bg-slate-900/50 p-3 rounded-2xl border border-slate-700/50">
+              <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">ห้องเรียน</p>
+              <p class="text-white text-sm font-medium line-clamp-1"
+                :title="group.room_names.length ? group.room_names.join(', ') : 'ไม่ระบุห้อง'">
+                {{ group.room_names.length ? group.room_names.join(', ') : 'ไม่ระบุห้อง' }}
+              </p>
+            </div>
           </div>
 
           <div class="space-y-3 text-sm text-slate-300 mb-6">
@@ -298,7 +305,7 @@ const groupedMakeupClasses = computed(() => {
   makeupClasses.value.forEach(item => {
     // ใช้ string key ที่รวมทุกอย่างเพื่อใช้ group (อิงจากปฏิทินด้วย)
     // เปลี่ยนจาก makeup_time_start เป็น original_date เพื่อรวมวิชาที่ชดเชยสำหรับกรณีขาดสอนวันเดียวกัน
-    const key = `${item.makeup_date}_${item.original_date || item.makeup_time_start}_${item.teacher_id}_${item.room_id || 'noroom'}_${item.status}`
+    const key = `${item.makeup_date}_${item.original_date || 'nodate'}_${item.teacher_id}_${item.status}`
 
     if (!groups[key]) {
       groups[key] = {
@@ -313,11 +320,17 @@ const groupedMakeupClasses = computed(() => {
         status: item.status,
         original_date: item.original_date,
         items: [],
+        room_names: [],
         notes: ''
       }
     }
 
     groups[key].items.push(item)
+
+    // รวบรวมชื่อห้องที่ไม่ซ้ำกัน
+    if (item.room_name && !groups[key].room_names.includes(item.room_name)) {
+      groups[key].room_names.push(item.room_name)
+    }
 
     // ต่อ notes
     if (item.notes) {

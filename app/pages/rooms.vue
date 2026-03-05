@@ -13,8 +13,8 @@
 
         <!-- Filters & Actions -->
         <div class="flex flex-wrap items-center justify-center gap-4">
-          <USelectMenu v-model="selectedTerm" :options="termOptions" placeholder="เลือกเทอม" size="lg"
-            class="min-w-[150px]" value-attribute="value" option-attribute="label" />
+          <USelect v-model="selectedTerm" :items="termOptions" value-key="value" label-key="label"
+            placeholder="เลือกเทอม" size="lg" class="min-w-[150px]" />
           <UInput type="date" v-model="selectedDate" size="lg" icon="i-heroicons-calendar" />
           <div class="h-8 w-px bg-slate-700 mx-2 hidden md:block"></div>
           <UButton label="เพิ่มห้อง" icon="i-heroicons-plus-circle" color="primary" size="lg"
