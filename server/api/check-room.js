@@ -93,7 +93,12 @@ export default defineEventHandler(async (event) => {
         // (In this system, a regular class is defined by having a subject ID in the schedule slot)
 
         // Check Teacher Schedules for this room
-        const teacherSchedules = db.prepare(`SELECT id_teacher, name, scheduleData FROM schedules WHERE term = ?`).all(term)
+        const teacherSchedules = db.prepare(`
+            SELECT s.id_teacher, t.name, s.scheduleData 
+            FROM schedules s
+            LEFT JOIN teachers t ON s.id_teacher = t.id_teacher
+            WHERE s.term = ?
+        `).all(term)
 
         for (const ts of teacherSchedules) {
             if (!ts.scheduleData) continue

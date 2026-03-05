@@ -1,38 +1,37 @@
 <template>
   <div class="min-h-screen bg-slate-900 text-white pb-20">
     <!-- Header -->
-    <div class="bg-slate-800 border-b border-slate-700 p-6 sticky top-0 z-20 shadow-lg mb-8 no-print">
+    <div class="bg-slate-800 border-b border-slate-700 p-6 sticky top-0 z-30 shadow-lg mb-8 no-print">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
           <h1 class="text-3xl font-bold text-white flex items-center gap-2">
             <UIcon name="i-heroicons-home-modern" class="text-blue-400" />
-            จัดการห้องเรียน
+            ตารางการใช้ห้องเรียน
           </h1>
-          <p class="text-slate-400 mt-1">เพิ่ม แก้ไข และจัดการห้องเรียนสำหรับการสอนชดเชย</p>
+          <p class="text-slate-400 mt-1">ดูสถานะการใช้งาน จัดการ และเพิ่มห้องเรียนสำหรับการเรียนการสอน</p>
         </div>
 
-        <!-- Summary Stats -->
-        <div class="flex flex-wrap justify-center gap-4">
-          <div class="bg-slate-900/50 px-6 py-3 rounded-2xl border border-slate-700 backdrop-blur-sm min-w-[140px]">
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">ห้องทั้งหมด</p>
-            <p class="text-2xl font-black text-white">{{ rooms?.length || 0 }} <span
-                class="text-xs font-normal text-slate-500">ห้อง</span></p>
-          </div>
-
-          <UButton label="เพิ่มห้องเรียนใหม่" icon="i-heroicons-plus-circle" color="primary" size="xl"
-            class="rounded-2xl shadow-lg shadow-blue-500/20 font-bold px-8" @click="openAddModal" />
+        <!-- Filters & Actions -->
+        <div class="flex flex-wrap items-center justify-center gap-4">
+          <USelectMenu v-model="selectedTerm" :options="termOptions" placeholder="เลือกเทอม" size="lg"
+            class="min-w-[150px]" value-attribute="value" option-attribute="label" />
+          <UInput type="date" v-model="selectedDate" size="lg" icon="i-heroicons-calendar" />
+          <div class="h-8 w-px bg-slate-700 mx-2 hidden md:block"></div>
+          <UButton label="เพิ่มห้อง" icon="i-heroicons-plus-circle" color="primary" size="lg"
+            class="rounded-xl shadow-lg shadow-blue-500/20 font-bold" @click="openAddModal" />
         </div>
       </div>
     </div>
 
     <div class="container mx-auto px-4">
-      <!-- Loading -->
+      <!-- Loading State -->
       <div v-if="pending" class="flex justify-center py-20">
         <UIcon name="i-heroicons-arrow-path" class="w-10 h-10 animate-spin text-blue-500" />
       </div>
 
-      <!-- Content -->
+      <!-- Main Content -->
       <div v-else>
+        <!-- Empty State -->
         <div v-if="!rooms || rooms.length === 0"
           class="text-center py-32 bg-slate-800/30 rounded-[40px] border border-dashed border-slate-700 relative overflow-hidden">
           <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent"></div>
@@ -42,65 +41,94 @@
               <UIcon name="i-heroicons-building-office-2" class="w-12 h-12 text-slate-600" />
             </div>
             <h3 class="text-2xl font-bold text-slate-400 mb-2">ยังไม่มีห้องเรียนในระบบ</h3>
-            <p class="text-slate-600 mb-8">เริ่มสร้างห้องเรียนเพื่อใช้ในการจัดตารางสอนชดเชยได้ทันทีค่ะ</p>
+            <p class="text-slate-600 mb-8">เริ่มสร้างห้องเรียนเพื่อจัดตารางสอนได้ทันทีค่ะ</p>
             <UButton color="primary" size="xl" label="เริ่มสร้างห้องเรียนแรก" icon="i-heroicons-plus-circle"
               class="rounded-2xl px-10 shadow-xl shadow-blue-500/10" @click="openAddModal" />
           </div>
         </div>
 
-        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div v-for="room in rooms" :key="room.id_room"
-            class="relative overflow-hidden bg-slate-800 rounded-[32px] border border-slate-700 p-8 shadow-xl hover:shadow-blue-500/5 hover:border-blue-500/40 transition-all duration-500 group">
-            <!-- Background Decoration -->
-            <div
-              class="absolute -right-6 -top-6 opacity-[0.03] rotate-12 group-hover:scale-110 transition-transform duration-700">
-              <UIcon name="i-heroicons-building-library" class="w-40 h-40 text-white" />
+        <!-- Schedule Matrix -->
+        <div v-else class="bg-slate-800 rounded-3xl border border-slate-700 overflow-hidden shadow-2xl relative">
+          <!-- Guide Legend -->
+          <div class="flex gap-6 p-4 border-b border-slate-700 bg-slate-800/80 sticky left-0 z-20">
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-300">
+              <div class="w-4 h-4 rounded-md bg-amber-500/20 border border-amber-500/50"></div>
+              เรียนปกติ
             </div>
-
-            <div class="flex justify-between items-start relative z-10 mb-6">
-              <div
-                class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 shadow-inner border border-slate-700/50">
-                <UIcon name="i-heroicons-building-library" class="text-3xl text-blue-400 group-hover:text-white" />
-              </div>
-              <div
-                class="flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-[-10px] group-hover:translate-y-0">
-                <UButton icon="i-heroicons-pencil-square" color="amber" variant="soft" size="md"
-                  class="rounded-xl border border-amber-500/10" @click="openEditModal(room)" />
-                <UButton icon="i-heroicons-trash" color="error" variant="soft" size="md"
-                  class="rounded-xl border border-red-500/10" @click="confirmDelete(room)" />
-              </div>
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-300">
+              <div class="w-4 h-4 rounded-md bg-red-500/20 border border-red-500/50"></div>
+              สอนชดเชย
             </div>
+          </div>
 
-            <div class="relative z-10">
-              <h3
-                class="text-2xl font-black text-white mb-2 decoration-blue-500 underline-offset-4 decoration-2 group-hover:underline transition-all">
-                {{ room.room_name }}
-              </h3>
-              <div
-                class="flex items-center gap-2 text-slate-400 bg-slate-900/50 w-fit px-3 py-1 rounded-full border border-slate-700/50 mb-8">
-                <UIcon name="i-heroicons-map-pin" class="text-blue-500" />
-                <span class="text-sm font-bold">{{ room.building || 'ไม่ระบุอาคาร' }}</span>
-              </div>
+          <div class="overflow-x-auto w-full custom-scrollbar">
+            <table class="w-full text-left border-collapse min-w-[1200px]">
+              <thead>
+                <tr class="bg-slate-900 border-b border-slate-700 text-sm font-black text-slate-400">
+                  <th
+                    class="p-4 whitespace-nowrap sticky left-0 bg-slate-900 z-10 w-48 shadow-[2px_0_5px_rgba(0,0,0,0.1)]">
+                    ห้องเรียน
+                  </th>
+                  <th v-for="time in times" :key="time"
+                    class="p-4 whitespace-nowrap text-center w-[120px] border-l border-slate-800">
+                    {{ time }}
+                  </th>
+                  <th
+                    class="p-4 whitespace-nowrap text-center sticky right-0 bg-slate-900 z-10 border-l border-slate-700 shadow-[-2px_0_5px_rgba(0,0,0,0.1)]">
+                    จัดการ
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-700/50">
+                <tr v-for="room in rooms" :key="room.id_room" class="hover:bg-slate-800/80 transition-colors">
+                  <!-- Room Info -->
+                  <td
+                    class="p-4 sticky left-0 bg-slate-800 z-10 w-48 shadow-[2px_0_5px_rgba(0,0,0,0.1)] group-hover:bg-slate-700/50 transition-colors">
+                    <p class="font-bold text-white truncate max-w-[160px]">{{ room.room_name }}</p>
+                    <p class="text-xs text-slate-400 truncate max-w-[160px]">{{ room.building || 'ไม่ระบุอาคาร' }}</p>
+                  </td>
 
-              <div class="grid grid-cols-2 gap-4">
+                  <!-- Slots -->
+                  <td v-for="(slot, idx) in room.slots" :key="idx"
+                    class="p-2 border-l border-slate-700/30 align-top relative min-w-[120px] max-w-[120px] h-[90px]">
+                    <div v-if="slot"
+                      class="w-full h-full p-2.5 rounded-xl flex flex-col justify-center gap-1 shadow-sm group/slot transition-all hover:scale-105 hover:z-20 cursor-default"
+                      :class="slot.type === 'makeup' ? 'bg-red-500/10 border border-red-500/30 text-red-200' : 'bg-amber-500/10 border border-amber-500/30 text-amber-200'">
 
-                <div
-                  class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700/30 group-hover:border-blue-500/20 transition-colors">
-                  <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">สถานะ</p>
-                  <div class="flex items-center gap-1.5">
-                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <p class="text-sm font-bold text-green-400">พร้อมใช้</p>
-                  </div>
-                </div>
-              </div>
+                      <!-- Hover Details Popup -->
+                      <div
+                        class="absolute inset-0 z-30 hidden group-hover/slot:flex items-center justify-center p-3 rounded-xl shadow-2xl backdrop-blur-md"
+                        :class="slot.type === 'makeup' ? 'bg-red-950/90 border border-red-500/50 text-red-100' : 'bg-amber-950/90 border border-amber-500/50 text-amber-100'">
+                        <div class="text-center w-full relative z-40">
+                          <p class="font-bold text-xs line-clamp-2 leading-snug break-words whitespace-normal"
+                            :class="slot.type === 'makeup' ? 'text-red-400' : 'text-amber-400'">
+                            {{ slot.subjectName }}
+                          </p>
+                          <p class="text-[10px] mt-1 text-slate-300 line-clamp-1 whitespace-normal text-opacity-80">{{
+                            slot.teacherName }}</p>
+                          <UBadge v-if="slot.type === 'makeup'" size="xs" color="red" variant="soft"
+                            class="mt-1.5 mx-auto w-fit scale-[0.85] origin-top">ชดเชย (-{{ slot.timeEnd }})</UBadge>
+                        </div>
+                      </div>
 
-              <div v-if="room.description"
-                class="mt-4 p-4 bg-slate-900/30 rounded-2xl border border-dashed border-slate-700/50">
-                <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                  {{ room.description }}
-                </p>
-              </div>
-            </div>
+                      <p class="text-[11px] font-bold truncate">{{ slot.subjectName }}</p>
+                      <p class="text-[10px] truncate opacity-80">{{ slot.teacherName }}</p>
+                    </div>
+                  </td>
+
+                  <!-- Actions -->
+                  <td
+                    class="p-4 text-center sticky right-0 bg-slate-800 z-10 border-l border-slate-700 shadow-[-2px_0_5px_rgba(0,0,0,0.1)] group-hover:bg-slate-700/50 transition-colors">
+                    <div class="flex items-center justify-center gap-1">
+                      <UButton icon="i-heroicons-pencil-square" color="amber" variant="ghost" size="sm"
+                        class="rounded-lg" @click="openEditModal(room)" />
+                      <UButton icon="i-heroicons-trash" color="error" variant="ghost" size="sm" class="rounded-lg"
+                        @click="confirmDelete(room)" />
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -121,7 +149,7 @@
               <div>
                 <h3 class="text-2xl font-bold text-white">{{ editingRoom ? 'แก้ไขข้อมูลห้องเรียน' : 'เพิ่มห้องเรียนใหม่'
                   }}</h3>
-                <p class="text-slate-400 text-sm">ระบุรายละเอียดของห้องเรียนเพื่อให้ระบุในตารางสอนชดเชย</p>
+                <p class="text-slate-400 text-sm">ระบุรายละเอียดของห้องเรียนเพื่อให้สะดวกในการค้นหาเวลาว่าง</p>
               </div>
             </div>
 
@@ -154,7 +182,6 @@
     </UModal>
 
     <!-- Modal ยืนยันการลบ -->
-    <!-- Modal ยืนยันการลบ -->
     <UModal v-model:open="deleteModalOpen"
       :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
       <template #content>
@@ -179,7 +206,7 @@
             </div>
 
             <p class="text-xs text-red-500/60 text-center mb-2 bg-red-500/5 py-2 rounded-lg border border-red-500/10">
-              ⚠️ หมายเหตุ: การลบห้องจะไม่ส่งผลกระทบต่อข้อมูลคลาสชดเชยที่เคยใช้ห้องนี้ไปแล้ว
+              ⚠️ หมายเหตุ: การลบห้องจะไม่ส่งผลกระทบต่อข้อมูลคลาสสอนที่เคยใช้ห้องนี้ไปแล้ว
             </p>
           </div>
           <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
@@ -198,14 +225,46 @@
 </template>
 
 <script setup>
-const { data: rooms, pending, refresh } = await useFetch('/api/rooms')
+import { ref, computed, watchEffect } from 'vue'
+import dayjs from 'dayjs'
 
-const totalCapacity = computed(() => {
-  if (!rooms.value) return 0
-  return rooms.value.reduce((sum, room) => sum + (room.capacity || 0), 0)
+const times = [
+  '08:00', '09:00', '10:00', '11:00', '12:00',
+  '13:00', '14:00', '15:00', '16:00', '17:00',
+  '18:00', '19:00', '20:00', '21:00'
+]
+
+// Terms
+const { data: termsData } = await useFetch('/api/terms')
+const termOptions = computed(() => {
+  if (!termsData.value) return []
+  return termsData.value.map(t => ({
+    label: `เทอม ${t.term}/${t.academic_year}`,
+    value: `${t.term}/${t.academic_year}`
+  }))
 })
 
-// Modal
+const selectedTerm = ref('')
+const selectedDate = ref(dayjs().format('YYYY-MM-DD'))
+
+watchEffect(() => {
+  if (termOptions.value.length > 0 && !selectedTerm.value) {
+    selectedTerm.value = termOptions.value[0].value
+  }
+})
+
+// Rooms Schedule Data
+const { data: scheduleData, pending, refresh: refreshRooms } = await useFetch('/api/rooms/schedule', {
+  query: {
+    term: selectedTerm,
+    date: selectedDate
+  },
+  watch: [selectedTerm, selectedDate]
+})
+
+const rooms = computed(() => scheduleData.value?.data || [])
+
+// Modal state
 const modalOpen = ref(false)
 const editingRoom = ref(null)
 const saving = ref(false)
@@ -278,7 +337,7 @@ const saveRoom = async () => {
       })
     }
 
-    await refresh()
+    await refreshRooms()
     modalOpen.value = false
   } catch (error) {
     console.error(error)
@@ -295,7 +354,7 @@ const saveRoom = async () => {
   }
 }
 
-// Delete
+// Delete state
 const deleteModalOpen = ref(false)
 const roomToDelete = ref(null)
 const deleting = ref(false)
@@ -321,7 +380,7 @@ const deleteRoom = async () => {
       color: 'primary'
     })
 
-    await refresh()
+    await refreshRooms()
     deleteModalOpen.value = false
     roomToDelete.value = null
   } catch (error) {
@@ -336,3 +395,24 @@ const deleteRoom = async () => {
   }
 }
 </script>
+
+<style scoped>
+/* Scrollbar Styling for Table */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 1);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(51, 65, 85, 1);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 1);
+}
+</style>
