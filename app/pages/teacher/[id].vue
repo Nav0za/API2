@@ -8,7 +8,8 @@
       <div class="flex flex-col md:flex-row gap-6 mb-8">
         <!-- Profile Card -->
         <div class="flex-1 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-6">
-          <div class="w-20 h-20 rounded-full bg-amber-100 text-slate-800 font-bold flex items-center justify-center text-3xl shadow-sm border border-amber-200">
+          <div
+            class="w-20 h-20 rounded-full bg-amber-100 text-slate-800 font-bold flex items-center justify-center text-3xl shadow-sm border border-amber-200">
             {{ (teacherData?.first_name?.[0] || '') + (teacherData?.last_name?.[0] || '') }}
           </div>
           <div>
@@ -280,7 +281,7 @@
               <!-- แสดงรายวิชาที่สอนเป็น Grid -->
               <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 <div v-for="subject in subjects" :key="subject.id_subject"
-                  class="group p-4 rounded-2xl bg-slate-50/50 hover:bg-white border border-slate-100/50 hover:border-blue-200 hover:shadow-md hover:shadow-blue-500/5 transition-all duration-300 flex flex-col justify-between">
+                  class="group p-4 rounded-2xl bg-slate-100/50 hover:bg-white border border-blue-200 shadow-md shadow-blue-500/5 transition-all duration-300 flex flex-col justify-between">
                   <div class="mb-3">
                     <h3
                       class="font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
@@ -292,7 +293,7 @@
                   </div>
 
                   <div class="flex items-center justify-end gap-1 mt-auto pt-3 border-t border-slate-100">
-                    <UButton label="แก้ไข" icon="i-lucide-edit" color="warning" variant="ghost" size="xs"
+                    <UButton label="แก้ไข" icon="i-lucide-edit" color="warning" variant="outline" size="xs"
                       class="cursor-pointer rounded-lg hover:bg-amber-50" @click="editSubject(subject)" />
                     <UButton label="ลบ" icon="i-lucide-trash" color="error" variant="ghost" size="xs"
                       class="cursor-pointer rounded-lg hover:bg-red-50" @click="deleteSubject(subject.id_subject)" />
@@ -344,13 +345,14 @@
     </div>
 
 
-    <div v-if="!selectedTerm" class="text-center text-slate-400 py-10 font-medium italic">
-      กรุณาเลือกภาคการศึกษาเพื่อแสดง/จัดการตารางสอน
-    </div>
-
-    <!-- ตารางสอน -->
-    <div v-else class="mt-4 overflow-x-auto pb-6 custom-scrollbar">
-      <div class="min-w-fit md:min-w-full p-1">
+    <div class="container mx-auto">
+      <div v-if="!selectedTerm" class="text-center text-slate-400 py-10 font-medium italic">
+        กรุณาเลือกภาคการศึกษาเพื่อแสดง/จัดการตารางสอน
+      </div>
+  
+      <!-- ตารางสอน -->
+      <div v-else class="mt-4 overflow-x-auto pb-6 custom-scrollbar">
+        <div class="min-w-fit md:min-w-full p-1">
         <div
           class="grid grid-cols-[80px_repeat(13,minmax(85px,1fr))] text-center border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
           <!-- แสดงเวลา Header -->
@@ -454,6 +456,7 @@
         </div>
       </div>
 
+      </div>
     </div>
   </div>
 </template>
@@ -512,7 +515,7 @@ const timeSlots = [
 const days = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์']
 
 // --- Computeds ---
-const teacherData = computed(() => 
+const teacherData = computed(() =>
   teachers.value?.find(t => t.id_teacher == id)
 )
 
