@@ -66,7 +66,8 @@
 
             <div class="flex flex-col items-center text-center relative z-10">
               <!-- Custom Avatar Circle (to allow 2 initials) -->
-              <div class="w-24 h-24 rounded-full mb-6 ring-4 ring-slate-900 shadow-2xl group-hover:ring-amber-500/30 transition-all duration-500 bg-gradient-to-br from-amber-400 to-orange-500 text-white font-black flex items-center justify-center text-3xl">
+              <div
+                class="w-24 h-24 rounded-full mb-6 ring-4 ring-slate-900 shadow-2xl group-hover:ring-amber-500/30 transition-all duration-500 bg-gradient-to-br from-amber-400 to-orange-500 text-white font-black flex items-center justify-center text-3xl">
                 {{ (teacher.first_name?.[0] || '') + (teacher.last_name?.[0] || '') }}
               </div>
 
@@ -86,10 +87,10 @@
                   class="rounded-xl flex-1 font-bold bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50"
                   :to="`/teacher/${teacher.id_teacher}`" />
                 <div class="flex gap-1">
-                  <UButton icon="i-heroicons-pencil-square" color="amber" variant="soft"
-                    class="rounded-xl border border-amber-500/10" @click="openEditModal(teacher)" />
-                  <UButton icon="i-heroicons-trash" color="error" variant="soft" class="rounded-xl border-red-500/10"
-                    @click="confirmDeleteTeacher(teacher)" />
+                  <UButton icon="i-heroicons-pencil-square" color="warning" variant="soft"
+                    class="rounded-xl border border-amber-500/10 cursor-pointer" @click="openEditModal(teacher)" />
+                  <UButton icon="i-heroicons-trash" color="error" variant="soft"
+                    class="rounded-xl border-red-500/10 cursor-pointer" @click="confirmDeleteTeacher(teacher)" />
                 </div>
               </div>
             </div>
@@ -123,7 +124,8 @@
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
-            <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+            <div
+              class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
               <UIcon name="i-heroicons-exclamation-triangle" class="text-4xl text-red-500" />
             </div>
 
@@ -163,7 +165,8 @@
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
             <div class="flex items-center gap-4 mb-8">
-              <div class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20">
+              <div
+                class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20">
                 <UIcon name="i-heroicons-pencil-square" class="text-2xl text-amber-500" />
               </div>
               <div>
@@ -174,7 +177,8 @@
 
             <div class="space-y-6">
               <div>
-                <label class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">ชื่อปัจจุบัน</label>
+                <label
+                  class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">ชื่อปัจจุบัน</label>
                 <div class="p-4 bg-slate-800 rounded-2xl text-slate-300 border border-slate-700 font-bold italic">{{
                   seletedTeacher?.name }}</div>
               </div>
@@ -194,15 +198,15 @@
               </div>
             </div>
           </div>
-          
+
           <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex gap-3">
               <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
                 class="rounded-2xl py-4 flex-1 font-bold font-heading" @click="editModalopen = false" />
               <UButton label="บันทึกข้อมูล" color="primary" size="xl" block
                 class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold font-heading"
-                :disabled="!newName.trim() || newName === seletedTeacher?.name" :loading="updatingTeacher"
-                @click="updateTeacher(seletedTeacher?.id_teacher)" />
+                :disabled="!editFirstName.trim() || (editPrefix === seletedTeacher?.prefix && editFirstName === seletedTeacher?.first_name && editLastName === seletedTeacher?.last_name)"
+                :loading="updatingTeacher" @click="updateTeacher(seletedTeacher?.id_teacher)" />
             </div>
           </div>
         </div>
@@ -228,7 +232,7 @@ const filteredTeachers = computed(() => {
   if (!teachers.value) return []
   if (!searchQuery.value) return teachers.value
   const query = searchQuery.value.toLowerCase()
-  return teachers.value.filter(t => 
+  return teachers.value.filter(t =>
     t.name?.toLowerCase().includes(query) ||
     t.first_name?.toLowerCase().includes(query) ||
     t.last_name?.toLowerCase().includes(query)
@@ -245,7 +249,7 @@ const addTeacher = async () => {
   try {
     const newTeacher = await $fetch('/api/teachers', {
       method: 'POST',
-      body: { 
+      body: {
         prefix: newPrefix.value,
         first_name: newFirstName.value.trim(),
         last_name: newLastName.value.trim()
@@ -255,7 +259,7 @@ const addTeacher = async () => {
     newPrefix.value = ''
     newFirstName.value = ''
     newLastName.value = ''
-    
+
     if (teachers.value) {
       teachers.value.push(newTeacher)
     } else {
@@ -329,7 +333,7 @@ const updateTeacher = async (id) => {
       first_name: editFirstName.value.trim(),
       last_name: editLastName.value.trim()
     }
-    
+
     await $fetch(`/api/teachers/${id}`, {
       method: 'PUT',
       body

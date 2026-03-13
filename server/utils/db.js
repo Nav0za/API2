@@ -2,8 +2,8 @@ import Database from 'better-sqlite3'
 import { resolve } from 'path'
 import { existsSync, mkdirSync } from 'fs'
 
-// ใช้โปรเจกต์ root เสมอ
-const dbDir = resolve(process.cwd(), 'data')
+// ใช้โฟลเดอร์ server/data
+const dbDir = resolve(process.cwd(), 'server', 'data')
 
 // ถ้าโฟลเดอร์ไม่มี ให้สร้าง
 if (!existsSync(dbDir)) {
@@ -20,8 +20,7 @@ db.exec(`
     name TEXT UNIQUE,
     prefix TEXT,
     first_name TEXT,
-    last_name TEXT,
-    subject TEXT
+    last_name TEXT
   );`)
 
 // Subjects - Note: UNIQUE constraint removed to allow duplicate subject names with different sections
@@ -143,6 +142,12 @@ try {
       }
     })()
     console.log(`Migrated ${teachers.length} teachers name data`)
+  }
+
+  // Migration: Remove unused 'subject' column from teachers
+  if (teacherTableInfo.some(col => col.name === 'subject')) {
+    db.exec('ALTER TABLE teachers DROP COLUMN subject')
+    console.log('Migrated teachers table: removed unused subject column')
   }
 
 } catch (err) {
