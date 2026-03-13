@@ -8,7 +8,9 @@
       <div class="flex flex-col md:flex-row gap-6 mb-8">
         <!-- Profile Card -->
         <div class="flex-1 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-6">
-          <UAvatar :alt="teacherName.toUpperCase()" size="xl" class="bg-amber-100 text-slate-800 font-bold text-2xl" />
+          <div class="w-20 h-20 rounded-full bg-amber-100 text-slate-800 font-bold flex items-center justify-center text-3xl shadow-sm border border-amber-200">
+            {{ (teacherData?.first_name?.[0] || '') + (teacherData?.last_name?.[0] || '') }}
+          </div>
           <div>
             <h1 class="text-3xl font-bold text-slate-900">{{ teacherName }}</h1>
             <p class="text-slate-500 mt-1">อาจารย์ผู้สอน</p>
@@ -510,8 +512,12 @@ const timeSlots = [
 const days = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์']
 
 // --- Computeds ---
+const teacherData = computed(() => 
+  teachers.value?.find(t => t.id_teacher == id)
+)
+
 const teacherName = computed(() =>
-  teachers.value?.find(t => t.id_teacher == id)?.name || 'ไม่พบชื่ออาจารย์'
+  teacherData.value?.name || 'ไม่พบชื่ออาจารย์'
 )
 
 const hoursPerWeek = computed(() => {

@@ -18,6 +18,9 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS teachers (
     id_teacher INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE,
+    prefix TEXT,
+    first_name TEXT,
+    last_name TEXT,
     subject TEXT
   );`)
 
@@ -99,6 +102,47 @@ try {
 
     // Optional: Clear id_section in Subjects once migrated to avoid confusion
     // db.exec('UPDATE Subjects SET id_section = NULL')
+  }
+
+  // Migration for teachers name structure
+  const teacherTableInfo = db.prepare('PRAGMA table_info(teachers)').all()
+  const hasPrefix = teacherTableInfo.some(col => col.name === 'prefix')
+  
+  if (!hasPrefix) {
+    db.exec('ALTER TABLE teachers ADD COLUMN prefix TEXT')
+    db.exec('ALTER TABLE teachers ADD COLUMN first_name TEXT')
+    db.exec('ALTER TABLE teachers ADD COLUMN last_name TEXT')
+    console.log('Migrated teachers table: added prefix, first_name, last_name')
+
+    // Split existing names
+    const teachers = db.prepare('SELECT id_teacher, name FROM teachers').all()
+    const updateTeacher = db.prepare('UPDATE teachers SET prefix = ?, first_name = ?, last_name = ? WHERE id_teacher = ?')
+    
+    db.transaction(() => {
+      const thaiPrefixes = ['นาย', 'นาง', 'นางสาว', 'น.ส.', 'ดร.', 'ผศ.', 'รศ.', 'ศ.', 'อาจารย์', 'อ.', 'ครู']
+      for (const t of teachers) {
+        let name = t.name.trim()
+        let prefix = ''
+        let first = ''
+        let last = ''
+
+        // Try to find prefix
+        for (const p of thaiPrefixes) {
+          if (name.startsWith(p)) {
+            prefix = p
+            name = name.substring(p.length).trim()
+            break
+          }
+        }
+
+        const parts = name.split(/\s+/)
+        first = parts[0] || ''
+        last = parts.slice(1).join(' ')
+
+        updateTeacher.run(prefix, first, last, t.id_teacher)
+      }
+    })()
+    console.log(`Migrated ${teachers.length} teachers name data`)
   }
 
 } catch (err) {

@@ -19,12 +19,16 @@
                 class="text-xs font-normal text-slate-500">ท่าน</span></p>
           </div>
 
-          <div class="flex items-center gap-3">
-            <UInput v-model="name" placeholder="กรอกชื่ออาจารย์ใหม่..." size="xl" class="w-64 rounded-xl"
-              :disabled="addingTeacher" @keyup.enter="addTeacher" icon="i-heroicons-user-plus" />
-            <UButton label="เพิ่มอาจารย์" color="primary" size="xl"
+          <div class="flex items-center gap-2">
+            <UInput v-model="newPrefix" placeholder="คำนำหน้า" size="xl" class="w-32 rounded-xl"
+              :disabled="addingTeacher" />
+            <UInput v-model="newFirstName" placeholder="ชื่อ" size="xl" class="w-40 rounded-xl"
+              :disabled="addingTeacher" @keyup.enter="addTeacher" />
+            <UInput v-model="newLastName" placeholder="นามสกุล" size="xl" class="w-48 rounded-xl"
+              :disabled="addingTeacher" @keyup.enter="addTeacher" />
+            <UButton icon="i-heroicons-plus" color="primary" size="xl" square
               class="rounded-xl shadow-lg shadow-blue-500/20 font-bold" :loading="addingTeacher"
-              :disabled="!name.trim()" @click="addTeacher" />
+              :disabled="!newFirstName.trim()" @click="addTeacher" />
           </div>
         </div>
       </div>
@@ -61,9 +65,10 @@
             </div>
 
             <div class="flex flex-col items-center text-center relative z-10">
-              <UAvatar :alt="teacher.name.toUpperCase()" size="3xl"
-                class="mb-6 ring-4 ring-slate-900 shadow-2xl group-hover:ring-amber-500/30 transition-all duration-500"
-                :ui="{ background: 'bg-gradient-to-br from-amber-400 to-orange-500 text-white font-black' }" />
+              <!-- Custom Avatar Circle (to allow 2 initials) -->
+              <div class="w-24 h-24 rounded-full mb-6 ring-4 ring-slate-900 shadow-2xl group-hover:ring-amber-500/30 transition-all duration-500 bg-gradient-to-br from-amber-400 to-orange-500 text-white font-black flex items-center justify-center text-3xl">
+                {{ (teacher.first_name?.[0] || '') + (teacher.last_name?.[0] || '') }}
+              </div>
 
               <h3 class="text-xl font-black text-white mb-2 leading-tight group-hover:text-amber-400 transition-colors">
                 {{ teacher.name }}
@@ -174,10 +179,19 @@
                   seletedTeacher?.name }}</div>
               </div>
 
-              <UFormField label="ชื่อที่ต้องการเปลี่ยนแปลง *">
-                <UInput v-model="newName" placeholder="ระบุชื่อใหม่..." size="xl" class="rounded-xl" autofocus
-                  @keyup.enter="updateTeacher(seletedTeacher?.id_teacher)" />
-              </UFormField>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <UFormField label="คำนำหน้า">
+                  <UInput v-model="editPrefix" placeholder="ระบุ..." size="xl" class="rounded-xl" />
+                </UFormField>
+                <UFormField label="ชื่อ *">
+                  <UInput v-model="editFirstName" placeholder="ระบุชื่อ..." size="xl" class="rounded-xl" autofocus
+                    @keyup.enter="updateTeacher(seletedTeacher?.id_teacher)" />
+                </UFormField>
+                <UFormField label="นามสกุล">
+                  <UInput v-model="editLastName" placeholder="ระบุนามสกุล..." size="xl" class="rounded-xl"
+                    @keyup.enter="updateTeacher(seletedTeacher?.id_teacher)" />
+                </UFormField>
+              </div>
             </div>
           </div>
           
@@ -200,7 +214,10 @@
 <script setup>
 const { data: teachers, pending, refresh: refreshTeachers } = await useFetch('/api/teachers')
 
-const name = ref('')
+const newPrefix = ref('')
+const newFirstName = ref('')
+const newLastName = ref('')
+
 const searchQuery = ref('')
 const errorMessage = ref('')
 const addingTeacher = ref(false)
@@ -210,12 +227,17 @@ const deletingTeacherId = ref(null)
 const filteredTeachers = computed(() => {
   if (!teachers.value) return []
   if (!searchQuery.value) return teachers.value
-  return teachers.value.filter(t => t.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  const query = searchQuery.value.toLowerCase()
+  return teachers.value.filter(t => 
+    t.name?.toLowerCase().includes(query) ||
+    t.first_name?.toLowerCase().includes(query) ||
+    t.last_name?.toLowerCase().includes(query)
+  )
 })
 
 // เพิ่มอาจารย์
 const addTeacher = async () => {
-  if (!name.value.trim()) return
+  if (!newFirstName.value.trim()) return
 
   addingTeacher.value = true
   errorMessage.value = ''
@@ -223,10 +245,17 @@ const addTeacher = async () => {
   try {
     const newTeacher = await $fetch('/api/teachers', {
       method: 'POST',
-      body: { name: name.value.trim() }
+      body: { 
+        prefix: newPrefix.value,
+        first_name: newFirstName.value.trim(),
+        last_name: newLastName.value.trim()
+      }
     })
 
-    name.value = ''
+    newPrefix.value = ''
+    newFirstName.value = ''
+    newLastName.value = ''
+    
     if (teachers.value) {
       teachers.value.push(newTeacher)
     } else {
@@ -277,30 +306,45 @@ const delTeacher = async (id) => {
 // แก้ไขชื่ออาจารย์
 const editModalopen = ref(false)
 const seletedTeacher = ref(null)
-const newName = ref('')
+const editPrefix = ref('')
+const editFirstName = ref('')
+const editLastName = ref('')
 
 const openEditModal = (teacher) => {
   seletedTeacher.value = teacher
-  newName.value = teacher.name
+  editPrefix.value = teacher.prefix || ''
+  editFirstName.value = teacher.first_name || ''
+  editLastName.value = teacher.last_name || ''
   editModalopen.value = true
 }
 
 const updateTeacher = async (id) => {
-  if (!newName.value.trim() || newName.value === seletedTeacher.value?.name) return
+  if (!editFirstName.value.trim()) return
 
   updatingTeacher.value = true
 
   try {
+    const body = {
+      prefix: editPrefix.value,
+      first_name: editFirstName.value.trim(),
+      last_name: editLastName.value.trim()
+    }
+    
     await $fetch(`/api/teachers/${id}`, {
       method: 'PUT',
-      body: { name: newName.value.trim() }
+      body
     })
 
     const teacher = teachers.value?.find(t => t.id_teacher === id)
-    if (teacher) teacher.name = newName.value.trim()
+    if (teacher) {
+      teacher.prefix = body.prefix
+      teacher.first_name = body.first_name
+      teacher.last_name = body.last_name
+      // Update full name string for display
+      teacher.name = [body.prefix, body.first_name, body.last_name].filter(Boolean).join(' ').trim()
+    }
 
     editModalopen.value = false
-    newName.value = ''
     seletedTeacher.value = null
   } catch (err) {
     console.error(err)
@@ -311,7 +355,7 @@ const updateTeacher = async (id) => {
 }
 
 // Clear error message เมื่อพิมพ์
-watch(name, () => {
+watch([newFirstName, newLastName], () => {
   if (errorMessage.value) {
     errorMessage.value = ''
   }
