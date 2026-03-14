@@ -28,14 +28,10 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS Subjects (
     id_subject INTEGER PRIMARY KEY AUTOINCREMENT,
     name_subject TEXT NOT NULL,
-    term TEXT,
     id_teacher INTEGER,
-    id_section INTEGER,
     id_room INTEGER,
     FOREIGN KEY (id_teacher) REFERENCES teachers(id_teacher)
       ON DELETE CASCADE,
-    FOREIGN KEY (id_section) REFERENCES sections(id_section)
-      ON DELETE SET NULL,
     FOREIGN KEY (id_room) REFERENCES rooms(id_room)
       ON DELETE SET NULL
   );`)
@@ -45,26 +41,12 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_subjects_teacher 
   ON Subjects(id_teacher);`)
 
-db.exec(`
-  CREATE INDEX IF NOT EXISTS idx_subjects_term 
-  ON Subjects(term);`)
-
-db.exec(`
-  CREATE INDEX IF NOT EXISTS idx_subjects_section 
-  ON Subjects(id_section);`)
+// No longer indexing term or id_section since they are removed
 
 // Migrations
 try {
   const tableInfo = db.prepare('PRAGMA table_info(Subjects)').all()
 
-  // Migration: Add id_section if not exists
-  const hasIdSection = tableInfo.some(col => col.name === 'id_section')
-  if (!hasIdSection) {
-    db.exec('ALTER TABLE Subjects ADD COLUMN id_section INTEGER REFERENCES sections(id_section) ON DELETE SET NULL')
-    console.log('Migrated Subjects table: added id_section')
-  }
-
-  // Migration: Add id_room if not exists
   const hasIdRoom = tableInfo.some(col => col.name === 'id_room')
   if (!hasIdRoom) {
     db.exec('ALTER TABLE Subjects ADD COLUMN id_room INTEGER REFERENCES rooms(id_room) ON DELETE SET NULL')
@@ -87,21 +69,8 @@ try {
     );
   `)
 
-  // Migration: Move id_section from Subjects to SubjectSections
-  const subjectsWithSection = db.prepare('SELECT id_subject, id_section FROM Subjects WHERE id_section IS NOT NULL').all()
-  if (subjectsWithSection.length > 0) {
-    const insertSection = db.prepare('INSERT OR IGNORE INTO SubjectSections (id_subject, id_section) VALUES (?, ?)')
-    const transaction = db.transaction((data) => {
-      for (const item of data) {
-        insertSection.run(item.id_subject, item.id_section)
-      }
-    })
-    transaction(subjectsWithSection)
-    console.log(`Migrated ${subjectsWithSection.length} subjects to SubjectSections`)
-
-    // Optional: Clear id_section in Subjects once migrated to avoid confusion
-    // db.exec('UPDATE Subjects SET id_section = NULL')
-  }
+  // Note: Migration logic that moved data from Subjects.id_section to SubjectSections 
+  // has been removed since the id_section column is no longer created in Subjects table natively.
 
   // Migration for teachers name structure
   const teacherTableInfo = db.prepare('PRAGMA table_info(teachers)').all()

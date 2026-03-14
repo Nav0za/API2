@@ -32,11 +32,9 @@ export async function findAvailableSlots(teacherId, missedDate, term) {
     }
   })
 
-  const allSubjects = db.prepare('SELECT id_subject, id_room, name_subject FROM Subjects').all()
-  const subjectRoomMap = {}
+  const allSubjects = db.prepare('SELECT id_subject, name_subject FROM Subjects').all()
   const subjectNameMap = {}
   allSubjects.forEach(s => {
-    subjectRoomMap[s.id_subject] = s.id_room
     subjectNameMap[s.id_subject] = s.name_subject
   })
 
@@ -45,7 +43,7 @@ export async function findAvailableSlots(teacherId, missedDate, term) {
   console.log(`[DEBUG] getTeacherSchedule result:`, teacherSchedule ? 'Found' : 'Not Found')
   if (!teacherSchedule) return []
 
-  const missedClasses = getClassesOnDate(teacherSchedule, missedDate, subjectRoomMap, subjectNameMap)
+  const missedClasses = getClassesOnDate(teacherSchedule, missedDate, subjectNameMap)
   console.log(`[DEBUG] missedClasses count: ${missedClasses.length}`)
 
   if (missedClasses.length === 0) {
@@ -129,8 +127,7 @@ export async function findAvailableSlots(teacherId, missedDate, term) {
         dateStr,
         term,
         missedClass.roomId,
-        allTeacherSchedules,
-        subjectRoomMap
+        allTeacherSchedules
       )
       console.log(`[DEBUG] findSlotsForClass (${dateStr}): Found ${slots.length} slots for subject ${missedClass.subjectName}`)
 
@@ -173,7 +170,7 @@ function getTeacherSchedule(teacherId, term) {
 /**
  * ดึงรายวิชาที่อาจารย์สอนในวันที่กำหนด (วันที่ขาดสอน)
  */
-function getClassesOnDate(schedule, dateStr, subjectRoomMap, subjectNameMap) {
+function getClassesOnDate(schedule, dateStr, subjectNameMap) {
   if (!schedule) return []
 
   const date = new Date(dateStr)
@@ -211,7 +208,7 @@ function getClassesOnDate(schedule, dateStr, subjectRoomMap, subjectNameMap) {
       } else {
         // จบวิชาก่อนหน้า
         if (currentSubject) {
-          classes.push(createClassObj(currentSubject, startSlot, duration, subjectRoomMap, subjectNameMap))
+          classes.push(createClassObj(currentSubject, startSlot, duration, subjectNameMap))
         }
 
         // เริ่มวิชาใหม่
@@ -229,7 +226,7 @@ function getClassesOnDate(schedule, dateStr, subjectRoomMap, subjectNameMap) {
             continue // ข้าม lunch slot แล้ววิชายังต่อเนื่อง
           }
         }
-        classes.push(createClassObj(currentSubject, startSlot, duration, subjectRoomMap, subjectNameMap))
+        classes.push(createClassObj(currentSubject, startSlot, duration, subjectNameMap))
         currentSubject = null
         duration = 0
       }
@@ -238,7 +235,7 @@ function getClassesOnDate(schedule, dateStr, subjectRoomMap, subjectNameMap) {
 
   // เก็บตกตัวสุดท้าย
   if (currentSubject) {
-    classes.push(createClassObj(currentSubject, startSlot, duration, subjectRoomMap, subjectNameMap))
+    classes.push(createClassObj(currentSubject, startSlot, duration, subjectNameMap))
   }
 
   // รวมวิชาเดิมที่แยกเป็นหลาย block (กรณีสอนกระจาย)
@@ -256,12 +253,12 @@ function getClassesOnDate(schedule, dateStr, subjectRoomMap, subjectNameMap) {
   return merged
 }
 
-function createClassObj(subjectId, startSlot, duration, subjectRoomMap, subjectNameMap) {
+function createClassObj(subjectId, startSlot, duration, subjectNameMap) {
   const sectionIds = getSectionsForSubject(subjectId)
   return {
     subjectId,
     subjectName: subjectNameMap[subjectId] || getSubjectName(subjectId),
-    roomId: subjectRoomMap[subjectId] || null,
+    roomId: null,
     sectionIds,
     sectionNames: sectionIds.map(id => getSectionName(id)).join(', '),
     startSlot,
@@ -274,7 +271,7 @@ function createClassObj(subjectId, startSlot, duration, subjectRoomMap, subjectN
 /**
  * หาช่วงว่างสำหรับคลาสที่ต้องชดเชย
  */
-function findSlotsForClass(teacherId, sectionIds, duration, dayOfWeek, dateStr, term, roomId, allTeacherSchedules, subjectRoomMap) {
+function findSlotsForClass(teacherId, sectionIds, duration, dayOfWeek, dateStr, term, roomId, allTeacherSchedules) {
   const dayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1
   if (!Array.isArray(sectionIds)) sectionIds = [sectionIds]
 
@@ -342,7 +339,7 @@ function findSlotsForClass(teacherId, sectionIds, duration, dayOfWeek, dateStr, 
       }
 
       // 4. เช็คตารางเรียนปกติว่าใช้ห้องเดิมไหม
-      if (roomId && isRoomUsedByRegularClass(roomId, dayIndex, slotIdx, allTeacherSchedules, subjectRoomMap)) {
+      if (roomId && isRoomUsedByRegularClass(roomId, dayIndex, slotIdx, allTeacherSchedules)) {
         checkPass = false
         break
       }
@@ -488,11 +485,9 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
     }
   })
 
-  const allSubjects = db.prepare('SELECT id_subject, id_room, name_subject FROM Subjects').all()
-  const subjectRoomMap = {}
+  const allSubjects = db.prepare('SELECT id_subject, name_subject FROM Subjects').all()
   const subjectNameMap = {}
   allSubjects.forEach(s => {
-    subjectRoomMap[s.id_subject] = s.id_room
     subjectNameMap[s.id_subject] = s.name_subject
   })
 
@@ -574,9 +569,8 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
       dayIndex,
       dateStr,
       term,
-      classes.map(c => c.roomId !== undefined ? c.roomId : subjectRoomMap[c.subjectId]).filter(Boolean),
-      allTeacherSchedules,
-      subjectRoomMap
+      classes.map(c => c.roomId).filter(Boolean),
+      allTeacherSchedules
     )
 
     suggestions.push(...slots.map(slot => ({
@@ -587,7 +581,7 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
         subjectName: subjectNameMap[c.subjectId] || getSubjectName(c.subjectId),
         sectionId: c.sectionId,
         sectionName: getSectionName(c.sectionId),
-        roomId: c.roomId !== undefined ? c.roomId : (subjectRoomMap[c.subjectId] || null),
+        roomId: c.roomId !== undefined ? c.roomId : null,
         duration: c.duration
       }))
     })))
@@ -601,7 +595,7 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
 /**
  * หาช่วงว่างติดกันที่ยาวพอสำหรับหลายวิชา
  */
-function findContinuousFreeSlots(teacherId, sectionIds, duration, dayIndex, dateStr, term, roomIds, allTeacherSchedules, subjectRoomMap) {
+function findContinuousFreeSlots(teacherId, sectionIds, duration, dayIndex, dateStr, term, roomIds, allTeacherSchedules) {
   const teacherSchedule = getTeacherSchedule(teacherId, term)
   if (!teacherSchedule || !teacherSchedule[dayIndex]) return []
 
@@ -685,7 +679,7 @@ function findContinuousFreeSlots(teacherId, sectionIds, duration, dayIndex, date
       }
 
       for (const roomId of roomIds) {
-        if (isRoomUsedByRegularClass(roomId, dayIndex, slotIdx, allTeacherSchedules, subjectRoomMap)) {
+        if (isRoomUsedByRegularClass(roomId, dayIndex, slotIdx, allTeacherSchedules)) {
           allFree = false
           break
         }
@@ -713,7 +707,7 @@ function findContinuousFreeSlots(teacherId, sectionIds, duration, dayIndex, date
 /**
  * เช็คว่าห้องถูกใช้งานโดยคลาสปกติในช่วงเวลาที่กำหนดหรือไม่
  */
-function isRoomUsedByRegularClass(roomId, dayIndex, slotIdx, allTeacherSchedules, subjectRoomMap) {
+function isRoomUsedByRegularClass(roomId, dayIndex, slotIdx, allTeacherSchedules) {
   if (!roomId) return false
   for (const ts of allTeacherSchedules) {
     if (!ts.parsedSchedule) continue
@@ -724,8 +718,6 @@ function isRoomUsedByRegularClass(roomId, dayIndex, slotIdx, allTeacherSchedules
       let classUsesRoom = false
       if (slot.room_id) {
         if (Number(slot.room_id) === Number(roomId)) classUsesRoom = true
-      } else {
-        if (Number(subjectRoomMap[slot.value]) === Number(roomId)) classUsesRoom = true
       }
       if (classUsesRoom) return true
     }

@@ -122,9 +122,6 @@ export function checkRoomAvailability({ room_id, date, start_time, end_time, ter
                     let classUsesRoom = false
                     if (slot.room_id) {
                         if (Number(slot.room_id) === Number(roomId)) classUsesRoom = true
-                    } else {
-                        const subject = db.prepare('SELECT id_room FROM Subjects WHERE id_subject = ?').get(slot.value)
-                        if (subject && Number(subject.id_room) === Number(roomId)) classUsesRoom = true
                     }
 
                     if (classUsesRoom) {

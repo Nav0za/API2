@@ -115,8 +115,7 @@ function createClassObj(subjectId, startSlot, duration, teacherId, date, roomId)
         hasMakeup = !!makeupRecord
     }
 
-    // Fallback to default subject room if no specific room is assigned
-    const finalRoomId = roomId ? Number(roomId) : getRoomForSubject(subjectId)
+    const finalRoomId = roomId ? Number(roomId) : null
 
     return {
         subjectId,
@@ -132,11 +131,7 @@ function createClassObj(subjectId, startSlot, duration, teacherId, date, roomId)
     }
 }
 
-function getRoomForSubject(subjectId) {
-    const stmt = db.prepare('SELECT id_room FROM Subjects WHERE id_subject = ?')
-    const result = stmt.get(subjectId)
-    return result?.id_room || null
-}
+
 
 function getSubjectName(subjectId) {
     const stmt = db.prepare('SELECT name_subject FROM Subjects WHERE id_subject = ?')
