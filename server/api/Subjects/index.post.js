@@ -11,8 +11,8 @@ export default defineEventHandler(async (event) => {
     }
 
     // 1. Insert Subject
-    const stmt = db.prepare('INSERT INTO Subjects (name_subject, id_teacher, id_room) VALUES (?, ?, ?)')
-    const result = stmt.run(body.name_subject, body.id_teacher, body.id_room || null)
+    const stmt = db.prepare('INSERT INTO Subjects (name_subject, id_teacher) VALUES (?, ?)')
+    const result = stmt.run(body.name_subject, body.id_teacher)
     const subjectId = result.lastInsertRowid
 
     // 2. Insert SubjectSections (Join table)
@@ -27,7 +27,6 @@ export default defineEventHandler(async (event) => {
     return {
       id_subject: subjectId,
       name_subject: body.name_subject,
-      id_room: body.id_room || null,
       id_sections: body.id_sections,
       status: 1
     }

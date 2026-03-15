@@ -738,13 +738,11 @@ const getSubjectLabel = (val, roomId = null, sectionIds = null) => {
     sectionDisplay = `(${subj.section_names || '?'})`
   }
 
-  // If we have a specific roomId for this slot, use it. Otherwise use subj.room_name
+  // If we have a specific roomId for this slot, use it.
   let roomName = ''
   if (roomId) {
     const r = rooms.value?.find(rm => rm.id_room == roomId)
     if (r) roomName = r.room_name
-  } else if (subj.room_name) {
-    roomName = subj.room_name
   }
 
   return `${subj.name_subject} ${sectionDisplay} ${roomName ? `[${roomName}]` : ''}`

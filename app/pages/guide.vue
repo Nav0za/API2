@@ -44,7 +44,7 @@
               ขั้นตอนแรกสุดคือการกำหนด เทอม และ ช่วงวันที่ ของการเรียนการสอนในเทอมนั้น ๆ
               ระบบจะใช้ข้อมูลนี้ในการคำนวณวันหยุดและช่วงเวลาที่เปิดสอนชดเชย และเก็บข้อมูลต่าง ๆ ไว้ในแต่ละเทอมนั้น
             </p>
-            <UButton to="/terms" label="ไปที่หน้าตั้งค่าเทอม" variant="soft" color="primary"
+            <UButton to="/terms" label="ไปที่หน้าตั้งค่าเทอม" variant="soft" color="primary" size="xl"
               trailing-icon="i-heroicons-arrow-right" />
           </UCard>
         </div>
@@ -70,7 +70,7 @@
               ลงทะเบียนห้องปฏิบัติการหรือห้องบรรยายที่มีในคณะ
               เพื่อให้ระบบแจ้งเตือนหากมีการจองสอนชดเชยซ้ำซ้อนในห้องเดียวกัน
             </p>
-            <UButton to="/rooms" label="จัดการห้องเรียน" variant="soft" color="secondary"
+            <UButton to="/rooms" label="จัดการห้องเรียน" variant="soft" color="primary" size="xl"
               trailing-icon="i-heroicons-arrow-right" />
           </UCard>
         </div>
@@ -93,10 +93,10 @@
               </div>
             </template>
             <p class="text-slate-400 mb-4">
-              เพิ่มรายชื่ออาจารย์ผู้สอนพร้อมรหัสบุคลากร เพื่อใช้ระบุว่าใครเป็นผู้สอนในแต่ละคาบสิกา sิกา
-              อาจารย์แต่ละท่านจะมี **"หน้าดูตารางสอนส่วนตัว"** ให้ด้วยนะคะสิคะ sิกา
+              เพิ่มรายชื่ออาจารย์ผู้สอนพร้อมรหัสบุคลากร เพื่อใช้ระบุว่าใครเป็นผู้สอนในแต่ละคาบ
+              อาจารย์แต่ละท่านจะมี **"หน้าดูตารางสอนส่วนตัว"** ให้ด้วย
             </p>
-            <UButton to="/teachers" label="เพิ่มรายชื่ออาจารย์" variant="soft" color="error"
+            <UButton to="/teachers" label="เพิ่มรายชื่ออาจารย์" variant="soft" color="primary" size="xl"
               trailing-icon="i-heroicons-arrow-right" />
           </UCard>
         </div>
@@ -119,10 +119,10 @@
               </div>
             </template>
             <p class="text-slate-400 mb-4">
-              สร้างกลุ่มเรียน เช่น SE66, TC2R1 และเข้าไป **"จัดตารางเรียนหลัก"** (Weekly Schedule) ของกลุ่มนี้สิคะ sิกา
-              ระบบจะ Sync ตารางนี้ไปหาอาจารย์ผู้สอนที่ระบุโดยอัตโนมัติเลยค่ะ! สิกา sิกา
+              สร้างกลุ่มเรียน เช่น SE66, TC2R1 และเข้าไป **"จัดตารางเรียนหลัก"** (Weekly Schedule) ของกลุ่มนี้
+              ระบบจะ Sync ตารางนี้ไปหาอาจารย์ผู้สอนที่ระบุโดยอัตโนมัติ
             </p>
-            <UButton to="/sections" label="สร้างกลุ่มเรียนและตาราง" variant="soft" color="warning"
+            <UButton to="/sections" label="สร้างกลุ่มเรียนและตาราง" variant="soft" color="primary" size="xl"
               trailing-icon="i-heroicons-arrow-right" />
           </UCard>
         </div>
@@ -146,19 +146,19 @@
             </template>
             <div class="space-y-4">
               <p class="text-slate-400">
-                เมื่อทุกอย่างพร้อมแล้ว คุณสามารถใช้งานที่หน้าแรก (Home) ได้ดังนี้สิคะ sิกา:
+                เมื่อทุกอย่างพร้อมแล้ว คุณสามารถใช้งานที่หน้าแรก (Home) ได้ดังนี้:
               </p>
               <ul class="list-disc list-inside text-sm text-slate-300 space-y-2 ml-2">
                 <li><span class="text-blue-400 font-bold">เพิ่มกิจกรรม:</span>
-                  เลือกวันที่ปฏิทินเพื่อเพิ่มวันหยุดหรือแจ้งอาจารย์ลาสอนสิกา sิกา</li>
+                  เลือกวันที่ปฏิทินเพื่อเพิ่มวันหยุดหรือแจ้งอาจารย์ลาสอน</li>
                 <li><span class="text-green-400 font-bold">หาช่วงว่าง (Find Slots):</span> กดปุ่ม "จัดสอนชดเชย"
-                  ระบบจะหาช่วงเวลาที่ทุกคนว่างและห้องว่างให้คุณอัตโนมัติสิคะ sิกา</li>
+                  ระบบจะหาช่วงเวลาที่ทุกคนว่างและห้องว่างให้คุณอัตโนมัติ</li>
                 <li><span class="text-purple-400 font-bold">ยืนยันผล:</span>
-                  ข้อมูลจะไปปรากฏในตารางของทั้งนักศึกษาและอาจารย์ทันทีค่ะ sิกา</li>
+                  ข้อมูลจะไปปรากฏในตารางของทั้งนักศึกษาและอาจารย์ทันที</li>
               </ul>
             </div>
             <div class="mt-6">
-              <UButton to="/" label="ไปที่หน้าปฏิทิน (เริ่มใช้งานจริง)" block size="lg" color="primary"
+              <UButton to="/" label="ไปที่หน้าปฏิทิน (เริ่มใช้งานจริง)" block size="xl" color="primary"
                 class="rounded-2xl font-black shadow-lg shadow-blue-500/20" />
             </div>
           </UCard>
@@ -181,23 +181,12 @@
               </div>
             </template>
             <p class="text-slate-400 mb-4">
-              คุณสามารถเข้าหน้า **"สรุปผล"** เพื่อดูสถิติการสอนชดเชยทั้งหมดสิคะ sิกา
-              รวมถึงสามารถ Export ข้อมูลเป็นไฟล์ CSV เพื่อส่งรายงานต่อได้อย่างง่ายดายค่ะสิคะ sิกา
+              คุณสามารถเข้าหน้า **"สรุปผล"** เพื่อดูสถิติการสอนชดเชยทั้งหมด
+              รวมถึงสามารถ Export ข้อมูลเป็นไฟล์ CSV เพื่อส่งรายงานต่อได้อย่างง่ายดาย
             </p>
-            <UButton to="/summary" label="ดูสรุปสถิติ" variant="soft" color="info"
+            <UButton to="/summary" label="ดูสรุปสถิติ" variant="soft" color="primary" size="xl"
               trailing-icon="i-heroicons-arrow-right" />
           </UCard>
-        </div>
-      </div>
-
-      <div
-        class="mt-20 text-center p-10 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl border border-slate-700">
-        <h3 class="text-2xl font-bold mb-4">สงสัยส่วนไหนเพิ่มเติมไหมคะ? sิกา</h3>
-        <p class="text-slate-400 mb-8">ดิฉัน Antigravity พร้อมช่วยคุณดูแลระบบอยู่เสมอค่ะสิคะ sิกา
-          ลองเริ่มจากปุ่มจัดการเทอมก่อนได้เลยนะคะ! sิกา🚀</p>
-        <div class="flex justify-center gap-4">
-          <UButton to="/terms" label="เริ่มต้นจัดเทอมเลยค่ะ sิกา" variant="solid" color="primary" size="lg"
-            class="px-8 rounded-2xl" />
         </div>
       </div>
     </div>

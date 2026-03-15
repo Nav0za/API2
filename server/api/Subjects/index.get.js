@@ -8,7 +8,7 @@ export default defineEventHandler((event) => {
   let subjects
   // เช็คว่ามี id teacher มั้ย
   let baseQuery = `
-    SELECT s.*, r.room_name,
+    SELECT s.*,
     (
       SELECT GROUP_CONCAT(sec.section_name, ', ')
       FROM SubjectSections ss
@@ -22,7 +22,6 @@ export default defineEventHandler((event) => {
       WHERE ss.id_subject = s.id_subject
     ) as sections_json
     FROM Subjects s
-    LEFT JOIN rooms r ON s.id_room = r.id_room
   `
 
   if (id_teacher) {

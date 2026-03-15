@@ -78,11 +78,10 @@ export default defineEventHandler(async (event) => {
         `).all(term)
 
         // Lookup table for subjects to get their default rooms
-        const subjectsRaw = db.prepare('SELECT id_subject, id_room, name_subject FROM Subjects').all()
+        const subjectsRaw = db.prepare('SELECT id_subject, name_subject FROM Subjects').all()
         const subjectData = {}
         subjectsRaw.forEach(s => {
             subjectData[s.id_subject] = {
-                roomId: s.id_room,
                 name: s.name_subject
             }
         })
@@ -102,8 +101,8 @@ export default defineEventHandler(async (event) => {
                         const subjectId = slot.value
                         const subjectInfo = subjectData[subjectId]
 
-                        // Determine Room ID (Priority: Explicitly assigned in slot > Default from Subject > Unassigned)
-                        let assignedRoomId = slot.room_id ? Number(slot.room_id) : (subjectInfo ? subjectInfo.roomId : null)
+                        // Determine Room ID (Priority: Explicitly assigned in slot > Unassigned)
+                        let assignedRoomId = slot.room_id ? Number(slot.room_id) : null
 
                         // If a valid room is found, map it to the grid
                         if (assignedRoomId && roomSchedules[assignedRoomId]) {

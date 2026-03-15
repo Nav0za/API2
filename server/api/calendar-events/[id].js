@@ -52,7 +52,7 @@ export default defineEventHandler(async (event) => {
       if (eventDetails.makeup_class_ids) {
         try {
           const ids = JSON.parse(eventDetails.makeup_class_ids)
-          if (Array.isArray(ids)) {
+          if (Array.isArray(ids) && ids.length > 0) {
             const placeholders = ids.map(() => '?').join(',')
             db.prepare(`DELETE FROM makeup_classes WHERE id_makeup IN (${placeholders})`).run(...ids)
           }

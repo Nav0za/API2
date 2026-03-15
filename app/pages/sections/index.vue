@@ -26,7 +26,7 @@
         <div class="flex items-center gap-3 bg-slate-800 p-2 rounded-2xl border border-slate-700">
           <USelect v-model="selectedTerm" :items="filterTermOptions" placeholder="เลือกเทอม" class="w-48"
             variant="subtle" icon="i-heroicons-funnel" />
-          <UButton icon="i-heroicons-plus-circle" label="เพิ่มกลุ่มเรียน" color="primary"
+          <UButton icon="i-heroicons-plus-circle" label="เพิ่มกลุ่มเรียน" color="primary" size="xl"
             class="px-6 rounded-xl shadow-lg shadow-blue-500/20" @click="openAddModal = true" />
         </div>
       </div>
@@ -93,7 +93,8 @@
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
             <div class="flex items-center gap-4 mb-8">
-              <div class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20">
+              <div
+                class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20">
                 <UIcon name="i-heroicons-plus-circle" class="text-2xl text-blue-500" />
               </div>
               <div>

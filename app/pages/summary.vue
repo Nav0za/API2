@@ -11,9 +11,9 @@
           <p class="text-slate-400 mt-1">สรุปข้อมูลการสอนชดเชยและสถิติต่างๆ ในระบบ</p>
         </div>
         <div class="flex gap-3">
-          <UButton label="ส่งออก PDF" icon="i-heroicons-document-text" color="secondary" variant="soft" size="lg"
+          <UButton label="ส่งออก PDF" icon="i-heroicons-document-text" color="primary" variant="soft" size="xl"
             class="rounded-xl shadow-lg border border-slate-700 no-print" @click="exportToPDF" />
-          <UButton label="ดาวน์โหลด CSV" icon="i-heroicons-cloud-arrow-down" color="primary" variant="solid" size="lg"
+          <UButton label="ดาวน์โหลด CSV" icon="i-heroicons-cloud-arrow-down" color="primary" variant="solid" size="xl"
             class="rounded-xl shadow-lg shadow-blue-500/20 no-print" @click="exportToCSV" />
         </div>
       </div>
@@ -24,7 +24,8 @@
       <div class="flex justify-between items-start">
         <div>
           <h1 class="text-2xl font-black uppercase text-black">รายงานสรุปผลการจัดการเรียนสอนชดเชย</h1>
-          <p class="text-sm font-bold mt-1 text-slate-700">คณะวิทยาศาสตร์และศิลปศาสตร์ มทร.อีสาน</p>
+          <p class="text-sm font-bold mt-1 text-slate-700">คณะครุศาสตร์อุตสาหกรรม สาขาเทคโนโลยีคอมพิวเตอร์ มทร.อีสาน
+            ขอนแก่น</p>
           <p class="text-xs text-slate-500 mt-1 italic">Semi-Auto Makeup Class Report - {{ new
             Date().toLocaleDateString('th-TH') }}</p>
         </div>
