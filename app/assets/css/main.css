@@ -16,3 +16,70 @@
   --color-green-900: #0A5331;
   --color-green-950: #052E16;
 }
+
+html,
+body {
+  background: #ffffff;
+  color: #0f172a;
+}
+
+/* FullCalendar button theme (Premium Light) */
+.fc .fc-button,
+.fc .fc-button-primary {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: none !important;
+}
+
+.fc .fc-button:hover,
+.fc .fc-button:focus {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.fc .fc-button-active {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+/* FullCalendar date/holiday text (Premium Light) */
+.fc .fc-daygrid-day-number,
+.fc .fc-daygrid-day-top .fc-daygrid-day-number,
+.fc .fc-daygrid-day-number > span,
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-event-title,
+.fc .fc-event-title,
+.fc .fc-daygrid-event-dot,
+.fc .fc-daygrid-day-top,
+.fc .fc-daygrid-day-harness {
+  color: #0f172a !important;
+  opacity: 1 !important;
+}
+
+/* Ensure holidays/events display as dark text */
+.fc .fc-daygrid-event-harness .fc-event-title,
+.fc .fc-daygrid-event-harness .fc-event-time {
+  color: #0f172a !important;
+}
+
+/* FullCalendar toolbar (title + nav buttons) */
+.fc .fc-toolbar,
+.fc .fc-toolbar-chunk {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.fc .fc-toolbar-title {
+  color: #0f172a !important;
+}
+
+.fc .fc-button,
+.fc .fc-toolbar button {
+  color: #0f172a !important;
+}
+
+/* Ensure today button & nav icons show in dark color */
+.fc .fc-button.fc-button-primary {
+  color: #0f172a !important;
+}
