@@ -9,7 +9,9 @@ export default defineEventHandler(async (event) => {
     const stmt = db.prepare(`
       SELECT 
         mc.*,
-        t.name as teacher_name,
+        t.prefix,
+        t.first_name,
+        t.last_name,
         s.section_name,
         sub.name_subject,
         r.room_name
@@ -30,7 +32,10 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    return makeupClass
+    return {
+      ...makeupClass,
+      teacher_name: [makeupClass.prefix, makeupClass.first_name, makeupClass.last_name].filter(Boolean).join(' ').trim()
+    }
   }
 
   // PUT - อัปเดตคลาสชดเชย (เช่น เปลี่ยน status, เพิ่มห้อง)
@@ -39,7 +44,7 @@ export default defineEventHandler(async (event) => {
 
     // ดึงข้อมูลเดิมก่อนอัปเดต
     const getMakeupStmt = db.prepare(`
-      SELECT mc.*, t.name as teacher_name 
+      SELECT mc.*, t.prefix, t.first_name, t.last_name
       FROM makeup_classes mc 
       LEFT JOIN teachers t ON mc.teacher_id = t.id_teacher
       WHERE mc.id_makeup = ?
@@ -131,13 +136,15 @@ export default defineEventHandler(async (event) => {
     const syncCalendarEvent = async (makeupId) => {
       // ค้นหาข้อมูล makeup class ปัจจุบัน
       const cls = db.prepare(`
-        SELECT mc.*, s.name_subject, r.room_name, t.name as teacher_name
+        SELECT mc.*, s.name_subject, r.room_name, t.prefix, t.first_name, t.last_name
         FROM makeup_classes mc
         LEFT JOIN Subjects s ON mc.subject_id = s.id_subject
         LEFT JOIN rooms r ON mc.room_id = r.id_room
         LEFT JOIN teachers t ON mc.teacher_id = t.id_teacher
         WHERE mc.id_makeup = ?
       `).get(makeupId)
+
+      const teacherName = [cls.prefix, cls.first_name, cls.last_name].filter(Boolean).join(' ').trim()
 
       // ค้นหา event เดิมบนปฏิทินที่ผูกกับ id_makeup นี้
       const targetIdStr = `[${makeupId}]`
@@ -148,7 +155,7 @@ export default defineEventHandler(async (event) => {
 
       if (cls && cls.status === 'confirmed' && cls.makeup_date) {
         // ต้องมีแสดงในปฏิทิน
-        const title = `สอนชดเชย - ${cls.teacher_name} (${cls.name_subject})`
+        const title = `สอนชดเชย - ${teacherName} (${cls.name_subject})`
         const start = `${cls.makeup_date}T${cls.makeup_time_start}:00`
         const end = `${cls.makeup_date}T${cls.makeup_time_end}:00`
         const desc = `วิชา: ${cls.name_subject}\nห้อง: ${cls.room_name || 'ไม่ระบุ'}${cls.notes ? '\n' + cls.notes : ''}`
@@ -162,9 +169,9 @@ export default defineEventHandler(async (event) => {
         } else {
           db.prepare(`
             INSERT INTO calendar_events 
-            (title, start, end, background_color, border_color, teacher_id, teacher_name, description, event_type, makeup_class_ids, original_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          `).run(title, start, end, '#10b981', '#10b981', cls.teacher_id, cls.teacher_name, desc, 'makeup_class', targetIdStr, cls.original_date)
+            (title, start, end, background_color, border_color, teacher_id, description, event_type, makeup_class_ids, original_date)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `).run(title, start, end, '#10b981', '#10b981', cls.teacher_id, desc, 'makeup_class', targetIdStr, cls.original_date)
         }
       } else if (existingEvent) {
         // ถ้า status ไม่ใช่ confirmed หรือไม่มี date แล้ว ให้ลบทิ้ง
