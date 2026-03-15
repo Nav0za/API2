@@ -22,14 +22,13 @@ export default defineEventHandler(async (event) => {
 
     try {
       const stmt = db.prepare(`
-        INSERT INTO rooms (room_name, building, capacity, description)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO rooms (room_name, building, description)
+        VALUES (?, ?, ?)
       `)
 
       const result = stmt.run(
         body.room_name,
         body.building || null,
-        body.capacity || null,
         body.description || null
       )
 
@@ -37,7 +36,6 @@ export default defineEventHandler(async (event) => {
         id_room: result.lastInsertRowid,
         room_name: body.room_name,
         building: body.building || null,
-        capacity: body.capacity || null,
         description: body.description || null,
         created_at: new Date().toISOString()
       }

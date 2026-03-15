@@ -622,10 +622,17 @@ const selectedEvent = ref(null)
 // Options
 const teacherOptions = computed(() => {
   return props.teachers.map(t => ({
-    label: t.name,
+    label: formatName(t),
     value: t.id_teacher
   }))
 })
+
+const formatName = (t) => {
+  if (!t) return ''
+  // Handle both teacher objects and those with name components
+  if (t.name) return t.name
+  return [t.prefix, t.first_name, t.last_name].filter(Boolean).join(' ').trim()
+}
 
 const termOptions = computed(() => {
   if (!terms.value || terms.value.length === 0) return []

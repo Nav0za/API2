@@ -72,7 +72,7 @@
               </div>
 
               <h3 class="text-xl font-black text-white mb-2 leading-tight group-hover:text-amber-400 transition-colors">
-                {{ teacher.name }}
+                {{ formatName(teacher) }}
               </h3>
 
               <div
@@ -137,9 +137,9 @@
               <div class="relative z-10">
                 <p class="text-xs font-black uppercase tracking-widest text-red-400/80 mb-2">อาจารย์ที่เลือก</p>
                 <div class="flex items-center justify-center gap-3">
-                  <UAvatar :alt="selectedTeacherForDelete?.name.toUpperCase()" size="lg"
+                  <UAvatar :alt="formatName(selectedTeacherForDelete).toUpperCase()" size="lg"
                     :ui="{ background: 'bg-red-500/20 text-red-500 font-black' }" />
-                  <p class="text-2xl font-black text-white">{{ selectedTeacherForDelete?.name }}</p>
+                  <p class="text-2xl font-black text-white">{{ formatName(selectedTeacherForDelete) }}</p>
                 </div>
               </div>
             </div>
@@ -180,7 +180,7 @@
                 <label
                   class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">ชื่อปัจจุบัน</label>
                 <div class="p-4 bg-slate-800 rounded-2xl text-slate-300 border border-slate-700 font-bold italic">{{
-                  seletedTeacher?.name }}</div>
+                  formatName(seletedTeacher) }}</div>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -232,12 +232,18 @@ const filteredTeachers = computed(() => {
   if (!teachers.value) return []
   if (!searchQuery.value) return teachers.value
   const query = searchQuery.value.toLowerCase()
-  return teachers.value.filter(t =>
-    t.name?.toLowerCase().includes(query) ||
-    t.first_name?.toLowerCase().includes(query) ||
-    t.last_name?.toLowerCase().includes(query)
-  )
+  return teachers.value.filter(t => {
+    const fullName = formatName(t).toLowerCase()
+    return fullName.includes(query) ||
+      t.first_name?.toLowerCase().includes(query) ||
+      t.last_name?.toLowerCase().includes(query)
+  })
 })
+
+const formatName = (t) => {
+  if (!t) return ''
+  return [t.prefix, t.first_name, t.last_name].filter(Boolean).join(' ').trim()
+}
 
 // เพิ่มอาจารย์
 const addTeacher = async () => {
@@ -344,8 +350,6 @@ const updateTeacher = async (id) => {
       teacher.prefix = body.prefix
       teacher.first_name = body.first_name
       teacher.last_name = body.last_name
-      // Update full name string for display
-      teacher.name = [body.prefix, body.first_name, body.last_name].filter(Boolean).join(' ').trim()
     }
 
     editModalopen.value = false

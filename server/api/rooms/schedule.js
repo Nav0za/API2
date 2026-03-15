@@ -47,7 +47,7 @@ export default defineEventHandler(async (event) => {
         // 2. Fetch Makeup Classes for the specific date
         const makeupClasses = db.prepare(`
       SELECT mc.id_makeup, mc.makeup_time_start, mc.makeup_time_end, mc.room_id,
-             t.name as teacher_name, sub.name_subject as subject_name
+             t.prefix, t.first_name, t.last_name, sub.name_subject as subject_name
       FROM makeup_classes mc
       LEFT JOIN teachers t ON mc.teacher_id = t.id_teacher
       LEFT JOIN Subjects sub ON mc.subject_id = sub.id_subject
@@ -61,7 +61,7 @@ export default defineEventHandler(async (event) => {
             for (const slotIdx of slotsOccupied) {
                 roomSchedules[makeup.room_id].slots[slotIdx] = {
                     type: 'makeup',
-                    teacherName: makeup.teacher_name,
+                    teacherName: [makeup.prefix, makeup.first_name, makeup.last_name].filter(Boolean).join(' ').trim(),
                     subjectName: makeup.subject_name || 'ชดเชยพิเศษ',
                     timeStart: makeup.makeup_time_start,
                     timeEnd: makeup.makeup_time_end
@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
 
         // 3. Fetch Regular Teacher Schedules (Since Teacher Schedules are synced with Section Schedules)
         const teacherSchedules = db.prepare(`
-            SELECT s.id_teacher, t.name, s.scheduleData 
+            SELECT s.id_teacher, t.prefix, t.first_name, t.last_name, s.scheduleData 
             FROM schedules s
             LEFT JOIN teachers t ON s.id_teacher = t.id_teacher
             WHERE s.term = ?
@@ -111,7 +111,7 @@ export default defineEventHandler(async (event) => {
                             if (!roomSchedules[assignedRoomId].slots[slotIdx] || roomSchedules[assignedRoomId].slots[slotIdx].type === 'regular') {
                                 roomSchedules[assignedRoomId].slots[slotIdx] = {
                                     type: 'regular',
-                                    teacherName: ts.name,
+                                    teacherName: [ts.prefix, ts.first_name, ts.last_name].filter(Boolean).join(' ').trim(),
                                     subjectName: subjectInfo ? subjectInfo.name : subjectId,
                                     // Note: regular slots are usually 1 hr blocks in this representation
                                     timeStart: times[slotIdx],
