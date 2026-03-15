@@ -26,7 +26,7 @@
               :disabled="addingTeacher" @keyup.enter="addTeacher" />
             <UInput v-model="newLastName" placeholder="นามสกุล" size="xl" class="w-48 rounded-xl"
               :disabled="addingTeacher" @keyup.enter="addTeacher" />
-            <UButton icon="i-heroicons-plus" color="primary" size="xl" square
+            <UButton label="เพิ่มอาจารย์" icon="i-heroicons-plus" color="primary" size="xl" square
               class="rounded-xl shadow-lg shadow-blue-500/20 font-bold" :loading="addingTeacher"
               :disabled="!newFirstName.trim()" @click="addTeacher" />
           </div>

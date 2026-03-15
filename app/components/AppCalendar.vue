@@ -12,13 +12,13 @@
         </div>
 
         <div class="flex flex-wrap gap-3 justify-center">
-          <UButton label="เพิ่มวันหยุด" icon="i-lucide-calendar-off" color="warning" variant="subtle" size="lg"
+          <UButton label="เพิ่มวันหยุด" icon="i-lucide-calendar-off" color="primary" variant="solid" size="xl"
             class="rounded-xl font-bold cursor-pointer" @click="openHolidayModal" />
-          <UButton label="อาจารย์ติดราชการ" icon="i-lucide-user-x" color="error" variant="subtle" size="lg"
+          <UButton label="อาจารย์ติดราชการ" icon="i-lucide-user-x" color="primary" variant="solid" size="xl"
             class="rounded-xl font-bold cursor-pointer" @click="openAbsenceModal" />
-          <UButton label="รายการชดเชย" icon="i-heroicons-clipboard-document-list" color="primary" variant="soft"
-            size="lg" class="rounded-xl font-bold" to="/makeup-classes" />
-          <UButton label="สรุปรายงาน" icon="i-lucide-bar-chart-3" color="secondary" variant="soft" size="lg"
+          <UButton label="รายการชดเชย" icon="i-heroicons-clipboard-document-list" color="primary" variant="solid"
+            size="xl" class="rounded-xl font-bold" to="/makeup-classes" />
+          <UButton label="สรุปรายงาน" icon="i-lucide-bar-chart-3" color="primary" variant="solid" size="xl"
             class="rounded-xl font-bold" to="/summary" />
         </div>
       </div>
@@ -262,7 +262,7 @@
                             <UIcon name="i-heroicons-book-open" class="text-blue-400 flex-shrink-0" />
                             <span class="truncate max-w-[100px]">{{ cls.subjectName }}</span>
                             <span v-if="cls.sectionName" class="text-slate-500 text-[10px] truncate">({{ cls.sectionName
-                              }})</span>
+                            }})</span>
 
                             <UIcon name="i-heroicons-map-pin" class="text-green-400 ml-1 flex-shrink-0" />
                             <span class="text-green-400 font-medium truncate">
@@ -323,7 +323,7 @@
                     <div class="flex flex-col">
                       <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">ช่วงเวลา</span>
                       <span class="text-xl font-black text-white">{{ selectedSlot.timeStart }} - {{ selectedSlot.timeEnd
-                        }}</span>
+                      }}</span>
                     </div>
                   </div>
 

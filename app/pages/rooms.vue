@@ -14,10 +14,10 @@
         <!-- Filters & Actions -->
         <div class="flex flex-wrap items-center justify-center gap-4">
           <USelect v-model="selectedTerm" :items="termOptions" value-key="value" label-key="label"
-            placeholder="เลือกเทอม" size="lg" class="min-w-[150px]" />
-          <UInput type="date" v-model="selectedDate" size="lg" icon="i-heroicons-calendar" />
+            placeholder="เลือกเทอม" size="xl" class="min-w-[150px]" />
+          <UInput type="date" v-model="selectedDate" size="xl" icon="i-heroicons-calendar" />
           <div class="h-8 w-px bg-slate-700 mx-2 hidden md:block"></div>
-          <UButton label="เพิ่มห้อง" icon="i-heroicons-plus-circle" color="primary" size="lg"
+          <UButton label="เพิ่มห้อง" icon="i-heroicons-plus-circle" color="primary" size="xl"
             class="rounded-xl shadow-lg shadow-blue-500/20 font-bold" @click="openAddModal" />
         </div>
       </div>
@@ -148,7 +148,7 @@
               </div>
               <div>
                 <h3 class="text-2xl font-bold text-white">{{ editingRoom ? 'แก้ไขข้อมูลห้องเรียน' : 'เพิ่มห้องเรียนใหม่'
-                  }}</h3>
+                }}</h3>
                 <p class="text-slate-400 text-sm">ระบุรายละเอียดของห้องเรียนเพื่อให้สะดวกในการค้นหาเวลาว่าง</p>
               </div>
             </div>

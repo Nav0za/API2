@@ -23,12 +23,18 @@ useHead({
       </template>
 
       <template #right>
-        <UButton label="คู่มือ" icon="i-heroicons-information-circle" color="success" variant="ghost" to="/guide" />
-        <UButton label="เทอม" icon="i-lucide-layers" color="warning" variant="ghost" to="/terms" />
-        <UButton to="/sections" variant="ghost" color="secondary" label="กลุ่มนักศึกษา" icon="i-heroicons-users" />
-        <UButton to="/rooms" variant="ghost" color="secondary" label="ห้องเรียน" icon="i-heroicons-building-office-2" />
-        <UButton label="อาจารย์" icon="i-lucide-users" color="warning" variant="ghost" to="/teachers" />
-        <UButton label="สรุปผล" icon="i-heroicons-chart-bar" color="info" variant="ghost" to="/summary" />
+        <UButton class="text-white" label="คู่มือ" size="xl" icon="i-heroicons-information-circle" color="primary"
+          variant="ghost" to="/guide" />
+        <UButton class="text-white" label="เทอม" size="xl" icon="i-lucide-layers" color="primary" variant="ghost"
+          to="/terms" />
+        <UButton class="text-white" to="/sections" size="xl" variant="ghost" color="primary" label="กลุ่มนักศึกษา"
+          icon="i-heroicons-users" />
+        <UButton class="text-white" to="/rooms" size="xl" variant="ghost" color="primary" label="ห้องเรียน"
+          icon="i-heroicons-building-office-2" />
+        <UButton class="text-white" label="อาจารย์" size="xl" icon="i-lucide-users" color="primary" variant="ghost"
+          to="/teachers" />
+        <UButton class="text-white" label="สรุปผล" size="xl" icon="i-heroicons-chart-bar" color="primary"
+          variant="ghost" to="/summary" />
       </template>
     </UHeader>
 
