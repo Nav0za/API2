@@ -22,7 +22,6 @@ export default defineEventHandler(async (event) => {
 
   const termStr = `${termRow.term}/${termRow.academic_year}`
 
-  // Cascade delete all related data for this term
   const cascadeDelete = db.transaction(() => {
     const startDate = termRow.start_date
     const endDate = termRow.end_date
