@@ -520,8 +520,13 @@ const teacherData = computed(() =>
 )
 
 const teacherName = computed(() =>
-  teacherData.value?.name || 'ไม่พบชื่ออาจารย์'
+  formatName(teacherData.value) || 'ไม่พบชื่ออาจารย์'
 )
+
+const formatName = (t) => {
+  if (!t) return ''
+  return [t.prefix, t.first_name, t.last_name].filter(Boolean).join(' ').trim()
+}
 
 const hoursPerWeek = computed(() => {
   if (!scheduleSlots.value) return 0

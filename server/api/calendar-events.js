@@ -13,14 +13,19 @@ export default defineEventHandler(async (event) => {
     let events
     if (qStart && qEnd) {
       events = db.prepare(`
-        SELECT * FROM calendar_events 
-        WHERE (start <= ? AND end >= ?) 
-           OR (start >= ? AND start <= ?)
-        ORDER BY start ASC
+        SELECT ce.*, t.prefix, t.first_name, t.last_name 
+        FROM calendar_events ce
+        LEFT JOIN teachers t ON ce.teacher_id = t.id_teacher
+        WHERE (ce.start <= ? AND ce.end >= ?) 
+           OR (ce.start >= ? AND ce.start <= ?)
+        ORDER BY ce.start ASC
       `).all(qEnd, qStart, qStart, qEnd)
     } else {
       events = db.prepare(`
-        SELECT * FROM calendar_events ORDER BY start ASC
+        SELECT ce.*, t.prefix, t.first_name, t.last_name 
+        FROM calendar_events ce
+        LEFT JOIN teachers t ON ce.teacher_id = t.id_teacher
+        ORDER BY ce.start ASC
       `).all()
     }
 
@@ -35,7 +40,7 @@ export default defineEventHandler(async (event) => {
       extendedProps: {
         eventType: e.event_type,
         teacherId: e.teacher_id,
-        teacherName: e.teacher_name,
+        teacherName: [e.prefix, e.first_name, e.last_name].filter(Boolean).join(' ').trim(),
         description: e.description,
         originalDate: e.original_date,
         makeupClassIds: e.makeup_class_ids
@@ -97,8 +102,8 @@ export default defineEventHandler(async (event) => {
 
     const result = db.prepare(`
       INSERT INTO calendar_events 
-      (title, start, end, background_color, border_color, teacher_id, teacher_name, description, event_type, all_day, original_date, makeup_class_ids)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (title, start, end, background_color, border_color, teacher_id, description, event_type, all_day, original_date, makeup_class_ids)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       body.title,
       body.start,
@@ -106,7 +111,6 @@ export default defineEventHandler(async (event) => {
       body.backgroundColor,
       body.borderColor,
       body.extendedProps?.teacherId || null,
-      body.extendedProps?.teacherName || null,
       body.extendedProps?.description || null,
       body.extendedProps?.eventType || 'normal',
       body.allDay ? 1 : 0,

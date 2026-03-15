@@ -10,7 +10,9 @@ export default defineEventHandler(async (event) => {
     let sql = `
       SELECT 
         mc.*,
-        t.name as teacher_name,
+        t.prefix,
+        t.first_name,
+        t.last_name,
         s.section_name,
         sub.name_subject,
         r.room_name
@@ -48,7 +50,10 @@ export default defineEventHandler(async (event) => {
     const stmt = db.prepare(sql)
     const makeupClasses = stmt.all(...params)
 
-    return makeupClasses
+    return makeupClasses.map(mc => ({
+      ...mc,
+      teacher_name: [mc.prefix, mc.first_name, mc.last_name].filter(Boolean).join(' ').trim()
+    }))
   }
 
   // POST - เพิ่มคลาสชดเชยใหม่

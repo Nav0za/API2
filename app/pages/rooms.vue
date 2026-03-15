@@ -272,7 +272,6 @@ const saving = ref(false)
 const formData = ref({
   room_name: '',
   building: '',
-  capacity: null,
   description: ''
 })
 
@@ -281,7 +280,6 @@ const openAddModal = () => {
   formData.value = {
     room_name: '',
     building: '',
-    capacity: null,
     description: ''
   }
   modalOpen.value = true
@@ -292,7 +290,6 @@ const openEditModal = (room) => {
   formData.value = {
     room_name: room.room_name,
     building: room.building || '',
-    capacity: room.capacity || null,
     description: room.description || ''
   }
   modalOpen.value = true

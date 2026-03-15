@@ -73,7 +73,7 @@ export function checkRoomAvailability({ room_id, date, start_time, end_time, ter
 
     // 1. Check Makeup Classes (exclude cancelled AND pending - pending have null dates from rescheduling)
     let makeupQuery = `
-        SELECT id_makeup, makeup_time_start, makeup_time_end, t.name as teacher_name 
+        SELECT id_makeup, makeup_time_start, makeup_time_end, t.prefix, t.first_name, t.last_name 
         FROM makeup_classes mc
         LEFT JOIN teachers t ON mc.teacher_id = t.id_teacher
         WHERE mc.room_id = ? 
@@ -95,16 +95,17 @@ export function checkRoomAvailability({ room_id, date, start_time, end_time, ter
         const mEnd = timeToMinutes(makeup.makeup_time_end)
 
         if (startMinutes < mEnd && endMinutes > mStart) {
+            const teacherName = [makeup.prefix, makeup.first_name, makeup.last_name].filter(Boolean).join(' ').trim()
             return {
                 available: false,
-                reason: `มีสอนชดเชยของ ${makeup.teacher_name || 'อาจารย์ท่านอื่น'} ในเวลา ${makeup.makeup_time_start} - ${makeup.makeup_time_end}`
+                reason: `มีสอนชดเชยของ ${teacherName || 'อาจารย์ท่านอื่น'} ในเวลา ${makeup.makeup_time_start} - ${makeup.makeup_time_end}`
             }
         }
     }
 
     // 2. Check Regular Schedules
     const teacherSchedules = db.prepare(`
-        SELECT s.id_teacher, t.name, s.scheduleData 
+        SELECT s.id_teacher, t.prefix, t.first_name, t.last_name, s.scheduleData 
         FROM schedules s
         LEFT JOIN teachers t ON s.id_teacher = t.id_teacher
         WHERE s.term = ?
@@ -126,9 +127,10 @@ export function checkRoomAvailability({ room_id, date, start_time, end_time, ter
 
                     if (classUsesRoom) {
                         const subject = db.prepare('SELECT name_subject FROM Subjects WHERE id_subject = ?').get(slot.value)
+                        const teacherName = [ts.prefix, ts.first_name, ts.last_name].filter(Boolean).join(' ').trim()
                         return {
                             available: false,
-                            reason: `ตรงกับตารางเรียนปกติ (วิชา ${subject?.name_subject || slot.value}) สอนโดย ${ts.name}`
+                            reason: `ตรงกับตารางเรียนปกติ (วิชา ${subject?.name_subject || slot.value}) สอนโดย ${teacherName}`
                         }
                     }
                 }

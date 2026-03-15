@@ -17,7 +17,6 @@ const db = new Database(dbPath)
 db.exec(`
   CREATE TABLE IF NOT EXISTS teachers (
     id_teacher INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE,
     prefix TEXT,
     first_name TEXT,
     last_name TEXT
@@ -29,11 +28,8 @@ db.exec(`
     id_subject INTEGER PRIMARY KEY AUTOINCREMENT,
     name_subject TEXT NOT NULL,
     id_teacher INTEGER,
-    id_room INTEGER,
     FOREIGN KEY (id_teacher) REFERENCES teachers(id_teacher)
-      ON DELETE CASCADE,
-    FOREIGN KEY (id_room) REFERENCES rooms(id_room)
-      ON DELETE SET NULL
+      ON DELETE CASCADE
   );`)
 
 // Indexes for Subjects table
@@ -47,16 +43,8 @@ db.exec(`
 try {
   const tableInfo = db.prepare('PRAGMA table_info(Subjects)').all()
 
-  const hasIdRoom = tableInfo.some(col => col.name === 'id_room')
-  if (!hasIdRoom) {
-    db.exec('ALTER TABLE Subjects ADD COLUMN id_room INTEGER REFERENCES rooms(id_room) ON DELETE SET NULL')
-    console.log('Migrated Subjects table: added id_room')
-  }
+  // Migration for adding id_room to Subjects (REMOVED: already dropped if exists below)
 
-  // Create index for id_room after migration
-  db.exec(`
-    CREATE INDEX IF NOT EXISTS idx_subjects_room 
-    ON Subjects(id_room);`)
 
   // Create SubjectSections join table
   db.exec(`
@@ -155,7 +143,6 @@ db.exec(`
     background_color TEXT DEFAULT '#3b82f6',
     border_color TEXT DEFAULT '#3b82f6',
     teacher_id INTEGER,
-    teacher_name TEXT,
     description TEXT,
     all_day INTEGER DEFAULT 0,
     original_date TEXT,
@@ -264,7 +251,6 @@ db.exec(`
     id_room INTEGER PRIMARY KEY AUTOINCREMENT,
     room_name TEXT NOT NULL UNIQUE,
     building TEXT,
-    capacity INTEGER,
     description TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );`)
@@ -305,8 +291,35 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_makeup_teacher 
   ON makeup_classes(teacher_id);`)
 
-db.exec(`
-  CREATE INDEX IF NOT EXISTS idx_makeup_status 
-  ON makeup_classes(status);`)
+// Migration (Cleanup): Remove redundant columns if they still exist
+try {
+  const teacherTableInfo = db.prepare('PRAGMA table_info(teachers)').all()
+  if (teacherTableInfo.some(col => col.name === 'name')) {
+    db.exec('ALTER TABLE teachers DROP COLUMN name')
+    console.log('Cleaned up teachers table: removed name column')
+  }
+
+  const eventTableInfo = db.prepare('PRAGMA table_info(calendar_events)').all()
+  if (eventTableInfo.some(col => col.name === 'teacher_name')) {
+    db.exec('ALTER TABLE calendar_events DROP COLUMN teacher_name')
+    console.log('Cleaned up calendar_events table: removed teacher_name column')
+  }
+
+  const roomTableInfo = db.prepare('PRAGMA table_info(rooms)').all()
+  if (roomTableInfo.some(col => col.name === 'capacity')) {
+    db.exec('ALTER TABLE rooms DROP COLUMN capacity')
+    console.log('Cleaned up rooms table: removed capacity column')
+  }
+
+  const subjectTableInfo = db.prepare('PRAGMA table_info(Subjects)').all()
+  if (subjectTableInfo.some(col => col.name === 'id_room')) {
+    db.exec('ALTER TABLE Subjects DROP COLUMN id_room')
+    console.log('Cleaned up Subjects table: removed id_room column')
+  }
+} catch (err) {
+  console.error('Cleanup migration error:', err)
+  // Fallback for older SQLite versions if DROP COLUMN fails
+  console.log('Note: Some columns might not have been dropped if SQLite version < 3.35.0')
+}
 
 export default db
