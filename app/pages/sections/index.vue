@@ -1,11 +1,11 @@
 <template>
-  <div class="min-h-screen bg-slate-900 text-white pb-20">
+  <div class="min-h-screen bg-white text-slate-900 pb-20">
     <!-- Navbar -->
-    <nav class="bg-slate-800 border-b border-slate-700 p-4 sticky top-0 z-50 shadow-lg">
+    <nav class="bg-white border-b border-slate-200 p-4 sticky top-0 z-50 shadow-lg">
       <div class="container mx-auto flex items-center justify-between">
         <div class="flex items-center gap-4">
           <UButton icon="i-lucide-arrow-left" color="gray" variant="ghost" to="/" />
-          <h2 class="text-xl font-bold text-blue-400">
+          <h2 class="text-xl font-bold text-blue-600">
             จัดการกลุ่มเรียน (Sections)
           </h2>
         </div>
@@ -16,14 +16,14 @@
       <!-- Header & Add Button -->
       <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
         <div>
-          <h1 class="text-3xl font-extrabold text-white tracking-tight">
+          <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
             รายชื่อกลุ่มเรียน
           </h1>
-          <p class="text-slate-400 mt-1">
+          <p class="text-slate-600 mt-1">
             จัดการข้อมูลกลุ่มนักศึกษาและตารางเรียนในแต่ละเทอม
           </p>
         </div>
-        <div class="flex items-center gap-3 bg-slate-800 p-2 rounded-2xl border border-slate-700">
+        <div class="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200">
           <USelect v-model="selectedTerm" :items="filterTermOptions" placeholder="เลือกเทอม" class="w-48"
             variant="subtle" icon="i-heroicons-funnel" />
           <UButton icon="i-heroicons-plus-circle" label="เพิ่มกลุ่มเรียน" color="primary" size="xl"
@@ -39,40 +39,40 @@
 
       <!-- Empty State -->
       <div v-else-if="!sections || sections.length === 0"
-        class="text-center py-24 bg-slate-800/50 rounded-3xl border border-dashed border-slate-700">
+        class="text-center py-24 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
         <div
-          class="bg-slate-800 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-700">
-          <UIcon name="i-heroicons-user-group" class="text-3xl text-slate-500" />
+          class="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200">
+          <UIcon name="i-heroicons-user-group" class="text-3xl text-slate-400" />
         </div>
-        <h3 class="text-xl font-bold text-white mb-2">ยังไม่มีกลุ่มเรียน</h3>
-        <p class="text-slate-400 mb-6">เริ่มสร้างกลุ่มเรียนแรกเพื่อจัดการตารางสอนได้เลย</p>
+        <h3 class="text-xl font-bold text-slate-900 mb-2">ยังไม่มีกลุ่มเรียน</h3>
+        <p class="text-slate-500 mb-6">เริ่มสร้างกลุ่มเรียนแรกเพื่อจัดการตารางสอนได้เลย</p>
         <UButton label="สร้างกลุ่มเรียนแรก" color="primary" variant="soft" @click="openAddModal = true" />
       </div>
 
       <!-- Section List -->
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div v-for="section in sections" :key="section.id_section"
-          class="group bg-slate-800 rounded-2xl border border-slate-700 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
+          class="group bg-white rounded-2xl border border-slate-200 hover:border-blue-500/50 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 overflow-hidden">
           <div class="p-6">
             <div class="flex justify-between items-start mb-4">
               <div class="flex-1 min-w-0">
-                <h3 class="text-xl font-bold text-white truncate group-hover:text-blue-400 transition-colors">
+                <h3 class="text-xl font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
                   {{ section.section_name }}
                 </h3>
                 <div class="flex items-center gap-2 mt-2">
                   <span
-                    class="text-xs px-2 py-0.5 bg-blue-500/10 text-blue-400 rounded-full border border-blue-500/20 font-medium lowercase">
+                    class="text-xs px-2 py-0.5 bg-blue-500/10 text-blue-600 rounded-full border border-blue-500/20 font-medium lowercase">
                     เทอม {{ section.term }}
                   </span>
                 </div>
               </div>
               <UDropdownMenu :items="getActionItems(section)">
                 <UButton icon="i-heroicons-ellipsis-vertical" color="gray" variant="ghost"
-                  class="rounded-full hover:bg-slate-700" />
+                  class="rounded-full hover:bg-slate-100" />
               </UDropdownMenu>
             </div>
 
-            <p class="text-sm text-slate-400 line-clamp-2 h-10 mb-6">
+            <p class="text-sm text-slate-600 line-clamp-2 h-10 mb-6">
               {{ section.description || 'ไม่มีรายละเอียดเพิ่มเติม' }}
             </p>
 
@@ -88,40 +88,40 @@
     <!-- Modals (Add, Edit, Delete) - Let's keep the logic mostly but fix UI -->
     <!-- Add Section Modal -->
     <UModal v-model:open="openAddModal"
-      :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
             <div class="flex items-center gap-4 mb-8">
               <div
                 class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20">
-                <UIcon name="i-heroicons-plus-circle" class="text-2xl text-blue-500" />
+                <UIcon name="i-heroicons-plus-circle" class="text-2xl text-blue-600" />
               </div>
               <div>
-                <h3 class="text-2xl font-bold text-white">เพิ่มกลุ่มเรียน</h3>
-                <p class="text-slate-400 text-sm">สร้างกลุ่มนักศึกษาใหม่สำหรับจัดการตารางเรียน</p>
+                <h3 class="text-2xl font-bold text-slate-900">เพิ่มกลุ่มเรียน</h3>
+                <p class="text-slate-500 text-sm">สร้างกลุ่มนักศึกษาใหม่สำหรับจัดการตารางเรียน</p>
               </div>
             </div>
 
             <form @submit.prevent="handleAddSection" class="space-y-6">
               <UFormField label="ชื่อกลุ่มเรียน (Section Name) *" help="เช่น TC2R1, SE66 เป็นต้น"
-                :ui="{ label: 'text-white font-bold mb-2' }">
+                :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                 <UInput v-model="newSection.name" placeholder="กรอกชื่อกลุ่มเรียน..." size="xl" class="rounded-xl"
-                  autofocus :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
+                  autofocus :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }" />
               </UFormField>
 
-              <UFormField label="ปีการศึกษา (Term) *" :ui="{ label: 'text-white font-bold mb-2' }">
+              <UFormField label="ปีการศึกษา (Term) *" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                 <USelect v-model="newSection.term" :items="termOptions" placeholder="เลือกเทอมที่ต้องการ" size="xl"
-                  class="rounded-xl" :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
+                  class="rounded-xl" :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }" />
               </UFormField>
 
-              <UFormField label="รายละเอียดเพิ่มเติม" :ui="{ label: 'text-white font-bold mb-2' }">
+              <UFormField label="รายละเอียดเพิ่มเติม" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                 <UTextarea v-model="newSection.description" placeholder="รายละเอียดกลุ่มเรียน (ถ้ามี)..." size="xl"
-                  class="rounded-xl" :rows="3" :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
+                  class="rounded-xl" :rows="3" :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }" />
               </UFormField>
             </form>
           </div>
-          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+          <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex gap-3">
               <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
                 class="rounded-2xl py-4 flex-1 font-bold" @click="openAddModal = false" />
@@ -136,41 +136,41 @@
 
     <!-- Edit Section Modal -->
     <UModal v-model:open="openEditModal"
-      :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
             <div class="flex items-center gap-4 mb-8">
               <div
                 class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20">
-                <UIcon name="i-heroicons-pencil-square" class="text-2xl text-amber-500" />
+                <UIcon name="i-heroicons-pencil-square" class="text-2xl text-amber-600" />
               </div>
               <div>
-                <h3 class="text-2xl font-bold text-white">แก้ไขข้อมูลกลุ่มเรียน</h3>
-                <p class="text-slate-400 text-sm">การเปลี่ยนชื่อกลุ่มจะไม่ส่งผลต่อตารางเรียนเดิม</p>
+                <h3 class="text-2xl font-bold text-slate-900">แก้ไขข้อมูลกลุ่มเรียน</h3>
+                <p class="text-slate-500 text-sm">การเปลี่ยนชื่อกลุ่มจะไม่ส่งผลต่อตารางเรียนเดิม</p>
               </div>
             </div>
 
             <form @submit.prevent="handleEditSection" class="space-y-6">
               <UFormField label="ชื่อกลุ่มเรียน *" help="ระบุชื่อที่ต้องการแก้ไข"
-                :ui="{ label: 'text-white font-bold mb-2' }">
+                :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                 <UInput v-model="editingSection.name" placeholder="ชื่อกลุ่มเรียน..." size="xl" class="rounded-xl"
-                  autofocus :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
+                  autofocus :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }" />
               </UFormField>
 
-              <UFormField label="เทอมปัจจุบัน" :ui="{ label: 'text-white font-bold mb-2' }">
+              <UFormField label="เทอมปัจจุบัน" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                 <UInput :model-value="`เทอม ${editingSection.term}`" disabled size="xl" class="rounded-xl opacity-70"
-                  :ui="{ base: 'bg-slate-800/50 border-slate-700 text-slate-400 rounded-2xl' }" />
+                  :ui="{ base: 'bg-slate-50 border-slate-200 text-slate-500 rounded-2xl' }" />
                 <p class="text-xs text-slate-500 mt-2">หมายเหตุ: ไม่สามารถเปลี่ยนเทอมได้หลังจากสร้างแล้วค่ะ</p>
               </UFormField>
 
-              <UFormField label="รายละเอียด" :ui="{ label: 'text-white font-bold mb-2' }">
+              <UFormField label="รายละเอียด" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                 <UTextarea v-model="editingSection.description" placeholder="รายละเอียด..." size="xl" class="rounded-xl"
-                  :rows="3" :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
+                  :rows="3" :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }" />
               </UFormField>
             </form>
           </div>
-          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+          <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex gap-3">
               <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
                 class="rounded-2xl py-4 flex-1 font-bold" @click="openEditModal = false" />
@@ -185,7 +185,7 @@
 
     <!-- Delete Confirmation Modal -->
     <UModal v-model:open="openDeleteModal"
-      :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
@@ -194,9 +194,9 @@
               <UIcon name="i-heroicons-trash" class="text-4xl text-red-500" />
             </div>
 
-            <h3 class="text-2xl font-bold text-white text-center mb-2">ยืนยันการลบกลุ่มเรียน</h3>
-            <p class="text-slate-400 text-center mb-8">คุณแน่ใจหรือไม่ที่จะลบกลุ่มเรียน <span
-                class="text-white font-bold">{{ deletingSection?.section_name }}</span>?
+            <h3 class="text-2xl font-bold text-slate-900 text-center mb-2">ยืนยันการลบกลุ่มเรียน</h3>
+            <p class="text-slate-500 text-center mb-8">คุณแน่ใจหรือไม่ที่จะลบกลุ่มเรียน <span
+                class="text-slate-900 font-bold">{{ deletingSection?.section_name }}</span>?
               การดำเนินการนี้ไม่สามารถย้อนคืนได้</p>
 
             <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-2xl mb-2">
@@ -214,10 +214,10 @@
               </div>
             </div>
           </div>
-          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+          <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex flex-col sm:flex-row gap-3">
               <UButton label="ยกเลิก" color="neutral" variant="outline" size="xl" block
-                class="rounded-2xl border-slate-700 py-4 flex-1 font-bold" @click="openDeleteModal = false" />
+                class="rounded-2xl border-slate-200 py-4 flex-1 font-bold" @click="openDeleteModal = false" />
               <UButton label="ยืนยันการลบถาวร" color="error" size="xl" block
                 class="rounded-2xl py-4 flex-1 shadow-lg shadow-red-500/20 font-bold" :loading="deleting"
                 @click="handleDeleteSection" />

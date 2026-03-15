@@ -1,14 +1,14 @@
 <template>
-  <div class="min-h-screen bg-slate-900 text-white pb-20">
+  <div class="min-h-screen bg-white text-slate-900 pb-20">
     <!-- Header -->
-    <div class="bg-slate-800 border-b border-slate-700 p-6 sticky top-0 z-30 shadow-lg mb-8 no-print">
+    <div class="bg-white border-b border-slate-200 p-6 sticky top-0 z-30 shadow-lg mb-8 no-print">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
-          <h1 class="text-3xl font-bold text-white flex items-center gap-2">
-            <UIcon name="i-heroicons-home-modern" class="text-blue-400" />
+          <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-2">
+            <UIcon name="i-heroicons-home-modern" class="text-blue-600" />
             ตารางการใช้ห้องเรียน
           </h1>
-          <p class="text-slate-400 mt-1">ดูสถานะการใช้งาน จัดการ และเพิ่มห้องเรียนสำหรับการเรียนการสอน</p>
+          <p class="text-slate-600 mt-1">ดูสถานะการใช้งาน จัดการ และเพิ่มห้องเรียนสำหรับการเรียนการสอน</p>
         </div>
 
         <!-- Filters & Actions -->
@@ -16,7 +16,7 @@
           <USelect v-model="selectedTerm" :items="termOptions" value-key="value" label-key="label"
             placeholder="เลือกเทอม" size="xl" class="min-w-[150px]" />
           <UInput type="date" v-model="selectedDate" size="xl" icon="i-heroicons-calendar" />
-          <div class="h-8 w-px bg-slate-700 mx-2 hidden md:block"></div>
+          <div class="h-8 w-px bg-slate-200 mx-2 hidden md:block"></div>
           <UButton label="เพิ่มห้อง" icon="i-heroicons-plus-circle" color="primary" size="xl"
             class="rounded-xl shadow-lg shadow-blue-500/20 font-bold" @click="openAddModal" />
         </div>
@@ -33,29 +33,29 @@
       <div v-else>
         <!-- Empty State -->
         <div v-if="!rooms || rooms.length === 0"
-          class="text-center py-32 bg-slate-800/30 rounded-[40px] border border-dashed border-slate-700 relative overflow-hidden">
+          class="text-center py-32 bg-slate-50 rounded-[40px] border border-dashed border-slate-200 relative overflow-hidden">
           <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent"></div>
           <div class="relative z-10">
             <div
-              class="bg-slate-800 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl border border-slate-700">
-              <UIcon name="i-heroicons-building-office-2" class="w-12 h-12 text-slate-600" />
+              class="bg-white w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl border border-slate-200">
+              <UIcon name="i-heroicons-building-office-2" class="w-12 h-12 text-slate-400" />
             </div>
-            <h3 class="text-2xl font-bold text-slate-400 mb-2">ยังไม่มีห้องเรียนในระบบ</h3>
-            <p class="text-slate-600 mb-8">เริ่มสร้างห้องเรียนเพื่อจัดตารางสอนได้ทันทีค่ะ</p>
+            <h3 class="text-2xl font-bold text-slate-600 mb-2">ยังไม่มีห้องเรียนในระบบ</h3>
+            <p class="text-slate-500 mb-8">เริ่มสร้างห้องเรียนเพื่อจัดตารางสอนได้ทันทีค่ะ</p>
             <UButton color="primary" size="xl" label="เริ่มสร้างห้องเรียนแรก" icon="i-heroicons-plus-circle"
               class="rounded-2xl px-10 shadow-xl shadow-blue-500/10" @click="openAddModal" />
           </div>
         </div>
 
         <!-- Schedule Matrix -->
-        <div v-else class="bg-slate-800 rounded-3xl border border-slate-700 overflow-hidden shadow-2xl relative">
+        <div v-else class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-2xl relative">
           <!-- Guide Legend -->
-          <div class="flex gap-6 p-4 border-b border-slate-700 bg-slate-800/80 sticky left-0 z-20">
-            <div class="flex items-center gap-2 text-xs font-bold text-slate-300">
+          <div class="flex gap-6 p-4 border-b border-slate-200 bg-slate-50 sticky left-0 z-20">
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
               <div class="w-4 h-4 rounded-md bg-amber-500/20 border border-amber-500/50"></div>
               เรียนปกติ
             </div>
-            <div class="flex items-center gap-2 text-xs font-bold text-slate-300">
+            <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
               <div class="w-4 h-4 rounded-md bg-red-500/20 border border-red-500/50"></div>
               สอนชดเชย
             </div>
@@ -64,28 +64,28 @@
           <div class="overflow-x-auto w-full custom-scrollbar">
             <table class="w-full text-left border-collapse min-w-[1200px]">
               <thead>
-                <tr class="bg-slate-900 border-b border-slate-700 text-sm font-black text-slate-400">
+                <tr class="bg-slate-100 border-b border-slate-200 text-sm font-black text-slate-600">
                   <th
-                    class="p-4 whitespace-nowrap sticky left-0 bg-slate-900 z-10 w-48 shadow-[2px_0_5px_rgba(0,0,0,0.1)]">
+                    class="p-4 whitespace-nowrap sticky left-0 bg-slate-100 z-10 w-48 shadow-[2px_0_5px_rgba(0,0,0,0.1)]">
                     ห้องเรียน
                   </th>
                   <th v-for="time in times" :key="time"
-                    class="p-4 whitespace-nowrap text-center w-[120px] border-l border-slate-800">
+                    class="p-4 whitespace-nowrap text-center w-[120px] border-l border-slate-200">
                     {{ time }}
                   </th>
                   <th
-                    class="p-4 whitespace-nowrap text-center sticky right-0 bg-slate-900 z-10 border-l border-slate-700 shadow-[-2px_0_5px_rgba(0,0,0,0.1)]">
+                    class="p-4 whitespace-nowrap text-center sticky right-0 bg-slate-100 z-10 border-l border-slate-200 shadow-[-2px_0_5px_rgba(0,0,0,0.1)]">
                     จัดการ
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-700/50">
-                <tr v-for="room in rooms" :key="room.id_room" class="hover:bg-slate-800/80 transition-colors">
+              <tbody class="divide-y divide-slate-200">
+                <tr v-for="room in rooms" :key="room.id_room" class="hover:bg-slate-50 transition-colors">
                   <!-- Room Info -->
                   <td
-                    class="p-4 sticky left-0 bg-slate-800 z-10 w-48 shadow-[2px_0_5px_rgba(0,0,0,0.1)] group-hover:bg-slate-700/50 transition-colors">
-                    <p class="font-bold text-white truncate max-w-[160px]">{{ room.room_name }}</p>
-                    <p class="text-xs text-slate-400 truncate max-w-[160px]">{{ room.building || 'ไม่ระบุอาคาร' }}</p>
+                    class="p-4 sticky left-0 bg-white z-10 w-48 shadow-[2px_0_5px_rgba(0,0,0,0.1)] group-hover:bg-slate-50 transition-colors">
+                    <p class="font-bold text-slate-900 truncate max-w-[160px]">{{ room.room_name }}</p>
+                    <p class="text-xs text-slate-500 truncate max-w-[160px]">{{ room.building || 'ไม่ระบุอาคาร' }}</p>
                   </td>
 
                   <!-- Slots -->
@@ -118,7 +118,7 @@
 
                   <!-- Actions -->
                   <td
-                    class="p-4 text-center sticky right-0 bg-slate-800 z-10 border-l border-slate-700 shadow-[-2px_0_5px_rgba(0,0,0,0.1)] group-hover:bg-slate-700/50 transition-colors">
+                    class="p-4 text-center sticky right-0 bg-white z-10 border-l border-slate-200 shadow-[-2px_0_5px_rgba(0,0,0,0.1)] group-hover:bg-slate-50 transition-colors">
                     <div class="flex items-center justify-center gap-1">
                       <UButton icon="i-heroicons-pencil-square" color="amber" variant="ghost" size="sm"
                         class="rounded-lg" @click="openEditModal(room)" />
@@ -136,7 +136,7 @@
 
     <!-- Modal เพิ่ม/แก้ไขห้อง -->
     <UModal v-model:open="modalOpen"
-      :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
@@ -147,9 +147,9 @@
                   class="text-2xl text-blue-500" />
               </div>
               <div>
-                <h3 class="text-2xl font-bold text-white">{{ editingRoom ? 'แก้ไขข้อมูลห้องเรียน' : 'เพิ่มห้องเรียนใหม่'
+                <h3 class="text-2xl font-bold text-slate-900">{{ editingRoom ? 'แก้ไขข้อมูลห้องเรียน' : 'เพิ่มห้องเรียนใหม่'
                 }}</h3>
-                <p class="text-slate-400 text-sm">ระบุรายละเอียดของห้องเรียนเพื่อให้สะดวกในการค้นหาเวลาว่าง</p>
+                <p class="text-slate-600 text-sm">ระบุรายละเอียดของห้องเรียนเพื่อให้สะดวกในการค้นหาเวลาว่าง</p>
               </div>
             </div>
 
@@ -168,7 +168,7 @@
               </UFormField>
             </div>
           </div>
-          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+          <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex gap-3">
               <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
                 class="rounded-2xl py-4 flex-1 font-bold" @click="modalOpen = false" />
@@ -183,7 +183,7 @@
 
     <!-- Modal ยืนยันการลบ -->
     <UModal v-model:open="deleteModalOpen"
-      :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
@@ -192,15 +192,15 @@
               <UIcon name="i-heroicons-exclamation-triangle" class="text-4xl text-red-500" />
             </div>
 
-            <h3 class="text-2xl font-bold text-white text-center mb-2">ยืนยันการลบห้องเรียน</h3>
-            <p class="text-slate-400 text-center mb-8">คุณแน่ใจหรือไม่ที่จะลบห้องเรียนนี้ออกจากระบบ?
+            <h3 class="text-2xl font-bold text-slate-900 text-center mb-2">ยืนยันการลบห้องเรียน</h3>
+            <p class="text-slate-600 text-center mb-8">คุณแน่ใจหรือไม่ที่จะลบห้องเรียนนี้ออกจากระบบ?
               การดำเนินการนี้ไม่สามารถย้อนคืนได้ค่ะ</p>
 
             <div
               class="bg-red-500/5 border border-red-500/20 p-6 rounded-2xl mb-8 text-center relative overflow-hidden">
               <div class="relative z-10">
                 <p class="text-xs font-black uppercase tracking-widest text-red-400/80 mb-1">ห้องที่เลือก</p>
-                <p class="text-3xl font-black text-white">{{ roomToDelete?.room_name }}</p>
+                <p class="text-3xl font-black text-slate-900">{{ roomToDelete?.room_name }}</p>
                 <p class="text-sm text-slate-500 mt-2">{{ roomToDelete?.building }}</p>
               </div>
             </div>
@@ -209,10 +209,10 @@
               ⚠️ หมายเหตุ: การลบห้องจะไม่ส่งผลกระทบต่อข้อมูลคลาสสอนที่เคยใช้ห้องนี้ไปแล้ว
             </p>
           </div>
-          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+          <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex flex-col sm:flex-row gap-3">
               <UButton label="ยกเลิก" color="neutral" variant="outline" size="xl" block
-                class="rounded-2xl border-slate-700 py-4 flex-1 font-bold" @click="deleteModalOpen = false" />
+                class="rounded-2xl border-slate-200 py-4 flex-1 font-bold" @click="deleteModalOpen = false" />
               <UButton label="ยืนยันการลบถาวร" color="error" size="xl" block
                 class="rounded-2xl py-4 flex-1 shadow-lg shadow-red-500/20 font-bold" :loading="deleting"
                 @click="deleteRoom" />

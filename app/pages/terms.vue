@@ -1,24 +1,24 @@
 <template>
-  <div class="min-h-screen bg-slate-900 text-white pb-20">
+  <div class="min-h-screen bg-white text-slate-900 pb-20">
     <!-- Header -->
-    <div class="bg-slate-800 border-b border-slate-700 p-6 sticky top-0 z-20 shadow-lg mb-8 no-print">
+    <div class="bg-white border-b border-slate-200 p-6 sticky top-0 z-20 shadow-lg mb-8 no-print">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
-          <h1 class="text-3xl font-bold text-white flex items-center gap-2">
-            <UIcon name="i-heroicons-academic-cap" class="text-amber-400" />
+          <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-2">
+            <UIcon name="i-heroicons-academic-cap" class="text-amber-600" />
             จัดการเทอมการศึกษา
           </h1>
-          <p class="text-slate-400 mt-1">กำหนดช่วงเวลาภาคการศึกษาเพื่อใช้จัดตารางเรียน</p>
+          <p class="text-slate-600 mt-1">กำหนดช่วงเวลาภาคการศึกษาเพื่อใช้จัดตารางเรียน</p>
         </div>
         <!-- Quick Stats -->
         <div class="flex gap-4">
-          <div class="bg-slate-900/50 px-6 py-3 rounded-2xl border border-slate-700 backdrop-blur-sm">
+          <div class="bg-slate-50 px-6 py-3 rounded-2xl border border-slate-200 backdrop-blur-sm">
             <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">จำนวนเทอมทั้งหมด</p>
-            <p class="text-2xl font-black text-white">{{ terms?.length || 0 }} <span class="text-xs font-normal text-slate-500">รายการ</span></p>
+            <p class="text-2xl font-black text-slate-900">{{ terms?.length || 0 }} <span class="text-xs font-normal text-slate-500">รายการ</span></p>
           </div>
-          <div class="bg-slate-900/50 px-6 py-3 rounded-2xl border border-slate-700 backdrop-blur-sm">
+          <div class="bg-slate-50 px-6 py-3 rounded-2xl border border-slate-200 backdrop-blur-sm">
             <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">ปีการศึกษาล่าสุด</p>
-            <p class="text-2xl font-black text-amber-400">{{ latestYear }}</p>
+            <p class="text-2xl font-black text-amber-600">{{ latestYear }}</p>
           </div>
         </div>
       </div>
@@ -29,9 +29,9 @@
         
         <!-- Left Side: Add Form -->
         <div class="lg:col-span-1">
-          <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-xl sticky top-28">
-            <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-              <UIcon name="i-heroicons-plus-circle" class="text-blue-400" />
+          <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-xl sticky top-28">
+            <h3 class="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <UIcon name="i-heroicons-plus-circle" class="text-blue-600" />
               เพิ่มเทอมใหม่
             </h3>
             <FormTerm @added-term="onAddedTerm" />
@@ -41,45 +41,45 @@
         <!-- Right Side: Term List -->
         <div class="lg:col-span-2">
           <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold flex items-center gap-2">
+            <h2 class="text-xl font-bold flex items-center gap-2 text-slate-900">
               <UIcon name="i-heroicons-list-bullet" class="text-slate-500" />
               รายการเทอมการศึกษา
             </h2>
-            <div class="text-xs text-slate-500 italic">เรียงตามปีการศึกษาล่าสุด</div>
+            <div class="text-xs text-slate-500 italic">เรียงตามปีการศึกษาล่าสสุด</div>
           </div>
           
           <div class="space-y-4">
-            <div v-if="!terms || terms.length === 0" class="text-center py-24 bg-slate-800/30 rounded-3xl border border-dashed border-slate-700">
-              <div class="bg-slate-800 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border border-slate-700">
-                <UIcon name="i-heroicons-calendar-days" class="text-4xl text-slate-600" />
+            <div v-if="!terms || terms.length === 0" class="text-center py-24 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+              <div class="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border border-slate-200">
+                <UIcon name="i-heroicons-calendar-days" class="text-4xl text-slate-400" />
               </div>
-              <p class="text-slate-400 font-medium">ยังไม่มีข้อมูลเทอมในระบบ</p>
-              <p class="text-slate-600 text-sm mt-2">กรุณาเพิ่มข้อมูลที่ฟอร์มด้านซ้ายมือค่ะ</p>
+              <p class="text-slate-600 font-medium">ยังไม่มีข้อมูลเทอมในระบบ</p>
+              <p class="text-slate-500 text-sm mt-2">กรุณาเพิ่มข้อมูลที่ฟอร์มด้านซ้ายมือค่ะ</p>
             </div>
 
             <div
               v-for="term in sortedTerms"
               :key="term.id_term"
-              class="relative overflow-hidden p-6 rounded-3xl bg-slate-800 border border-slate-700 hover:border-blue-500/50 transition-all duration-300 shadow-xl group hover:shadow-blue-500/5"
+              class="relative overflow-hidden p-6 rounded-3xl bg-white border border-slate-200 hover:border-blue-500/50 transition-all duration-300 shadow-xl group hover:shadow-blue-500/5"
             >
               <!-- Background Decor -->
               <div class="absolute -right-8 -top-8 opacity-[0.03] rotate-12 group-hover:scale-110 transition-transform duration-700">
-                <UIcon name="i-heroicons-academic-cap" class="w-48 h-48 text-white" />
+                <UIcon name="i-heroicons-academic-cap" class="w-48 h-48 text-slate-900" />
               </div>
 
               <div class="flex flex-col sm:flex-row justify-between items-center relative z-10 gap-6">
                 <div class="flex items-center gap-6 w-full">
-                  <div class="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 shadow-inner border border-slate-700/50">
-                    <span class="text-2xl font-black text-amber-400 group-hover:text-white">{{ term.term }}</span>
+                  <div class="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 shadow-inner border border-slate-200/50">
+                    <span class="text-2xl font-black text-amber-600 group-hover:text-white">{{ term.term }}</span>
                   </div>
                   <div>
-                    <div class="text-2xl font-black text-white flex items-center gap-2">
+                    <div class="text-2xl font-black text-slate-900 flex items-center gap-2">
                       ปีการศึกษา {{ term.academic_year }}
-                      <span v-if="isCurrentTerm(term)" class="text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/30 whitespace-nowrap">ปัจจุบัน</span>
+                      <span v-if="isCurrentTerm(term)" class="text-[10px] bg-green-500/20 text-green-600 px-2 py-0.5 rounded-full border border-green-500/30 whitespace-nowrap">ปัจจุบัน</span>
                     </div>
-                    <div class="text-slate-400 text-sm flex items-center gap-2 mt-2 font-medium">
+                    <div class="text-slate-600 text-sm flex items-center gap-2 mt-2 font-medium">
                       <UIcon name="i-heroicons-calendar-days" class="text-slate-500" />
-                      {{ formatDate(term.start_date) }} <UIcon name="i-heroicons-arrow-right-circle" class="text-slate-600" /> {{ formatDate(term.end_date) }}
+                      {{ formatDate(term.start_date) }} <UIcon name="i-heroicons-arrow-right-circle" class="text-slate-400" /> {{ formatDate(term.end_date) }}
                     </div>
                   </div>
                 </div>
@@ -105,8 +105,7 @@
     </div>
 
     <!-- Modal ยืนยันการลบ -->
-    <!-- Modal ยืนยันการลบ -->
-    <UModal v-model:open="confirmDeleteTerm" :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
+    <UModal v-model:open="confirmDeleteTerm" :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
@@ -114,19 +113,19 @@
               <UIcon name="i-heroicons-exclamation-triangle" class="text-4xl text-red-500" />
             </div>
             
-            <h3 class="text-2xl font-bold text-white text-center mb-2">ยืนยันการลบเทอมการศึกษา</h3>
-            <p class="text-slate-400 text-center mb-8">การดำเนินการนี้จะลบข้อมูลตารางเรียนและข้อมูลที่เกี่ยวข้องทั้งหมดในเทอมนี้อย่างถาวร ไม่สามารถย้อนคืนได้</p>
+            <h3 class="text-2xl font-bold text-slate-900 text-center mb-2">ยืนยันการลบเทอมการศึกษา</h3>
+            <p class="text-slate-600 text-center mb-8">การดำเนินการนี้จะลบข้อมูลตารางเรียนและข้อมูลที่เกี่ยวข้องทั้งหมดในเทอมนี้อย่างถาวร ไม่สามารถย้อนคืนได้</p>
 
             <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-2xl text-center relative overflow-hidden">
                <div class="relative z-10">
                   <p class="text-xs font-black uppercase tracking-widest text-red-400/80 mb-1">เทอมที่เลือก</p>
-                  <p class="text-3xl font-black text-white">
+                  <p class="text-3xl font-black text-slate-900">
                     {{ selectedTermForDelete?.term }} / {{ selectedTermForDelete?.academic_year }}
                   </p>
                </div>
             </div>
           </div>
-          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+          <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex flex-col sm:flex-row gap-3">
               <UButton
                 label="ยกเลิก"
@@ -134,7 +133,7 @@
                 variant="outline"
                 size="xl"
                 block
-                class="rounded-2xl border-slate-700 py-4 flex-1"
+                class="rounded-2xl border-slate-200 py-4 flex-1"
                 @click="confirmDeleteTerm = false"
               />
               <UButton

@@ -1,7 +1,7 @@
 <template>
-  <footer class="bg-gray-200 text-slate-100 py-8 px-4">
+  <footer class="bg-white text-slate-700 py-8 px-4 border-t border-slate-200">
     <div class="max-w-6xl mx-auto">
-      <div class="border-t border-gray-300 pt-8 text-center text-slate-400">
+      <div class="pt-8 text-center text-slate-500">
         <p>Built with Nuxt UI • © {{ new Date().getFullYear() }}</p>
       </div>
     </div>
