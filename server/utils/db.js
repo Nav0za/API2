@@ -28,11 +28,8 @@ db.exec(`
     id_subject INTEGER PRIMARY KEY AUTOINCREMENT,
     name_subject TEXT NOT NULL,
     id_teacher INTEGER,
-    id_room INTEGER,
     FOREIGN KEY (id_teacher) REFERENCES teachers(id_teacher)
-      ON DELETE CASCADE,
-    FOREIGN KEY (id_room) REFERENCES rooms(id_room)
-      ON DELETE SET NULL
+      ON DELETE CASCADE
   );`)
 
 // Indexes for Subjects table
@@ -46,16 +43,8 @@ db.exec(`
 try {
   const tableInfo = db.prepare('PRAGMA table_info(Subjects)').all()
 
-  const hasIdRoom = tableInfo.some(col => col.name === 'id_room')
-  if (!hasIdRoom) {
-    db.exec('ALTER TABLE Subjects ADD COLUMN id_room INTEGER REFERENCES rooms(id_room) ON DELETE SET NULL')
-    console.log('Migrated Subjects table: added id_room')
-  }
+  // Migration for adding id_room to Subjects (REMOVED: already dropped if exists below)
 
-  // Create index for id_room after migration
-  db.exec(`
-    CREATE INDEX IF NOT EXISTS idx_subjects_room 
-    ON Subjects(id_room);`)
 
   // Create SubjectSections join table
   db.exec(`
@@ -320,6 +309,12 @@ try {
   if (roomTableInfo.some(col => col.name === 'capacity')) {
     db.exec('ALTER TABLE rooms DROP COLUMN capacity')
     console.log('Cleaned up rooms table: removed capacity column')
+  }
+
+  const subjectTableInfo = db.prepare('PRAGMA table_info(Subjects)').all()
+  if (subjectTableInfo.some(col => col.name === 'id_room')) {
+    db.exec('ALTER TABLE Subjects DROP COLUMN id_room')
+    console.log('Cleaned up Subjects table: removed id_room column')
   }
 } catch (err) {
   console.error('Cleanup migration error:', err)
