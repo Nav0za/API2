@@ -132,7 +132,7 @@
                       <div v-if="quickAddPreview"
                         class="bg-blue-500/5 border border-blue-500/10 p-4 rounded-2xl text-center">
                         <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">แสดงตัวอย่าง</p>
-                        <p class="text-white font-bold leading-tight">{{ quickAddPreview }}</p>
+                        <p class="text-blue-700 font-bold leading-tight">{{ quickAddPreview }}</p>
                       </div>
                     </div>
 
@@ -324,7 +324,7 @@
         <!-- ปุ่มบันทึกตารางสอน -->
         <div class="flex gap-2">
           <UButton label="ลงวิชาทีละหลายชั่วโมง" icon="i-heroicons-calendar-days" color="primary" variant="solid"
-            size="xl" class="cursor-pointer rounded-xl font-bold" />
+            size="xl" class="cursor-pointer rounded-xl font-bold" @click="quickAddOpen = true" />
           <UButton label="บันทึกตาราง" color="primary" icon="i-heroicons-check-circle" size="xl"
             class="cursor-pointer px-6 rounded-xl font-bold shadow-lg shadow-blue-500/20" :loading="saving"
             @click="saveSchedule" />
