@@ -14,9 +14,9 @@
         <!-- Quick Stats -->
         <div class="flex flex-wrap justify-center gap-4">
           <div class="bg-slate-50 px-6 py-3 rounded-2xl border border-slate-200 backdrop-blur-sm min-w-[140px]">
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">อาจารย์ทั้งหมด</p>
+            <p class="text-lg font-black uppercase tracking-widest text-slate-500 mb-1">อาจารย์ทั้งหมด</p>
             <p class="text-2xl font-black text-slate-900">{{ teachers?.length || 0 }} <span
-                class="text-xs font-normal text-slate-500">ท่าน</span></p>
+                class="text-lg font-normal text-slate-500">ท่าน</span></p>
           </div>
 
           <div class="flex items-center gap-2">
@@ -71,7 +71,8 @@
                 {{ (teacher.first_name?.[0] || '') + (teacher.last_name?.[0] || '') }}
               </div>
 
-              <h3 class="text-xl font-black text-white mb-2 leading-tight group-hover:text-amber-400 transition-colors">
+              <h3
+                class="text-xl font-black text-slate-900 mb-2 leading-tight group-hover:text-amber-400 transition-colors">
                 {{ formatName(teacher) }}
               </h3>
 
@@ -171,27 +172,27 @@
               </div>
               <div>
                 <h3 class="text-2xl font-bold text-slate-900">แก้ไขชื่ออาจารย์</h3>
-                <p class="text-slate-600 text-sm">การเปลี่ยนชื่อจะไม่ส่งผลต่อประวัติการสอนชดเชย</p>
+                <p class="text-slate-600 text-md">การเปลี่ยนชื่อจะไม่ส่งผลต่อประวัติการสอนชดเชย</p>
               </div>
             </div>
 
             <div class="space-y-6">
               <div>
                 <label
-                  class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">ชื่อปัจจุบัน</label>
-                <div class="p-4 bg-slate-800 rounded-2xl text-slate-300 border border-slate-700 font-bold italic">{{
+                  class="text-lg font-black uppercase tracking-widest text-slate-500 mb-2 block">ชื่อปัจจุบัน</label>
+                <div class="p-4 rounded-2xl text-slate-900 border border-slate-300 font-bold italic">{{
                   formatName(seletedTeacher) }}</div>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <UFormField label="คำนำหน้า">
+                <UFormField class="text-lg" label="คำนำหน้า">
                   <UInput v-model="editPrefix" placeholder="ระบุ..." size="xl" class="rounded-xl" />
                 </UFormField>
-                <UFormField label="ชื่อ *">
+                <UFormField class="text-lg" label="ชื่อ *">
                   <UInput v-model="editFirstName" placeholder="ระบุชื่อ..." size="xl" class="rounded-xl" autofocus
                     @keyup.enter="updateTeacher(seletedTeacher?.id_teacher)" />
                 </UFormField>
-                <UFormField label="นามสกุล">
+                <UFormField class="text-lg" label="นามสกุล">
                   <UInput v-model="editLastName" placeholder="ระบุนามสกุล..." size="xl" class="rounded-xl"
                     @keyup.enter="updateTeacher(seletedTeacher?.id_teacher)" />
                 </UFormField>
@@ -202,9 +203,9 @@
           <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex gap-3">
               <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
-                class="rounded-2xl py-4 flex-1 font-bold font-heading" @click="editModalopen = false" />
+                class="rounded-2xl py-4 flex-1 font-bold font-heading cursor-pointer" @click="editModalopen = false" />
               <UButton label="บันทึกข้อมูล" color="primary" size="xl" block
-                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold font-heading"
+                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold font-heading cursor-pointer"
                 :disabled="!editFirstName.trim() || (editPrefix === seletedTeacher?.prefix && editFirstName === seletedTeacher?.first_name && editLastName === seletedTeacher?.last_name)"
                 :loading="updatingTeacher" @click="updateTeacher(seletedTeacher?.id_teacher)" />
             </div>

@@ -30,7 +30,7 @@
           <!-- Manage External (Out-of-Department) Subjects -->
           <UModal v-model:open="extSubjectModalOpen"
             :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden max-w-lg' }">
-            <UButton label="วิชานอกสาขา" icon="i-heroicons-book-open" color="warning" variant="soft"
+            <UButton label="วิชานอกสาขา" icon="i-heroicons-book-open" color="primary" variant="solid" size="xl"
               class="cursor-pointer" />
             <template #content>
               <div class="flex flex-col max-h-[85vh]">
@@ -41,7 +41,7 @@
                     <UIcon name="i-heroicons-book-open" class="text-3xl text-amber-400" />
                   </div>
                   <h3 class="text-2xl font-bold text-white text-center mb-1">วิชานอกสาขา</h3>
-                  <p class="text-slate-400 text-sm text-center">รายวิชาที่ไม่ได้เรียนกับอาจารย์ในสาขา</p>
+                  <p class="text-slate-400 text-md text-center">รายวิชาที่ไม่ได้เรียนกับอาจารย์ในสาขา</p>
                 </div>
 
                 <!-- Scrollable List -->
@@ -80,13 +80,13 @@
 
                   <!-- Add New External Subject -->
                   <div class="bg-amber-500/5 border border-amber-500/15 rounded-2xl p-4 space-y-3">
-                    <p class="text-xs font-bold text-amber-400 uppercase tracking-widest">เพิ่มวิชาใหม่</p>
-                    <UInput v-model="newExtName" placeholder="ชื่อรายวิชา *"
+                    <p class="text-lg font-bold text-amber-400 uppercase tracking-widest">เพิ่มวิชาใหม่</p>
+                    <UInput size="xl" v-model="newExtName" placeholder="ชื่อรายวิชา *"
                       :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-xl' }" />
-                    <UInput v-model="newExtInstructor" placeholder="ชื่ออาจารย์ผู้สอน (ไม่ทำก็ได้)"
+                    <UInput size="xl" v-model="newExtInstructor" placeholder="ชื่ออาจารย์ผู้สอน (ไม่ทำก็ได้)"
                       :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-xl' }" />
-                    <UButton label="เพิ่มวิชานอกสาขา" icon="i-heroicons-plus" color="warning" block class="rounded-xl"
-                      @click="addExtSubject" :loading="addingExt" :disabled="!newExtName.trim()" />
+                    <UButton size="xl" label="เพิ่มวิชานอกสาขา" icon="i-heroicons-plus" color="warning" block
+                      class="rounded-xl" @click="addExtSubject" :loading="addingExt" :disabled="!newExtName.trim()" />
                   </div>
                 </div>
 
@@ -102,8 +102,8 @@
           <!-- Quick Add Subject to Schedule -->
           <UModal v-model:open="quickAddOpen"
             :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
-            <UButton label="เพิ่มรายวิชาในตาราง(ทีละหลายชั่วโมงได้)" icon="i-heroicons-plus" color="secondary"
-              variant="soft" class="cursor-pointer" />
+            <UButton label="เพิ่มรายวิชาในตาราง(ทีละหลายชั่วโมงได้)" icon="i-heroicons-plus" color="primary" size="xl"
+              variant="solid" class="cursor-pointer" />
             <template #content>
               <div class="flex flex-col max-h-[90vh]">
                 <!-- Header -->
@@ -199,8 +199,8 @@
             </template>
           </UModal>
           <UButton class="cursor-pointer" label="บันทึกตาราง" icon="i-heroicons-document-check" color="primary"
-            :loading="saving" @click="saveSchedule" />
-          <UButton class="cursor-pointer" label="ล้างตาราง" icon="i-lucide-trash" color="error" variant="soft"
+            size="xl" :loading="saving" @click="saveSchedule" />
+          <UButton class="cursor-pointer" label="ล้างตาราง" icon="i-lucide-trash" color="error" variant="soft" size="xl"
             @click="clearSchedule" />
         </div>
       </div>

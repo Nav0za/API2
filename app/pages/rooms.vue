@@ -51,11 +51,11 @@
         <div v-else class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-2xl relative">
           <!-- Guide Legend -->
           <div class="flex gap-6 p-4 border-b border-slate-200 bg-slate-50 sticky left-0 z-20">
-            <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
+            <div class="flex items-center gap-2 text-lg font-bold text-slate-700">
               <div class="w-4 h-4 rounded-md bg-amber-500/20 border border-amber-500/50"></div>
               เรียนปกติ
             </div>
-            <div class="flex items-center gap-2 text-xs font-bold text-slate-700">
+            <div class="flex items-center gap-2 text-lg font-bold text-slate-700">
               <div class="w-4 h-4 rounded-md bg-red-500/20 border border-red-500/50"></div>
               สอนชดเชย
             </div>
@@ -66,7 +66,7 @@
               <thead>
                 <tr class="bg-slate-100 border-b border-slate-200 text-sm font-black text-slate-600">
                   <th
-                    class="p-4 whitespace-nowrap sticky left-0 bg-slate-100 z-10 w-48 shadow-[2px_0_5px_rgba(0,0,0,0.1)]">
+                    class="text-lg p-4 whitespace-nowrap sticky left-0 bg-slate-100 z-10 w-48 shadow-[2px_0_5px_rgba(0,0,0,0.1)]">
                     ห้องเรียน
                   </th>
                   <th v-for="time in times" :key="time"
@@ -74,7 +74,7 @@
                     {{ time }}
                   </th>
                   <th
-                    class="p-4 whitespace-nowrap text-center sticky right-0 bg-slate-100 z-10 border-l border-slate-200 shadow-[-2px_0_5px_rgba(0,0,0,0.1)]">
+                    class="text-lg p-4 whitespace-nowrap text-center sticky right-0 bg-slate-100 z-10 border-l border-slate-200 shadow-[-2px_0_5px_rgba(0,0,0,0.1)]">
                     จัดการ
                   </th>
                 </tr>
@@ -85,7 +85,7 @@
                   <td
                     class="p-4 sticky left-0 bg-white z-10 w-48 shadow-[2px_0_5px_rgba(0,0,0,0.1)] group-hover:bg-slate-50 transition-colors">
                     <p class="font-bold text-slate-900 truncate max-w-[160px]">{{ room.room_name }}</p>
-                    <p class="text-xs text-slate-500 truncate max-w-[160px]">{{ room.building || 'ไม่ระบุอาคาร' }}</p>
+                    <p class="text-md text-slate-500 truncate max-w-[160px]">{{ room.building || 'ไม่ระบุอาคาร' }}</p>
                   </td>
 
                   <!-- Slots -->
@@ -120,10 +120,10 @@
                   <td
                     class="p-4 text-center sticky right-0 bg-white z-10 border-l border-slate-200 shadow-[-2px_0_5px_rgba(0,0,0,0.1)] group-hover:bg-slate-50 transition-colors">
                     <div class="flex items-center justify-center gap-1">
-                      <UButton icon="i-heroicons-pencil-square" color="amber" variant="ghost" size="sm"
-                        class="rounded-lg" @click="openEditModal(room)" />
-                      <UButton icon="i-heroicons-trash" color="error" variant="ghost" size="sm" class="rounded-lg"
-                        @click="confirmDelete(room)" />
+                      <UButton icon="i-heroicons-pencil-square" color="warning" variant="ghost" size="lg"
+                        class="rounded-lg cursor-pointer" @click="openEditModal(room)" />
+                      <UButton icon="i-heroicons-trash" color="error" variant="ghost" size="lg"
+                        class="rounded-lg cursor-pointer" @click="confirmDelete(room)" />
                     </div>
                   </td>
                 </tr>
@@ -135,8 +135,7 @@
     </div>
 
     <!-- Modal เพิ่ม/แก้ไขห้อง -->
-    <UModal v-model:open="modalOpen"
-      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
+    <UModal v-model:open="modalOpen" :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
@@ -147,22 +146,23 @@
                   class="text-2xl text-blue-500" />
               </div>
               <div>
-                <h3 class="text-2xl font-bold text-slate-900">{{ editingRoom ? 'แก้ไขข้อมูลห้องเรียน' : 'เพิ่มห้องเรียนใหม่'
-                }}</h3>
-                <p class="text-slate-600 text-sm">ระบุรายละเอียดของห้องเรียนเพื่อให้สะดวกในการค้นหาเวลาว่าง</p>
+                <h3 class="text-2xl font-bold text-slate-900">{{ editingRoom ? 'แก้ไขข้อมูลห้องเรียน' :
+                  'เพิ่มห้องเรียนใหม่'
+                  }}</h3>
+                <p class="text-slate-600 text-md">ระบุรายละเอียดของห้องเรียนเพื่อให้สะดวกในการค้นหาเวลาว่าง</p>
               </div>
             </div>
 
             <div class="space-y-6">
-              <UFormField label="ชื่อห้อง (Room Name) *" help="เช่น EN101, LabCom 1">
+              <UFormField class="text-lg" label="ชื่อห้อง (Room Name) *" help="เช่น EN101, LabCom 1">
                 <UInput v-model="formData.room_name" placeholder="ระบุชื่อห้อง..." size="xl" class="rounded-xl" />
               </UFormField>
 
-              <UFormField label="อาคาร (Building)">
+              <UFormField class="text-lg" label="อาคาร (Building)">
                 <UInput v-model="formData.building" placeholder="เช่น อาคาร EN" size="xl" class="rounded-xl" />
               </UFormField>
 
-              <UFormField label="คำอธิบายเพิ่มเติม">
+              <UFormField class="text-lg" label="คำอธิบายเพิ่มเติม">
                 <UTextarea v-model="formData.description" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)..." :rows="3"
                   size="xl" class="rounded-xl" />
               </UFormField>
@@ -171,9 +171,9 @@
           <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex gap-3">
               <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
-                class="rounded-2xl py-4 flex-1 font-bold" @click="modalOpen = false" />
+                class="rounded-2xl py-4 flex-1 font-bold cursor-pointer" @click="modalOpen = false" />
               <UButton :label="editingRoom ? 'บันทึกการแก้ไข' : 'สร้างห้องเรียน'" color="primary" size="xl" block
-                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold" :loading="saving"
+                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold cursor-pointer" :loading="saving"
                 @click="saveRoom" />
             </div>
           </div>
