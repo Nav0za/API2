@@ -181,8 +181,8 @@ export default defineEventHandler(async (event) => {
 
     // ถ้ามีการเปลี่ยน วัน/เวลา/ห้อง/สถานะ ให้อัปเดตปฏิทิน
     const dateChanged = newDate !== oldData.makeup_date
-    const timeChanged = (body.makeup_time_start !== undefined && body.makeup_time_start !== oldData.makeup_time_start) ||
-      (body.makeup_time_end !== undefined && body.makeup_time_end !== oldData.makeup_time_end)
+    const timeChanged = (body.makeup_time_start !== undefined && body.makeup_time_start !== oldData.makeup_time_start)
+      || (body.makeup_time_end !== undefined && body.makeup_time_end !== oldData.makeup_time_end)
     const roomChanged = body.room_id !== undefined && body.room_id !== oldData.room_id
     const statusChanged = body.status !== undefined && body.status !== oldData.status
 

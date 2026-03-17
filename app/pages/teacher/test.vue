@@ -27,26 +27,56 @@
             </h1>
 
             <!-- เพิ่มรายวิชา -->
-            <UModal v-model:open="open" :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
-              <UButton label="เพิ่มรายวิชา" class="cursor-pointer" />
+            <UModal
+              v-model:open="open"
+              :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }"
+            >
+              <UButton
+                label="เพิ่มรายวิชา"
+                class="cursor-pointer"
+              />
               <template #content>
                 <div class="flex flex-col max-h-[85vh]">
                   <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
-                    <h3 class="text-2xl font-bold text-white mb-6">เพิ่มรายวิชา</h3>
+                    <h3 class="text-2xl font-bold text-white mb-6">
+                      เพิ่มรายวิชา
+                    </h3>
                     <div class="space-y-4">
                       <div>
-                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">ชื่อวิชา</h3>
-                        <UInput v-model="subjectName" size="xl" class="w-full" :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
+                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
+                          ชื่อวิชา
+                        </h3>
+                        <UInput
+                          v-model="subjectName"
+                          size="xl"
+                          class="w-full"
+                          :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }"
+                        />
                       </div>
                     </div>
                   </div>
                   <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10 w-full">
                     <div class="flex gap-3">
-                      <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block class="rounded-2xl py-4 flex-1 font-bold" @click="open = false" />
-                      <UButton label="บันทึก" color="primary" size="xl" block class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold" @click="async () => {
-                        await addSubject()
-                        open = false
-                      }" />
+                      <UButton
+                        label="ยกเลิก"
+                        color="neutral"
+                        variant="soft"
+                        size="xl"
+                        block
+                        class="rounded-2xl py-4 flex-1 font-bold"
+                        @click="open = false"
+                      />
+                      <UButton
+                        label="บันทึก"
+                        color="primary"
+                        size="xl"
+                        block
+                        class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold"
+                        @click="async () => {
+                          await addSubject()
+                          open = false
+                        }"
+                      />
                     </div>
                   </div>
                 </div>
@@ -54,25 +84,52 @@
             </UModal>
 
             <!-- แก้ไขรายวิชา -->
-            <UModal v-model:open="editOpen" :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
+            <UModal
+              v-model:open="editOpen"
+              :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }"
+            >
               <template #content>
                 <div class="flex flex-col max-h-[85vh]">
                   <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
-                    <h3 class="text-2xl font-bold text-white mb-6">แก้ไขรายวิชา</h3>
+                    <h3 class="text-2xl font-bold text-white mb-6">
+                      แก้ไขรายวิชา
+                    </h3>
                     <div class="space-y-4">
                       <div>
-                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">ชื่อวิชา</h3>
-                        <UInput v-model="editSubjectName" size="xl" class="w-full" :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
+                        <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
+                          ชื่อวิชา
+                        </h3>
+                        <UInput
+                          v-model="editSubjectName"
+                          size="xl"
+                          class="w-full"
+                          :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }"
+                        />
                       </div>
                     </div>
                   </div>
                   <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10 w-full">
                     <div class="flex gap-3">
-                      <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block class="rounded-2xl py-4 flex-1 font-bold" @click="editOpen = false" />
-                      <UButton label="บันทึก" color="warning" size="xl" block class="rounded-2xl py-4 flex-1 shadow-lg shadow-amber-500/20 font-bold" @click="async () => {
-                        await updateSubject()
-                        editOpen = false
-                      }" />
+                      <UButton
+                        label="ยกเลิก"
+                        color="neutral"
+                        variant="soft"
+                        size="xl"
+                        block
+                        class="rounded-2xl py-4 flex-1 font-bold"
+                        @click="editOpen = false"
+                      />
+                      <UButton
+                        label="บันทึก"
+                        color="warning"
+                        size="xl"
+                        block
+                        class="rounded-2xl py-4 flex-1 shadow-lg shadow-amber-500/20 font-bold"
+                        @click="async () => {
+                          await updateSubject()
+                          editOpen = false
+                        }"
+                      />
                     </div>
                   </div>
                 </div>

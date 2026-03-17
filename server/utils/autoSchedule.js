@@ -24,7 +24,7 @@ export async function findAvailableSlots(teacherId, missedDate, term) {
   console.log(`[DEBUG] findAvailableSlots called with: teacherId=${teacherId}, missedDate=${missedDate}, term=${term}`)
   // ดึงตารางทั้งหมดเพื่อเช็คห้องเรียน
   const teacherSchedulesRaw = db.prepare('SELECT id_teacher, scheduleData FROM schedules WHERE term = ?').all(term)
-  const allTeacherSchedules = teacherSchedulesRaw.map(ts => {
+  const allTeacherSchedules = teacherSchedulesRaw.map((ts) => {
     try {
       return { ...ts, parsedSchedule: JSON.parse(ts.scheduleData) }
     } catch (e) {
@@ -34,7 +34,7 @@ export async function findAvailableSlots(teacherId, missedDate, term) {
 
   const allSubjects = db.prepare('SELECT id_subject, name_subject FROM Subjects').all()
   const subjectNameMap = {}
-  allSubjects.forEach(s => {
+  allSubjects.forEach((s) => {
     subjectNameMap[s.id_subject] = s.name_subject
   })
 
@@ -117,7 +117,7 @@ export async function findAvailableSlots(teacherId, missedDate, term) {
 
     // เช็คแต่ละคลาสที่ขาด
     for (const missedClass of missedClasses) {
-      if (!missedClass.sectionIds || missedClass.sectionIds.length === 0) continue;
+      if (!missedClass.sectionIds || missedClass.sectionIds.length === 0) continue
 
       const slots = findSlotsForClass(
         teacherId,
@@ -176,7 +176,7 @@ function getClassesOnDate(schedule, dateStr, subjectNameMap) {
   const date = new Date(dateStr)
   const dayOfWeek = date.getDay() // 0=อาทิตย์, 1=จันทร์
   // แปลง dayOfWeek เป็น index ของตาราง (0=จันทร์, ..., 6=อาทิตย์)
-  // แต่ JS getDay(): 0=Sun, 1=Mon. 
+  // แต่ JS getDay(): 0=Sun, 1=Mon.
   // สมมติ array เรียง: [Mon, Tue, Wed, Thu, Fri, Sat, Sun]
   // Mon(1) -> 0
   // Sun(0) -> 6
@@ -294,7 +294,7 @@ function findSlotsForClass(teacherId, sectionIds, duration, dayOfWeek, dateStr, 
   const busySectionSlots = new Set()
   const busyRoomSlots = new Set()
 
-  existingMakeups.forEach(m => {
+  existingMakeups.forEach((m) => {
     const slots = getSlotsFromTimes(m.makeup_time_start, m.makeup_time_end)
     if (Number(m.teacher_id) === Number(teacherId)) {
       slots.forEach(s => busyTeacherSlots.add(s))
@@ -477,7 +477,7 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
   const allSectionIds = [...new Set(classes.map(c => c.sectionId).filter(Boolean))]
 
   const teacherSchedulesRaw = db.prepare('SELECT id_teacher, scheduleData FROM schedules WHERE term = ?').all(term)
-  const allTeacherSchedules = teacherSchedulesRaw.map(ts => {
+  const allTeacherSchedules = teacherSchedulesRaw.map((ts) => {
     try {
       return { ...ts, parsedSchedule: JSON.parse(ts.scheduleData) }
     } catch (e) {
@@ -487,7 +487,7 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
 
   const allSubjects = db.prepare('SELECT id_subject, name_subject FROM Subjects').all()
   const subjectNameMap = {}
-  allSubjects.forEach(s => {
+  allSubjects.forEach((s) => {
     subjectNameMap[s.id_subject] = s.name_subject
   })
 
@@ -612,7 +612,7 @@ function findContinuousFreeSlots(teacherId, sectionIds, duration, dayIndex, date
   const busySectionSlots = new Map() // Section ID -> Set of busy slots
   const busyRoomSlots = new Set()
 
-  existingMakeups.forEach(m => {
+  existingMakeups.forEach((m) => {
     const slots = getSlotsFromTimes(m.makeup_time_start, m.makeup_time_end)
     if (Number(m.teacher_id) === Number(teacherId)) {
       slots.forEach(s => busyTeacherSlots.add(s))

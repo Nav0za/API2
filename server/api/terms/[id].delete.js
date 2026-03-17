@@ -32,13 +32,13 @@ export default defineEventHandler(async (event) => {
 
     // 2. Identify and Delete makeup_classes AND their associated Calendar Events
     const combinedMakeupIds = []
-    
+
     if (teacherIdsInTerm.length > 0) {
       const ph = teacherIdsInTerm.map(() => '?').join(',')
       const ids = db.prepare(`SELECT id_makeup FROM makeup_classes WHERE teacher_id IN (${ph})`).all(...teacherIdsInTerm).map(r => r.id_makeup)
       combinedMakeupIds.push(...ids)
     }
-    
+
     if (sectionIdsInTerm.length > 0) {
       const ph = sectionIdsInTerm.map(() => '?').join(',')
       const ids = db.prepare(`SELECT id_makeup FROM makeup_classes WHERE section_id IN (${ph})`).all(...sectionIdsInTerm).map(r => r.id_makeup)
@@ -48,20 +48,20 @@ export default defineEventHandler(async (event) => {
     const uniqueMakeupIds = [...new Set(combinedMakeupIds)]
 
     if (uniqueMakeupIds.length > 0) {
-       // Delete calendar events linked to these makeups
-       for (const mid of uniqueMakeupIds) {
-         db.prepare("DELETE FROM calendar_events WHERE event_type = 'makeup_class' AND makeup_class_ids = ?").run(`[${mid}]`)
-       }
-       
-       // Delete the makeup classes themselves
-       const ph = uniqueMakeupIds.map(() => '?').join(',')
-       db.prepare(`DELETE FROM makeup_classes WHERE id_makeup IN (${ph})`).run(...uniqueMakeupIds)
+      // Delete calendar events linked to these makeups
+      for (const mid of uniqueMakeupIds) {
+        db.prepare('DELETE FROM calendar_events WHERE event_type = \'makeup_class\' AND makeup_class_ids = ?').run(`[${mid}]`)
+      }
+
+      // Delete the makeup classes themselves
+      const ph = uniqueMakeupIds.map(() => '?').join(',')
+      db.prepare(`DELETE FROM makeup_classes WHERE id_makeup IN (${ph})`).run(...uniqueMakeupIds)
     }
 
     // 3. Delete external_subjects explicitly for this term
     db.prepare('DELETE FROM external_subjects WHERE term = ?').run(termStr)
 
-    // 4. Delete section_schedules 
+    // 4. Delete section_schedules
     db.prepare('DELETE FROM section_schedules WHERE term = ?').run(termStr)
 
     // 5. Delete sections (this will CASCADE to SubjectSections automatically via DB ForeignKey)
@@ -107,7 +107,7 @@ export default defineEventHandler(async (event) => {
     const allRemainingSchedules = db.prepare('SELECT scheduleData FROM schedules').all()
     const usedRoomIds = new Set()
 
-    allRemainingSchedules.forEach(s => {
+    allRemainingSchedules.forEach((s) => {
       try {
         if (!s.scheduleData) return
         const parsed = JSON.parse(s.scheduleData)

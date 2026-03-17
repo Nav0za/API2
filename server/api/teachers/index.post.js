@@ -4,7 +4,7 @@ export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
     const { prefix, first_name, last_name } = body
-    
+
     if (!first_name) {
       throw createError({
         statusCode: 400,
@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
     const stmt = db.prepare('INSERT INTO teachers (name, prefix, first_name, last_name) VALUES (?, ?, ?, ?)')
     const result = stmt.run(fullName, prefix || '', first_name, last_name || '')
-    
+
     return {
       id_teacher: result.lastInsertRowid,
       name: fullName,

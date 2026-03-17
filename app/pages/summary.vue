@@ -5,16 +5,35 @@
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
           <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <UIcon name="i-heroicons-presentation-chart-line" class="text-blue-600" />
+            <UIcon
+              name="i-heroicons-presentation-chart-line"
+              class="text-blue-600"
+            />
             ตัวชี้วัดและรายงาน
           </h1>
-          <p class="text-slate-600 mt-1">สรุปข้อมูลการสอนชดเชยและสถิติต่างๆ ในระบบ</p>
+          <p class="text-slate-600 mt-1">
+            สรุปข้อมูลการสอนชดเชยและสถิติต่างๆ ในระบบ
+          </p>
         </div>
         <div class="flex gap-3">
-          <UButton label="ส่งออก PDF" icon="i-heroicons-document-text" color="primary" variant="soft" size="xl"
-            class="rounded-xl shadow-lg border border-slate-200 no-print" @click="exportToPDF" />
-          <UButton label="ดาวน์โหลด CSV" icon="i-heroicons-cloud-arrow-down" color="primary" variant="solid" size="xl"
-            class="rounded-xl shadow-lg shadow-blue-500/20 no-print" @click="exportToCSV" />
+          <UButton
+            label="ส่งออก PDF"
+            icon="i-heroicons-document-text"
+            color="primary"
+            variant="soft"
+            size="xl"
+            class="rounded-xl shadow-lg border border-slate-200 no-print"
+            @click="exportToPDF"
+          />
+          <UButton
+            label="ดาวน์โหลด CSV"
+            icon="i-heroicons-cloud-arrow-down"
+            color="primary"
+            variant="solid"
+            size="xl"
+            class="rounded-xl shadow-lg shadow-blue-500/20 no-print"
+            @click="exportToCSV"
+          />
         </div>
       </div>
     </div>
@@ -23,14 +42,23 @@
     <div class="print-only mb-8 text-black bg-white p-6 border-b-2 border-black hidden">
       <div class="flex justify-between items-start">
         <div>
-          <h1 class="text-2xl font-black uppercase text-black">รายงานสรุปผลการจัดการเรียนสอนชดเชย</h1>
-          <p class="text-sm font-bold mt-1 text-slate-700">คณะครุศาสตร์อุตสาหกรรม สาขาเทคโนโลยีคอมพิวเตอร์ มทร.อีสาน
-            ขอนแก่น</p>
-          <p class="text-xs text-slate-500 mt-1 italic">Semi-Auto Makeup Class Report - {{ new
-            Date().toLocaleDateString('th-TH') }}</p>
+          <h1 class="text-2xl font-black uppercase text-black">
+            รายงานสรุปผลการจัดการเรียนสอนชดเชย
+          </h1>
+          <p class="text-sm font-bold mt-1 text-slate-700">
+            คณะครุศาสตร์อุตสาหกรรม สาขาเทคโนโลยีคอมพิวเตอร์ มทร.อีสาน
+            ขอนแก่น
+          </p>
+          <p class="text-xs text-slate-500 mt-1 italic">
+            Semi-Auto Makeup Class Report - {{ new
+              Date().toLocaleDateString('th-TH') }}
+          </p>
         </div>
         <div class="text-right">
-          <img src="/image/rmutiLogo.png" class="h-16 w-auto mb-2 ml-auto filter grayscale opacity-50" />
+          <img
+            src="/image/rmutiLogo.png"
+            class="h-16 w-auto mb-2 ml-auto filter grayscale opacity-50"
+          >
         </div>
       </div>
     </div>
@@ -40,41 +68,75 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
           <div class="absolute right-0 bottom-0 opacity-10 scale-150 group-hover:scale-125 transition-transform">
-            <UIcon name="i-heroicons-clipboard-document-list" class="w-24 h-24" />
+            <UIcon
+              name="i-heroicons-clipboard-document-list"
+              class="w-24 h-24"
+            />
           </div>
-          <p class="text-slate-500 text-lg font-bold uppercase tracking-widest">รวมรายการชดเชย</p>
-          <p class="text-4xl font-black text-slate-900 mt-2">{{ makeupClasses.length }}</p>
+          <p class="text-slate-500 text-lg font-bold uppercase tracking-widest">
+            รวมรายการชดเชย
+          </p>
+          <p class="text-4xl font-black text-slate-900 mt-2">
+            {{ makeupClasses.length }}
+          </p>
         </div>
         <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
           <div
-            class="absolute right-0 bottom-0 opacity-10 scale-150 text-green-500 group-hover:scale-125 transition-transform">
-            <UIcon name="i-heroicons-check-badge" class="w-24 h-24" />
+            class="absolute right-0 bottom-0 opacity-10 scale-150 text-green-500 group-hover:scale-125 transition-transform"
+          >
+            <UIcon
+              name="i-heroicons-check-badge"
+              class="w-24 h-24"
+            />
           </div>
-          <p class="text-slate-500 text-lg font-bold uppercase tracking-widest text-green-600/80">ยืนยันแล้ว</p>
-          <p class="text-4xl font-black text-green-600 mt-2">{{ confirmedCount }}</p>
+          <p class="text-slate-500 text-lg font-bold uppercase tracking-widest text-green-600/80">
+            ยืนยันแล้ว
+          </p>
+          <p class="text-4xl font-black text-green-600 mt-2">
+            {{ confirmedCount }}
+          </p>
         </div>
         <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
           <div
-            class="absolute right-0 bottom-0 opacity-10 scale-150 text-amber-500 group-hover:scale-125 transition-transform">
-            <UIcon name="i-heroicons-clock" class="w-24 h-24" />
+            class="absolute right-0 bottom-0 opacity-10 scale-150 text-amber-500 group-hover:scale-125 transition-transform"
+          >
+            <UIcon
+              name="i-heroicons-clock"
+              class="w-24 h-24"
+            />
           </div>
-          <p class="text-slate-500 text-lg font-bold uppercase tracking-widest text-amber-600/80">รอให้สอนเสร็จ</p>
-          <p class="text-4xl font-black text-amber-600 mt-2">{{ confirmedCount }}</p>
+          <p class="text-slate-500 text-lg font-bold uppercase tracking-widest text-amber-600/80">
+            รอให้สอนเสร็จ
+          </p>
+          <p class="text-4xl font-black text-amber-600 mt-2">
+            {{ confirmedCount }}
+          </p>
         </div>
         <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
           <div
-            class="absolute right-0 bottom-0 opacity-10 scale-150 text-red-500 group-hover:scale-125 transition-transform">
-            <UIcon name="i-heroicons-no-symbol" class="w-24 h-24" />
+            class="absolute right-0 bottom-0 opacity-10 scale-150 text-red-500 group-hover:scale-125 transition-transform"
+          >
+            <UIcon
+              name="i-heroicons-no-symbol"
+              class="w-24 h-24"
+            />
           </div>
-          <p class="text-slate-500 text-lg font-bold uppercase tracking-widest text-red-600/80">ยกเลิกแล้ว</p>
-          <p class="text-4xl font-black text-red-600 mt-2">{{ cancelledCount }}</p>
+          <p class="text-slate-500 text-lg font-bold uppercase tracking-widest text-red-600/80">
+            ยกเลิกแล้ว
+          </p>
+          <p class="text-4xl font-black text-red-600 mt-2">
+            {{ cancelledCount }}
+          </p>
         </div>
       </div>
 
       <!-- Distribution Chart Section -->
       <div class="bg-white p-8 rounded-3xl border border-slate-200 mb-8 shadow-xl">
         <h2 class="text-xl font-bold mb-6 flex items-center gap-2 text-slate-900">
-          <UIcon name="i-heroicons-chart-pie" class="text-blue-600" />
+          <UIcon
+            name="i-heroicons-chart-pie"
+            class="text-blue-600"
+          />
           สัดส่วนความสำเร็จ (Distribution)
         </h2>
         <div class="flex flex-col gap-6">
@@ -84,8 +146,10 @@
               <span class="font-bold">{{ successRate }}%</span>
             </div>
             <div class="w-full h-4 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-              <div class="h-full bg-gradient-to-r from-green-500 to-green-300 transition-all duration-1000"
-                :style="{ width: successRate + '%' }"></div>
+              <div
+                class="h-full bg-gradient-to-r from-green-500 to-green-300 transition-all duration-1000"
+                :style="{ width: successRate + '%' }"
+              />
             </div>
           </div>
           <div class="space-y-2">
@@ -94,8 +158,10 @@
               <span class="font-bold">{{ pendingRate }}%</span>
             </div>
             <div class="w-full h-4 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-              <div class="h-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-1000"
-                :style="{ width: pendingRate + '%' }"></div>
+              <div
+                class="h-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-1000"
+                :style="{ width: pendingRate + '%' }"
+              />
             </div>
           </div>
         </div>
@@ -106,7 +172,10 @@
         <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="p-6 border-b border-slate-200 bg-slate-50">
             <h2 class="font-bold text-slate-900 flex items-center gap-2 text-xl">
-              <UIcon name="i-heroicons-user-group" class="text-blue-600" />
+              <UIcon
+                name="i-heroicons-user-group"
+                class="text-blue-600"
+              />
               สรุปตามอาจารย์
             </h2>
           </div>
@@ -114,21 +183,35 @@
             <table class="w-full text-left">
               <thead>
                 <tr class="text-slate-500 text-md font-black uppercase tracking-widest border-b border-slate-200">
-                  <th class="px-8 py-5">ชื่ออาจารย์</th>
-                  <th class="px-8 py-5 text-center">จำนวนครั้ง</th>
-                  <th class="px-8 py-5 text-center">ชั่วโมงชดเชย</th>
+                  <th class="px-8 py-5">
+                    ชื่ออาจารย์
+                  </th>
+                  <th class="px-8 py-5 text-center">
+                    จำนวนครั้ง
+                  </th>
+                  <th class="px-8 py-5 text-center">
+                    ชั่วโมงชดเชย
+                  </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200">
-                <tr v-for="teacher in teacherStats" :key="teacher.name"
-                  class="hover:bg-slate-50 transition-colors group">
-                  <td class="px-8 py-5 font-bold text-slate-900">{{ teacher.name }}</td>
+                <tr
+                  v-for="teacher in teacherStats"
+                  :key="teacher.name"
+                  class="hover:bg-slate-50 transition-colors group"
+                >
+                  <td class="px-8 py-5 font-bold text-slate-900">
+                    {{ teacher.name }}
+                  </td>
                   <td class="px-8 py-5 text-center">
                     <span
-                      class="bg-slate-100 px-3 py-1 rounded-full text-sm font-bold group-hover:bg-blue-500 transition-colors">{{
-                        teacher.count }}</span>
+                      class="bg-slate-100 px-3 py-1 rounded-full text-sm font-bold group-hover:bg-blue-500 transition-colors"
+                    >{{
+                      teacher.count }}</span>
                   </td>
-                  <td class="px-8 py-5 text-center text-slate-600 font-medium">{{ teacher.hours }} ชม.</td>
+                  <td class="px-8 py-5 text-center text-slate-600 font-medium">
+                    {{ teacher.hours }} ชม.
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -139,7 +222,10 @@
         <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="p-6 border-b border-slate-200 bg-slate-50">
             <h2 class="font-bold text-slate-900 flex items-center gap-2 text-xl">
-              <UIcon name="i-heroicons-academic-cap" class="text-amber-600" />
+              <UIcon
+                name="i-heroicons-academic-cap"
+                class="text-amber-600"
+              />
               สรุปตามกลุ่มเรียน
             </h2>
           </div>
@@ -147,21 +233,35 @@
             <table class="w-full text-left">
               <thead>
                 <tr class="text-slate-500 text-md font-black uppercase tracking-widest border-b border-slate-200">
-                  <th class="px-8 py-5">กลุ่มเรียน</th>
-                  <th class="px-8 py-5 text-center">จำนวนครั้ง</th>
-                  <th class="px-8 py-5 text-center">ชั่วโมงรวม</th>
+                  <th class="px-8 py-5">
+                    กลุ่มเรียน
+                  </th>
+                  <th class="px-8 py-5 text-center">
+                    จำนวนครั้ง
+                  </th>
+                  <th class="px-8 py-5 text-center">
+                    ชั่วโมงรวม
+                  </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-200">
-                <tr v-for="section in sectionStats" :key="section.name"
-                  class="hover:bg-slate-50 transition-colors group">
-                  <td class="px-8 py-5 font-bold text-slate-900">{{ section.name }}</td>
+                <tr
+                  v-for="section in sectionStats"
+                  :key="section.name"
+                  class="hover:bg-slate-50 transition-colors group"
+                >
+                  <td class="px-8 py-5 font-bold text-slate-900">
+                    {{ section.name }}
+                  </td>
                   <td class="px-8 py-5 text-center">
                     <span
-                      class="bg-slate-100 px-3 py-1 rounded-full text-sm font-bold group-hover:bg-amber-500 transition-colors">{{
-                        section.count }}</span>
+                      class="bg-slate-100 px-3 py-1 rounded-full text-sm font-bold group-hover:bg-amber-500 transition-colors"
+                    >{{
+                      section.count }}</span>
                   </td>
-                  <td class="px-8 py-5 text-center text-slate-600 font-medium">{{ section.hours }} ชม.</td>
+                  <td class="px-8 py-5 text-center text-slate-600 font-medium">
+                    {{ section.hours }} ชม.
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -208,12 +308,12 @@ const pendingRate = computed(() => {
 // คำนวณสถิติแยกตามอาจารย์
 const teacherStats = computed(() => {
   const groups = {}
-  makeupClasses.value.forEach(item => {
+  makeupClasses.value.forEach((item) => {
     const key = item.teacher_name || 'ไม่ทราบชื่อ'
     if (!groups[key]) groups[key] = { count: 0, hours: 0 }
     groups[key].count++
-    const start = (item.makeup_time_start || "00:00").split(':').map(Number)
-    const end = (item.makeup_time_end || "00:00").split(':').map(Number)
+    const start = (item.makeup_time_start || '00:00').split(':').map(Number)
+    const end = (item.makeup_time_end || '00:00').split(':').map(Number)
     groups[key].hours += (end[0] - start[0])
   })
   return Object.entries(groups).map(([name, data]) => ({ name, count: data.count, hours: data.hours }))
@@ -222,12 +322,12 @@ const teacherStats = computed(() => {
 // คำนวณสถิติแยกตามกลุ่มเรียน
 const sectionStats = computed(() => {
   const groups = {}
-  makeupClasses.value.forEach(item => {
+  makeupClasses.value.forEach((item) => {
     const key = item.section_name || 'ไม่ระบุกลุ่ม'
     if (!groups[key]) groups[key] = { count: 0, hours: 0 }
     groups[key].count++
-    const start = (item.makeup_time_start || "00:00").split(':').map(Number)
-    const end = (item.makeup_time_end || "00:00").split(':').map(Number)
+    const start = (item.makeup_time_start || '00:00').split(':').map(Number)
+    const end = (item.makeup_time_end || '00:00').split(':').map(Number)
     groups[key].hours += (end[0] - start[0])
   })
   return Object.entries(groups).map(([name, data]) => ({
