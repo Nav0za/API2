@@ -24,10 +24,10 @@
           </p>
         </div>
         <div class="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200">
-          <USelect v-model="selectedTerm" :items="filterTermOptions" placeholder="เลือกเทอม" class="w-48"
-            variant="subtle" icon="i-heroicons-funnel" />
+          <USelect v-model="selectedTerm" :items="filterTermOptions" placeholder="เลือกเทอม" class="w-48 cursor-pointer"
+            variant="subtle" icon="i-heroicons-funnel" size="xl" />
           <UButton icon="i-heroicons-plus-circle" label="เพิ่มกลุ่มเรียน" color="primary" size="xl"
-            class="px-6 rounded-xl shadow-lg shadow-blue-500/20" @click="openAddModal = true" />
+            class="px-6 rounded-xl shadow-lg shadow-blue-500/20 cursor-pointer" @click="openAddModal = true" />
         </div>
       </div>
 
@@ -61,7 +61,7 @@
                 </h3>
                 <div class="flex items-center gap-2 mt-2">
                   <span
-                    class="text-xs px-2 py-0.5 bg-blue-500/10 text-blue-600 rounded-full border border-blue-500/20 font-medium lowercase">
+                    class="text-md px-2 py-0.5 bg-blue-500/10 text-blue-600 rounded-full border border-blue-500/20 font-medium lowercase">
                     เทอม {{ section.term }}
                   </span>
                 </div>
@@ -78,7 +78,8 @@
 
             <div class="flex gap-3 mt-auto">
               <UButton block label="จัดการตารางเรียน" icon="i-heroicons-calendar" color="primary" variant="solid"
-                class="rounded-xl flex-1 font-bold" :to="`/sections/${section.id_section}?term=${section.term}`" />
+                size="xl" class="rounded-xl flex-1 font-bold"
+                :to="`/sections/${section.id_section}?term=${section.term}`" />
             </div>
           </div>
         </div>
@@ -104,18 +105,18 @@
             </div>
 
             <form @submit.prevent="handleAddSection" class="space-y-6">
-              <UFormField label="ชื่อกลุ่มเรียน (Section Name) *" help="เช่น TC2R1, SE66 เป็นต้น"
+              <UFormField class="text-lg" label="ชื่อกลุ่มเรียน (Section Name) *" help="เช่น TC2R1, SE66 เป็นต้น"
                 :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                 <UInput v-model="newSection.name" placeholder="กรอกชื่อกลุ่มเรียน..." size="xl" class="rounded-xl"
                   autofocus :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }" />
               </UFormField>
 
-              <UFormField label="ปีการศึกษา (Term) *" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
+              <UFormField class="text-lg" label="ปีการศึกษา (Term) *" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                 <USelect v-model="newSection.term" :items="termOptions" placeholder="เลือกเทอมที่ต้องการ" size="xl"
                   class="rounded-xl" :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }" />
               </UFormField>
 
-              <UFormField label="รายละเอียดเพิ่มเติม" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
+              <UFormField class="text-lg" label="รายละเอียดเพิ่มเติม" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                 <UTextarea v-model="newSection.description" placeholder="รายละเอียดกลุ่มเรียน (ถ้ามี)..." size="xl"
                   class="rounded-xl" :rows="3" :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }" />
               </UFormField>
@@ -124,9 +125,9 @@
           <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex gap-3">
               <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
-                class="rounded-2xl py-4 flex-1 font-bold" @click="openAddModal = false" />
+                class="rounded-2xl py-4 flex-1 font-bold cursor-pointer" @click="openAddModal = false" />
               <UButton label="บันทึกข้อมูล" color="primary" size="xl" block
-                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold" :loading="adding"
+                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold cursor-pointer" :loading="adding"
                 @click="handleAddSection" />
             </div>
           </div>

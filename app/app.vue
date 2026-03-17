@@ -18,7 +18,7 @@ useHead({
       <template #left>
         <NuxtLink class="flex items-center" to="/">
           <img src="/image/rmutiLogo.png" class="h-12 w-auto mx-5" alt="RMUTI logo">
-          <span class="text-xl">ระบบจัดวันสอนชดเชยกึ่งอัตโนมัติ</span>
+          <span class="text-2xl">ระบบจัดวันสอนชดเชยกึ่งอัตโนมัติ</span>
         </NuxtLink>
       </template>
 

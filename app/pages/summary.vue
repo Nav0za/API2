@@ -4,7 +4,7 @@
     <div class="bg-white border-b border-slate-200 p-6 sticky top-0 z-10 shadow-lg mb-8">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
-          <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
             <UIcon name="i-heroicons-presentation-chart-line" class="text-blue-600" />
             ตัวชี้วัดและรายงาน
           </h1>
@@ -42,7 +42,7 @@
           <div class="absolute right-0 bottom-0 opacity-10 scale-150 group-hover:scale-125 transition-transform">
             <UIcon name="i-heroicons-clipboard-document-list" class="w-24 h-24" />
           </div>
-          <p class="text-slate-500 text-xs font-bold uppercase tracking-widest">รวมรายการชดเชย</p>
+          <p class="text-slate-500 text-lg font-bold uppercase tracking-widest">รวมรายการชดเชย</p>
           <p class="text-4xl font-black text-slate-900 mt-2">{{ makeupClasses.length }}</p>
         </div>
         <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
@@ -50,7 +50,7 @@
             class="absolute right-0 bottom-0 opacity-10 scale-150 text-green-500 group-hover:scale-125 transition-transform">
             <UIcon name="i-heroicons-check-badge" class="w-24 h-24" />
           </div>
-          <p class="text-slate-500 text-xs font-bold uppercase tracking-widest text-green-600/80">ยืนยันแล้ว</p>
+          <p class="text-slate-500 text-lg font-bold uppercase tracking-widest text-green-600/80">ยืนยันแล้ว</p>
           <p class="text-4xl font-black text-green-600 mt-2">{{ confirmedCount }}</p>
         </div>
         <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
@@ -58,7 +58,7 @@
             class="absolute right-0 bottom-0 opacity-10 scale-150 text-amber-500 group-hover:scale-125 transition-transform">
             <UIcon name="i-heroicons-clock" class="w-24 h-24" />
           </div>
-          <p class="text-slate-500 text-xs font-bold uppercase tracking-widest text-amber-600/80">รอให้สอนเสร็จ</p>
+          <p class="text-slate-500 text-lg font-bold uppercase tracking-widest text-amber-600/80">รอให้สอนเสร็จ</p>
           <p class="text-4xl font-black text-amber-600 mt-2">{{ confirmedCount }}</p>
         </div>
         <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden group">
@@ -66,7 +66,7 @@
             class="absolute right-0 bottom-0 opacity-10 scale-150 text-red-500 group-hover:scale-125 transition-transform">
             <UIcon name="i-heroicons-no-symbol" class="w-24 h-24" />
           </div>
-          <p class="text-slate-500 text-xs font-bold uppercase tracking-widest text-red-600/80">ยกเลิกแล้ว</p>
+          <p class="text-slate-500 text-lg font-bold uppercase tracking-widest text-red-600/80">ยกเลิกแล้ว</p>
           <p class="text-4xl font-black text-red-600 mt-2">{{ cancelledCount }}</p>
         </div>
       </div>
@@ -79,7 +79,7 @@
         </h2>
         <div class="flex flex-col gap-6">
           <div class="space-y-2">
-            <div class="flex justify-between text-sm">
+            <div class="flex justify-between text-lg">
               <span class="text-slate-600">ยืนยันและเสร็จสิ้น</span>
               <span class="font-bold">{{ successRate }}%</span>
             </div>
@@ -89,7 +89,7 @@
             </div>
           </div>
           <div class="space-y-2">
-            <div class="flex justify-between text-sm">
+            <div class="flex justify-between text-lg">
               <span class="text-slate-600">รอให้สอนเสร็จ</span>
               <span class="font-bold">{{ pendingRate }}%</span>
             </div>
@@ -105,7 +105,7 @@
         <!-- สรุปตามอาจารย์ -->
         <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="p-6 border-b border-slate-200 bg-slate-50">
-            <h2 class="font-bold text-slate-900 flex items-center gap-2">
+            <h2 class="font-bold text-slate-900 flex items-center gap-2 text-xl">
               <UIcon name="i-heroicons-user-group" class="text-blue-600" />
               สรุปตามอาจารย์
             </h2>
@@ -113,7 +113,7 @@
           <div class="overflow-x-auto">
             <table class="w-full text-left">
               <thead>
-                <tr class="text-slate-500 text-xs font-black uppercase tracking-widest border-b border-slate-200">
+                <tr class="text-slate-500 text-md font-black uppercase tracking-widest border-b border-slate-200">
                   <th class="px-8 py-5">ชื่ออาจารย์</th>
                   <th class="px-8 py-5 text-center">จำนวนครั้ง</th>
                   <th class="px-8 py-5 text-center">ชั่วโมงชดเชย</th>
@@ -138,7 +138,7 @@
         <!-- สรุปตามกลุ่มเรียน -->
         <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
           <div class="p-6 border-b border-slate-200 bg-slate-50">
-            <h2 class="font-bold text-slate-900 flex items-center gap-2">
+            <h2 class="font-bold text-slate-900 flex items-center gap-2 text-xl">
               <UIcon name="i-heroicons-academic-cap" class="text-amber-600" />
               สรุปตามกลุ่มเรียน
             </h2>
@@ -146,7 +146,7 @@
           <div class="overflow-x-auto">
             <table class="w-full text-left">
               <thead>
-                <tr class="text-slate-500 text-xs font-black uppercase tracking-widest border-b border-slate-200">
+                <tr class="text-slate-500 text-md font-black uppercase tracking-widest border-b border-slate-200">
                   <th class="px-8 py-5">กลุ่มเรียน</th>
                   <th class="px-8 py-5 text-center">จำนวนครั้ง</th>
                   <th class="px-8 py-5 text-center">ชั่วโมงรวม</th>

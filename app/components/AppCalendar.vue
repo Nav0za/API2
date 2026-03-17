@@ -4,7 +4,7 @@
     <div class="bg-white border-b border-slate-200 p-6 z-20 shadow-lg mb-8">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
-          <h1 class="text-3xl font-bold flex items-center gap-2">
+          <h1 class="text-2xl font-bold flex items-center gap-2">
             <UIcon name="i-heroicons-calendar-days" class="text-blue-400" />
             ปฏิทินการสอน
           </h1>
@@ -18,8 +18,6 @@
             class="rounded-xl font-bold cursor-pointer" @click="openAbsenceModal" />
           <UButton label="รายการชดเชย" icon="i-heroicons-clipboard-document-list" color="success" variant="solid"
             size="xl" class="rounded-xl font-bold" to="/makeup-classes" />
-          <UButton label="สรุปรายงาน" icon="i-lucide-bar-chart-3" color="success" variant="solid" size="xl"
-            class="rounded-xl font-bold" to="/summary" />
         </div>
       </div>
     </div>
@@ -50,15 +48,15 @@
               </div>
             </div>
             <div class="space-y-6">
-              <UFormField label="ชื่อวันหยุด *" color="error" help="เช่น วันสงกรานต์, วันหยุดพิเศษ">
+              <UFormField label="ชื่อวันหยุด *" color="error" help="เช่น วันสงกรานต์, วันหยุดพิเศษ" class="text-lg">
                 <UInput v-model="holidayForm.title" placeholder="ระบุชื่อวันหยุด..." size="xl" class="rounded-xl" />
               </UFormField>
 
-              <UFormField label="วันที่ *">
+              <UFormField label="วันที่ *" class="text-lg">
                 <UInput v-model="holidayForm.date" type="date" size="xl" class="rounded-xl" />
               </UFormField>
 
-              <UFormField label="รายละเอียดเพิ่มเติม">
+              <UFormField label="รายละเอียดเพิ่มเติม" class="text-lg">
                 <UTextarea v-model="holidayForm.description" placeholder="หมายเหตุหรือรายละเอียดเพิ่มเติม (ถ้ามี)..."
                   :rows="3" size="xl" class="rounded-xl" />
               </UFormField>
@@ -94,19 +92,19 @@
             </div>
 
             <div class="space-y-6">
-              <UFormField label="อาจารย์ *" help="เลือกอาจารย์ที่ต้องการบันทึกวันติดราชการ"
+              <UFormField label="อาจารย์ *" help="เลือกอาจารย์ที่ต้องการบันทึกวันติดราชการ" class="text-lg"
                 :ui="{ label: 'text-slate-900 font-semibold', help: 'text-slate-600' }">
                 <USelect v-model="absenceForm.teacherId" :items="teacherOptions" placeholder="เลือกอาจารย์" size="xl"
                   class="rounded-xl w-full" />
               </UFormField>
 
-              <UFormField label="เทอม *" help="เทอมการศึกษาที่เกี่ยวข้อง"
+              <UFormField label="เทอม *" help="เทอมการศึกษาที่เกี่ยวข้อง" class="text-lg"
                 :ui="{ label: 'text-slate-900 font-semibold', help: 'text-slate-600' }">
                 <USelect v-model="absenceForm.term" :items="termOptions" placeholder="เลือกเทอม" size="xl"
                   class="rounded-xl" />
               </UFormField>
 
-              <UFormField label="วันที่ติดราชการ *" :ui="{ label: 'text-slate-900 font-semibold' }">
+              <UFormField label="วันที่ติดราชการ *" :ui="{ label: 'text-slate-900 font-semibold' }" class="text-lg">
                 <UInput v-model="absenceForm.date" type="date" size="xl" class="rounded-xl" />
               </UFormField>
 
@@ -129,13 +127,13 @@
 
               <div v-else-if="missedClasses.length > 0" class="border border-slate-200 rounded-xl p-4 bg-white/50">
                 <div class="flex items-center justify-between mb-3">
-                  <label class="block text-sm font-semibold text-slate-900">วิชาที่ติดราชการ</label>
+                  <label class="block text-md font-semibold text-slate-900">วิชาที่ติดราชการ</label>
                   <div class="flex gap-2">
-                    <UButton label="เลือกทั้งหมด" size="xs" color="primary" variant="soft"
-                      class="text-[10px] px-2 py-1 h-6 rounded-md"
+                    <UButton label="เลือกทั้งหมด" size="2xl" color="primary" variant="soft"
+                      class="text-[10px] px-2 py-1 h-6 rounded-md cursor-pointer"
                       @click="missedClasses.filter(c => !c.hasMakeup).forEach(c => c.selected = true)" />
-                    <UButton label="ไม่เลือกเลย" size="xs" color="neutral" variant="soft"
-                      class="text-[10px] px-2 py-1 h-6 rounded-md"
+                    <UButton label="ไม่เลือกเลย" size="2xl" color="neutral" variant="soft"
+                      class="text-[10px] px-2 py-1 h-6 rounded-md cursor-pointer"
                       @click="missedClasses.forEach(c => c.selected = false)" />
                   </div>
                 </div>
@@ -162,13 +160,13 @@
                     </div>
                   </div>
                 </div>
-                <div class="mt-3 pt-3 border-t border-slate-200 flex justify-between text-xs font-medium">
+                <div class="mt-3 pt-3 border-t border-slate-200 flex justify-between text-md font-medium">
                   <span class="text-slate-600">เลือกแล้ว: {{ selectedClassesCount }} วิชา</span>
                   <span class="text-blue-600">รวม: {{ totalDuration }} ชั่วโมง</span>
                 </div>
               </div>
 
-              <UFormField label="เหตุผล" help="เช่น ราชการ, ป่วย, ลากิจ"
+              <UFormField label="เหตุผล" help="เช่น ราชการ, ป่วย, ลากิจ" class="text-lg"
                 :ui="{ label: 'text-slate-900 font-semibold', help: 'text-slate-600' }">
                 <UTextarea v-model="absenceForm.reason" placeholder="ระบุเหตุผลในการติดราชการ..." :rows="3" size="xl"
                   class="rounded-xl" />
@@ -420,7 +418,8 @@
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
               <div class="flex gap-3 w-full sm:w-auto">
                 <!-- ปุ่มลบ: แสดงถ้าไม่ใช่ hardcoded holiday หรือถ้ามี ID (วันหยุดที่เพิ่มเอง) -->
-                <UButton v-if="selectedEvent?.id && selectedEvent.extendedProps?.eventType !== 'normal'"
+                <UButton
+                  v-if="selectedEvent?.id && selectedEvent.extendedProps?.eventType !== 'normal' && !String(selectedEvent.id).startsWith('holiday-')"
                   label="ลบรายการ" color="error" variant="soft" icon="i-lucide-trash" size="lg"
                   class="rounded-xl flex-1 font-bold" @click="confirmDeleteEvent" />
 
@@ -702,6 +701,9 @@ const calendarOptions = computed(() => ({
   weekends: true,
   events: filteredEvents.value,
   eventClick: handleEventClick,
+  eventClassNames: (arg) => {
+    return [`event-${arg.event.extendedProps?.eventType || 'normal'}`]
+  },
   datesSet: (info) => {
     // อัปเดตช่วงเวลาเมื่อมีการเปลี่ยนมุมมอง (เดือน/สัปดาห์/เลื่อน)
     currentRange.value = {
@@ -1572,6 +1574,14 @@ const getEventTypeClass = (type, isIconContainer = false) => {
 
 .fc-event {
   border-radius: 4px;
+}
+
+/* ปรับขนาดตัวอักษรสำหรับวันหยุด */
+.event-holiday .fc-event-title,
+.event-holiday .fc-event-main-frame {
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  padding: 2px 4px !important;
 }
 
 /* ปรับธีมปฏิทินเป็น Premium Light (พื้นขาว, ข้อความดำ) */

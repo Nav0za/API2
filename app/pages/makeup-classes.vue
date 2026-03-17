@@ -10,7 +10,7 @@
               <UIcon name="i-heroicons-calendar-days" class="text-blue-400" />
               รายการสอนชดเชย
             </h1>
-            <p class="text-slate-400 text-sm">ติดตามและจัดการคำขอสอนชดเชยทั้งหมด</p>
+            <p class="text-slate-400 text-md">ติดตามและจัดการคำขอสอนชดเชยทั้งหมด</p>
           </div>
         </div>
       </div>
@@ -20,15 +20,15 @@
     <div class="container mx-auto px-4 mb-8">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm">
-          <p class="text-slate-400 text-xs font-medium uppercase tracking-wider">ทั้งหมด</p>
+          <p class="text-slate-400 text-lg font-medium uppercase tracking-wider">ทั้งหมด</p>
           <p class="text-2xl font-bold text-white mt-1">{{ makeupClasses?.length || 0 }} รายการ</p>
         </div>
         <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm">
-          <p class="text-slate-400 text-xs font-medium uppercase tracking-wider text-green-500">ยืนยันแล้ว</p>
+          <p class="text-slate-400 text-lg font-medium uppercase tracking-wider text-green-500">ยืนยันแล้ว</p>
           <p class="text-2xl font-bold text-white mt-1">{{ stats.confirmed }}</p>
         </div>
         <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm">
-          <p class="text-slate-400 text-xs font-medium uppercase tracking-wider text-blue-500">เสร็จสิ้น</p>
+          <p class="text-slate-400 text-lg font-medium uppercase tracking-wider text-blue-500">เสร็จสิ้น</p>
           <p class="text-2xl font-bold text-white mt-1">{{ stats.completed }}</p>
         </div>
       </div>
