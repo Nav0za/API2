@@ -5,19 +5,45 @@
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
           <h1 class="text-2xl font-bold flex items-center gap-2">
-            <UIcon name="i-heroicons-calendar-days" class="text-blue-400" />
+            <UIcon
+              name="i-heroicons-calendar-days"
+              class="text-blue-400"
+            />
             ปฏิทินการสอน
           </h1>
-          <p class="text-slate-600 mt-1">จัดการวันหยุด อาจารย์ติดราชการ และการสอนชดเชย</p>
+          <p class="text-slate-600 mt-1">
+            จัดการวันหยุด อาจารย์ติดราชการ และการสอนชดเชย
+          </p>
         </div>
 
         <div class="flex flex-wrap gap-3 justify-center">
-          <UButton label="เพิ่มวันหยุด" icon="i-lucide-calendar-off" color="success" variant="solid" size="xl"
-            class="rounded-xl font-bold cursor-pointer" @click="openHolidayModal" />
-          <UButton label="อาจารย์ติดราชการ" icon="i-lucide-user-x" color="success" variant="solid" size="xl"
-            class="rounded-xl font-bold cursor-pointer" @click="openAbsenceModal" />
-          <UButton label="รายการชดเชย" icon="i-heroicons-clipboard-document-list" color="success" variant="solid"
-            size="xl" class="rounded-xl font-bold" to="/makeup-classes" />
+          <UButton
+            label="เพิ่มวันหยุด"
+            icon="i-lucide-calendar-off"
+            color="success"
+            variant="solid"
+            size="xl"
+            class="rounded-xl font-bold cursor-pointer"
+            @click="openHolidayModal"
+          />
+          <UButton
+            label="อาจารย์ติดราชการ"
+            icon="i-lucide-user-x"
+            color="success"
+            variant="solid"
+            size="xl"
+            class="rounded-xl font-bold cursor-pointer"
+            @click="openAbsenceModal"
+          />
+          <UButton
+            label="รายการชดเชย"
+            icon="i-heroicons-clipboard-document-list"
+            color="success"
+            variant="solid"
+            size="xl"
+            class="rounded-xl font-bold"
+            to="/makeup-classes"
+          />
         </div>
       </div>
     </div>
@@ -25,50 +51,101 @@
     <!-- Calendar Container -->
     <div class="container mx-auto px-4">
       <div class="bg-white border border-slate-200 p-6 shadow-xl rounded-3xl">
-
-        <FullCalendar v-if="events" ref="calendarRef" :options="calendarOptions" />
+        <FullCalendar
+          v-if="events"
+          ref="calendarRef"
+          :options="calendarOptions"
+        />
       </div>
     </div>
 
     <!-- Modal เพิ่มวันหยุด -->
-    <UModal v-model:open="holidayModalOpen"
-      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
+    <UModal
+      v-model:open="holidayModalOpen"
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }"
+    >
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
             <div class="flex items-center gap-4 mb-8">
               <div
-                class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20">
-                <UIcon name="i-lucide-calendar-off" class="text-2xl text-amber-500" />
+                class="w-12 h-12 bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-500/20"
+              >
+                <UIcon
+                  name="i-lucide-calendar-off"
+                  class="text-2xl text-amber-500"
+                />
               </div>
               <div>
-                <h3 class="text-2xl font-bold text-slate-900">{{ isEditingHoliday ? 'แก้ไขวันหยุด' : 'เพิ่มวันหยุด' }}
+                <h3 class="text-2xl font-bold text-slate-900">
+                  {{ isEditingHoliday ? 'แก้ไขวันหยุด' : 'เพิ่มวันหยุด' }}
                 </h3>
-                <p class="text-slate-600 text-sm">กำหนดวันหยุดพิเศษสำหรับการคำนวณตารางสอน</p>
+                <p class="text-slate-600 text-sm">
+                  กำหนดวันหยุดพิเศษสำหรับการคำนวณตารางสอน
+                </p>
               </div>
             </div>
             <div class="space-y-6">
-              <UFormField label="ชื่อวันหยุด *" color="error" help="เช่น วันสงกรานต์, วันหยุดพิเศษ" class="text-lg">
-                <UInput v-model="holidayForm.title" placeholder="ระบุชื่อวันหยุด..." size="xl" class="rounded-xl" />
+              <UFormField
+                label="ชื่อวันหยุด *"
+                color="error"
+                help="เช่น วันสงกรานต์, วันหยุดพิเศษ"
+                class="text-lg"
+              >
+                <UInput
+                  v-model="holidayForm.title"
+                  placeholder="ระบุชื่อวันหยุด..."
+                  size="xl"
+                  class="rounded-xl"
+                />
               </UFormField>
 
-              <UFormField label="วันที่ *" class="text-lg">
-                <UInput v-model="holidayForm.date" type="date" size="xl" class="rounded-xl" />
+              <UFormField
+                label="วันที่ *"
+                class="text-lg"
+              >
+                <UInput
+                  v-model="holidayForm.date"
+                  type="date"
+                  size="xl"
+                  class="rounded-xl"
+                />
               </UFormField>
 
-              <UFormField label="รายละเอียดเพิ่มเติม" class="text-lg">
-                <UTextarea v-model="holidayForm.description" placeholder="หมายเหตุหรือรายละเอียดเพิ่มเติม (ถ้ามี)..."
-                  :rows="3" size="xl" class="rounded-xl" />
+              <UFormField
+                label="รายละเอียดเพิ่มเติม"
+                class="text-lg"
+              >
+                <UTextarea
+                  v-model="holidayForm.description"
+                  placeholder="หมายเหตุหรือรายละเอียดเพิ่มเติม (ถ้ามี)..."
+                  :rows="3"
+                  size="xl"
+                  class="rounded-xl"
+                />
               </UFormField>
             </div>
           </div>
           <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex gap-3">
-              <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
-                class="rounded-2xl py-4 flex-1 font-bold" @click="holidayModalOpen = false" />
-              <UButton :label="isEditingHoliday ? 'บันทึกการแก้ไข' : 'เพิ่มวันหยุด'" color="primary" size="xl" block
-                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold" :loading="saving"
-                @click="saveHoliday" />
+              <UButton
+                label="ยกเลิก"
+                color="neutral"
+                variant="soft"
+                size="xl"
+                block
+                class="rounded-2xl py-4 flex-1 font-bold"
+                @click="holidayModalOpen = false"
+              />
+              <UButton
+                :label="isEditingHoliday ? 'บันทึกการแก้ไข' : 'เพิ่มวันหยุด'"
+                color="primary"
+                size="xl"
+                block
+                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold"
+                :loading="saving"
+                @click="saveHoliday"
+              />
             </div>
           </div>
         </div>
@@ -76,82 +153,165 @@
     </UModal>
 
     <!-- Modal อาจารย์ติดราชการ -->
-    <UModal v-model:open="absenceModalOpen"
-      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
+    <UModal
+      v-model:open="absenceModalOpen"
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }"
+    >
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
             <div class="flex items-center gap-4 mb-8">
               <div class="w-12 h-12 bg-red-500/10 rounded-xl flex items-center justify-center border border-red-500/20">
-                <UIcon name="i-lucide-user-x" class="text-2xl text-red-500" />
+                <UIcon
+                  name="i-lucide-user-x"
+                  class="text-2xl text-red-500"
+                />
               </div>
               <div>
-                <h3 class="text-2xl font-bold text-slate-900">บันทึกอาจารย์ติดราชการ</h3>
-                <p class="text-slate-600 text-sm">ระบุวันที่ติดราชการเพื่อหาช่วงเวลาชดเชยที่เหมาะสม</p>
+                <h3 class="text-2xl font-bold text-slate-900">
+                  บันทึกอาจารย์ติดราชการ
+                </h3>
+                <p class="text-slate-600 text-sm">
+                  ระบุวันที่ติดราชการเพื่อหาช่วงเวลาชดเชยที่เหมาะสม
+                </p>
               </div>
             </div>
 
             <div class="space-y-6">
-              <UFormField label="อาจารย์ *" help="เลือกอาจารย์ที่ต้องการบันทึกวันติดราชการ" class="text-lg"
-                :ui="{ label: 'text-slate-900 font-semibold', help: 'text-slate-600' }">
-                <USelect v-model="absenceForm.teacherId" :items="teacherOptions" placeholder="เลือกอาจารย์" size="xl"
-                  class="rounded-xl w-full" />
+              <UFormField
+                label="อาจารย์ *"
+                help="เลือกอาจารย์ที่ต้องการบันทึกวันติดราชการ"
+                class="text-lg"
+                :ui="{ label: 'text-slate-900 font-semibold', help: 'text-slate-600' }"
+              >
+                <USelect
+                  v-model="absenceForm.teacherId"
+                  :items="teacherOptions"
+                  placeholder="เลือกอาจารย์"
+                  size="xl"
+                  class="rounded-xl w-full"
+                />
               </UFormField>
 
-              <UFormField label="เทอม *" help="เทอมการศึกษาที่เกี่ยวข้อง" class="text-lg"
-                :ui="{ label: 'text-slate-900 font-semibold', help: 'text-slate-600' }">
-                <USelect v-model="absenceForm.term" :items="termOptions" placeholder="เลือกเทอม" size="xl"
-                  class="rounded-xl" />
+              <UFormField
+                label="เทอม *"
+                help="เทอมการศึกษาที่เกี่ยวข้อง"
+                class="text-lg"
+                :ui="{ label: 'text-slate-900 font-semibold', help: 'text-slate-600' }"
+              >
+                <USelect
+                  v-model="absenceForm.term"
+                  :items="termOptions"
+                  placeholder="เลือกเทอม"
+                  size="xl"
+                  class="rounded-xl"
+                />
               </UFormField>
 
-              <UFormField label="วันที่ติดราชการ *" :ui="{ label: 'text-slate-900 font-semibold' }" class="text-lg">
-                <UInput v-model="absenceForm.date" type="date" size="xl" class="rounded-xl" />
+              <UFormField
+                label="วันที่ติดราชการ *"
+                :ui="{ label: 'text-slate-900 font-semibold' }"
+                class="text-lg"
+              >
+                <UInput
+                  v-model="absenceForm.date"
+                  type="date"
+                  size="xl"
+                  class="rounded-xl"
+                />
               </UFormField>
 
               <!-- แสดงรายการวิชาที่สอนในวันนั้น -->
-              <div v-if="loadingMissedClasses" class="flex justify-center p-4">
-                <UIcon name="i-heroicons-arrow-path" class="animate-spin w-6 h-6 text-slate-400" />
+              <div
+                v-if="loadingMissedClasses"
+                class="flex justify-center p-4"
+              >
+                <UIcon
+                  name="i-heroicons-arrow-path"
+                  class="animate-spin w-6 h-6 text-slate-400"
+                />
               </div>
 
               <div
                 v-else-if="absenceForm.teacherId && absenceForm.date && absenceForm.term && missedClasses.length === 0"
-                class="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-sm text-amber-400">
+                class="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-sm text-amber-400"
+              >
                 <div class="flex items-start gap-2">
-                  <UIcon name="i-heroicons-exclamation-triangle" class="w-5 h-5 mt-0.5 flex-shrink-0" />
+                  <UIcon
+                    name="i-heroicons-exclamation-triangle"
+                    class="w-5 h-5 mt-0.5 flex-shrink-0"
+                  />
                   <div>
-                    <p class="font-medium">ไม่พบรายการวิชาที่สอนในวันที่เลือก</p>
-                    <p class="text-xs text-amber-400/80 mt-1">กรุณาตรวจสอบว่าเลือกเทอมถูกต้อง</p>
+                    <p class="font-medium">
+                      ไม่พบรายการวิชาที่สอนในวันที่เลือก
+                    </p>
+                    <p class="text-xs text-amber-400/80 mt-1">
+                      กรุณาตรวจสอบว่าเลือกเทอมถูกต้อง
+                    </p>
                   </div>
                 </div>
               </div>
 
-              <div v-else-if="missedClasses.length > 0" class="border border-slate-200 rounded-xl p-4 bg-white/50">
+              <div
+                v-else-if="missedClasses.length > 0"
+                class="border border-slate-200 rounded-xl p-4 bg-white/50"
+              >
                 <div class="flex items-center justify-between mb-3">
                   <label class="block text-md font-semibold text-slate-900">วิชาที่ติดราชการ</label>
                   <div class="flex gap-2">
-                    <UButton label="เลือกทั้งหมด" size="2xl" color="primary" variant="soft"
+                    <UButton
+                      label="เลือกทั้งหมด"
+                      size="2xl"
+                      color="primary"
+                      variant="soft"
                       class="text-[10px] px-2 py-1 h-6 rounded-md cursor-pointer"
-                      @click="missedClasses.filter(c => !c.hasMakeup).forEach(c => c.selected = true)" />
-                    <UButton label="ไม่เลือกเลย" size="2xl" color="neutral" variant="soft"
+                      @click="missedClasses.filter(c => !c.hasMakeup).forEach(c => c.selected = true)"
+                    />
+                    <UButton
+                      label="ไม่เลือกเลย"
+                      size="2xl"
+                      color="neutral"
+                      variant="soft"
                       class="text-[10px] px-2 py-1 h-6 rounded-md cursor-pointer"
-                      @click="missedClasses.forEach(c => c.selected = false)" />
+                      @click="missedClasses.forEach(c => c.selected = false)"
+                    />
                   </div>
                 </div>
-                <p class="text-xs text-slate-600 mb-3">(เลือกวิชาที่ต้องการจัดชดเชย)</p>
+                <p class="text-xs text-slate-600 mb-3">
+                  (เลือกวิชาที่ต้องการจัดชดเชย)
+                </p>
 
                 <div class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
-                  <div v-for="cls in missedClasses" :key="cls.subjectId"
-                    class="flex items-start gap-3 p-3 rounded-lg border transition-all" :class="{
+                  <div
+                    v-for="cls in missedClasses"
+                    :key="cls.subjectId"
+                    class="flex items-start gap-3 p-3 rounded-lg border transition-all"
+                    :class="{
                       'bg-slate-100 border-slate-200 opacity-50': !cls.selected && !cls.hasMakeup,
                       'border-blue-500/50 bg-blue-500/10 cursor-pointer': cls.selected && !cls.hasMakeup,
                       'opacity-40 bg-slate-100 border-slate-200 cursor-not-allowed': cls.hasMakeup
-                    }" @click="!cls.hasMakeup && (cls.selected = !cls.selected)">
-                    <UCheckbox v-model="cls.selected" class="mt-1" :disabled="cls.hasMakeup"
-                      @click.stop="!cls.hasMakeup && (cls.selected = !cls.selected)" />
+                    }"
+                    @click="!cls.hasMakeup && (cls.selected = !cls.selected)"
+                  >
+                    <UCheckbox
+                      v-model="cls.selected"
+                      class="mt-1"
+                      :disabled="cls.hasMakeup"
+                      @click.stop="!cls.hasMakeup && (cls.selected = !cls.selected)"
+                    />
                     <div class="flex-1 min-w-0">
                       <div class="flex justify-between items-start">
-                        <p class="font-medium text-slate-900 truncate">{{ cls.subjectName }}</p>
-                        <UBadge v-if="cls.hasMakeup" color="primary" variant="soft" size="xs">จัดชดเชยแล้ว</UBadge>
+                        <p class="font-medium text-slate-900 truncate">
+                          {{ cls.subjectName }}
+                        </p>
+                        <UBadge
+                          v-if="cls.hasMakeup"
+                          color="primary"
+                          variant="soft"
+                          size="xs"
+                        >
+                          จัดชดเชยแล้ว
+                        </UBadge>
                       </div>
                       <p class="text-xs text-slate-600 mt-1">
                         {{ cls.timeStart }} - {{ cls.timeEnd }} ({{ cls.duration }} ชม.)
@@ -166,21 +326,43 @@
                 </div>
               </div>
 
-              <UFormField label="เหตุผล" help="เช่น ราชการ, ป่วย, ลากิจ" class="text-lg"
-                :ui="{ label: 'text-slate-900 font-semibold', help: 'text-slate-600' }">
-                <UTextarea v-model="absenceForm.reason" placeholder="ระบุเหตุผลในการติดราชการ..." :rows="3" size="xl"
-                  class="rounded-xl" />
+              <UFormField
+                label="เหตุผล"
+                help="เช่น ราชการ, ป่วย, ลากิจ"
+                class="text-lg"
+                :ui="{ label: 'text-slate-900 font-semibold', help: 'text-slate-600' }"
+              >
+                <UTextarea
+                  v-model="absenceForm.reason"
+                  placeholder="ระบุเหตุผลในการติดราชการ..."
+                  :rows="3"
+                  size="xl"
+                  class="rounded-xl"
+                />
               </UFormField>
             </div>
           </div>
           <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex gap-3">
-              <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
-                class="rounded-2xl py-4 flex-1 font-bold" @click="absenceModalOpen = false" />
-              <UButton label="บันทึกและหาช่วงชดเชย" color="primary" size="xl" block
+              <UButton
+                label="ยกเลิก"
+                color="neutral"
+                variant="soft"
+                size="xl"
+                block
+                class="rounded-2xl py-4 flex-1 font-bold"
+                @click="absenceModalOpen = false"
+              />
+              <UButton
+                label="บันทึกและหาช่วงชดเชย"
+                color="primary"
+                size="xl"
+                block
                 class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold"
-                :loading="saving || loadingMissedClasses" :disabled="loadingMissedClasses"
-                @click="saveAbsenceAndFindSlots" />
+                :loading="saving || loadingMissedClasses"
+                :disabled="loadingMissedClasses"
+                @click="saveAbsenceAndFindSlots"
+              />
             </div>
           </div>
         </div>
@@ -188,46 +370,80 @@
     </UModal>
 
     <!-- Modal แสดงช่วงว่างที่แนะนำ -->
-    <UModal v-model:open="slotsModalOpen"
-      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden', width: 'max-w-4xl' }">
+    <UModal
+      v-model:open="slotsModalOpen"
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden', width: 'max-w-4xl' }"
+    >
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
             <div class="flex items-center gap-4 mb-8">
               <div
-                class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20">
-                <UIcon name="i-heroicons-light-bulb" class="text-2xl text-blue-500" />
+                class="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-500/20"
+              >
+                <UIcon
+                  name="i-heroicons-light-bulb"
+                  class="text-2xl text-blue-500"
+                />
               </div>
               <div>
-                <h3 class="text-2xl font-bold text-slate-900">ช่วงว่างที่แนะนำสำหรับสอนชดเชย</h3>
-                <p class="text-slate-600 text-sm">ระบบค้นหาช่วงเวลาที่อาจารย์และนักศึกษาว่างตรงกัน</p>
+                <h3 class="text-2xl font-bold text-slate-900">
+                  ช่วงว่างที่แนะนำสำหรับสอนชดเชย
+                </h3>
+                <p class="text-slate-600 text-sm">
+                  ระบบค้นหาช่วงเวลาที่อาจารย์และนักศึกษาว่างตรงกัน
+                </p>
               </div>
             </div>
 
-            <div v-if="loadingSlots"
-              class="text-center py-20 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-              <UIcon name="i-heroicons-arrow-path" class="animate-spin w-10 h-10 text-blue-500 mx-auto mb-4" />
-              <p class="text-slate-600 font-medium">กำลังค้นหาช่วงว่างที่เหมาะสม...</p>
+            <div
+              v-if="loadingSlots"
+              class="text-center py-20 bg-slate-50 rounded-2xl border border-dashed border-slate-200"
+            >
+              <UIcon
+                name="i-heroicons-arrow-path"
+                class="animate-spin w-10 h-10 text-blue-500 mx-auto mb-4"
+              />
+              <p class="text-slate-600 font-medium">
+                กำลังค้นหาช่วงว่างที่เหมาะสม...
+              </p>
             </div>
 
-            <div v-else-if="availableSlots.length === 0"
-              class="text-center py-20 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+            <div
+              v-else-if="availableSlots.length === 0"
+              class="text-center py-20 bg-slate-50 rounded-2xl border border-dashed border-slate-200"
+            >
               <div
-                class="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border border-slate-200">
-                <UIcon name="i-heroicons-calendar-days" class="text-3xl text-slate-500" />
+                class="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border border-slate-200"
+              >
+                <UIcon
+                  name="i-heroicons-calendar-days"
+                  class="text-3xl text-slate-500"
+                />
               </div>
-              <p class="text-slate-700 font-bold mb-1">ไม่พบช่วงว่างที่เหมาะสม</p>
-              <p class="text-slate-600 text-sm">ลองเลื่อนวันหรือปรับตารางสอนหลักเพื่อให้มีช่วงว่างเพิ่มขึ้น</p>
+              <p class="text-slate-700 font-bold mb-1">
+                ไม่พบช่วงว่างที่เหมาะสม
+              </p>
+              <p class="text-slate-600 text-sm">
+                ลองเลื่อนวันหรือปรับตารางสอนหลักเพื่อให้มีช่วงว่างเพิ่มขึ้น
+              </p>
             </div>
 
-            <div v-else class="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
-              <div v-for="(slot, index) in availableSlots" :key="index"
-                class="bg-white/50 border border-slate-200 rounded-2xl p-5 hover:border-blue-500/50 transition-all group shadow-sm hover:shadow-blue-500/5">
+            <div
+              v-else
+              class="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2"
+            >
+              <div
+                v-for="(slot, index) in availableSlots"
+                :key="index"
+                class="bg-white/50 border border-slate-200 rounded-2xl p-5 hover:border-blue-500/50 transition-all group shadow-sm hover:shadow-blue-500/5"
+              >
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-3 mb-3">
                       <span
-                        class="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-blue-500/10 flex-shrink-0">
+                        class="px-2 py-0.5 bg-blue-500/20 text-blue-400 rounded-lg text-[10px] font-black uppercase tracking-widest border border-blue-500/10 flex-shrink-0"
+                      >
                         {{ slot.dayOfWeek }}
                       </span>
                       <span class="text-xl font-black text-slate-900 truncate">
@@ -237,34 +453,57 @@
 
                     <div class="flex items-center gap-4 text-slate-600">
                       <div class="flex items-center gap-1.5 overflow-hidden">
-                        <UIcon name="i-heroicons-clock" class="text-slate-400 flex-shrink-0" />
+                        <UIcon
+                          name="i-heroicons-clock"
+                          class="text-slate-400 flex-shrink-0"
+                        />
                         <span class="font-bold whitespace-nowrap">{{ slot.timeStart }} - {{ slot.timeEnd }}</span>
                         <span class="text-xs text-slate-500 whitespace-nowrap">({{ slot.duration }} ชม.)</span>
                       </div>
                     </div>
 
                     <!-- แสดงรายการวิชาทั้งหมด (ถ้ามี) -->
-                    <div v-if="slot.classes && slot.classes.length > 0"
-                      class="mt-4 pt-3 border-t border-slate-200/50 space-y-3 overflow-hidden">
-                      <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">สถานะความพร้อม:</p>
+                    <div
+                      v-if="slot.classes && slot.classes.length > 0"
+                      class="mt-4 pt-3 border-t border-slate-200/50 space-y-3 overflow-hidden"
+                    >
+                      <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                        สถานะความพร้อม:
+                      </p>
 
                       <div
-                        class="flex flex-col gap-2 bg-white/50 p-3 rounded-xl border border-slate-200/50 overflow-hidden">
+                        class="flex flex-col gap-2 bg-white/50 p-3 rounded-xl border border-slate-200/50 overflow-hidden"
+                      >
                         <div class="flex items-center gap-2 text-green-600 text-sm font-medium">
-                          <UIcon name="i-heroicons-check-circle" class="w-5 h-5 flex-shrink-0" />
+                          <UIcon
+                            name="i-heroicons-check-circle"
+                            class="w-5 h-5 flex-shrink-0"
+                          />
                           <span class="truncate">อาจารย์และนักศึกษาทุกกลุ่มว่างตรงกัน</span>
                         </div>
                         <div class="flex flex-wrap gap-2 mt-1">
-                          <div v-for="cls in slot.classes" :key="cls.subjectId"
-                            class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200/80 text-xs text-slate-700 max-w-full overflow-hidden">
-                            <UIcon name="i-heroicons-book-open" class="text-blue-400 flex-shrink-0" />
+                          <div
+                            v-for="cls in slot.classes"
+                            :key="cls.subjectId"
+                            class="flex items-center gap-1.5 bg-white px-2 py-1.5 rounded-lg border border-slate-200/80 text-xs text-slate-700 max-w-full overflow-hidden"
+                          >
+                            <UIcon
+                              name="i-heroicons-book-open"
+                              class="text-blue-400 flex-shrink-0"
+                            />
                             <span class="truncate max-w-[100px]">{{ cls.subjectName }}</span>
-                            <span v-if="cls.sectionName" class="text-slate-500 text-[10px] truncate">({{ cls.sectionName
+                            <span
+                              v-if="cls.sectionName"
+                              class="text-slate-500 text-[10px] truncate"
+                            >({{ cls.sectionName
                             }})</span>
 
-                            <UIcon name="i-heroicons-map-pin" class="text-green-600 ml-1 flex-shrink-0" />
+                            <UIcon
+                              name="i-heroicons-map-pin"
+                              class="text-green-600 ml-1 flex-shrink-0"
+                            />
                             <span class="text-green-600 font-medium truncate">
-                              {{rooms?.find(r => Number(r.id_room) === Number(cls.roomId))?.room_name || 'ไม่ระบุห้อง'
+                              {{ rooms?.find(r => Number(r.id_room) === Number(cls.roomId))?.room_name || 'ไม่ระบุห้อง'
                               }} (ห้องว่าง)
                             </span>
                           </div>
@@ -273,50 +512,76 @@
                     </div>
                   </div>
 
-                  <UButton label="เลือกช่วงเวลานี้" color="primary" size="lg"
-                    class="rounded-xl font-bold px-6 w-full sm:w-auto" @click="confirmMakeupClass(slot)" />
+                  <UButton
+                    label="เลือกช่วงเวลานี้"
+                    color="primary"
+                    size="lg"
+                    class="rounded-xl font-bold px-6 w-full sm:w-auto"
+                    @click="confirmMakeupClass(slot)"
+                  />
                 </div>
               </div>
             </div>
           </div>
           <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
-            <UButton label="ปิดหน้าต่าง" color="neutral" variant="soft" size="xl" block
-              class="rounded-2xl py-4 font-bold" @click="slotsModalOpen = false" />
+            <UButton
+              label="ปิดหน้าต่าง"
+              color="neutral"
+              variant="soft"
+              size="xl"
+              block
+              class="rounded-2xl py-4 font-bold"
+              @click="slotsModalOpen = false"
+            />
           </div>
         </div>
       </template>
     </UModal>
 
     <!-- Modal ยืนยันการจัดสอนชดเชย -->
-    <UModal v-model:open="confirmMakeupModalOpen"
-      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
+    <UModal
+      v-model:open="confirmMakeupModalOpen"
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }"
+    >
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
             <div class="flex items-center gap-4 mb-8">
               <div
-                class="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center border border-green-500/20">
-                <UIcon name="i-heroicons-check-badge" class="text-2xl text-green-500" />
+                class="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center border border-green-500/20"
+              >
+                <UIcon
+                  name="i-heroicons-check-badge"
+                  class="text-2xl text-green-500"
+                />
               </div>
               <div>
-                <h3 class="text-2xl font-bold text-slate-900">ยืนยันการจัดสอนชดเชย</h3>
-                <p class="text-slate-600 text-sm">ตรวจสอบความถูกต้องและระบุห้องเรียน</p>
+                <h3 class="text-2xl font-bold text-slate-900">
+                  ยืนยันการจัดสอนชดเชย
+                </h3>
+                <p class="text-slate-600 text-sm">
+                  ตรวจสอบความถูกต้องและระบุห้องเรียน
+                </p>
               </div>
             </div>
 
-            <div v-if="selectedSlot" class="space-y-6">
+            <div
+              v-if="selectedSlot"
+              class="space-y-6"
+            >
               <div class="bg-white/80 border border-slate-200/50 p-6 rounded-2xl shadow-inner group">
                 <div class="flex flex-col gap-4">
                   <div class="flex items-center gap-6">
                     <div class="flex flex-col">
                       <span
-                        class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">วันที่สอนชดเชย</span>
+                        class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1"
+                      >วันที่สอนชดเชย</span>
                       <span class="text-xl font-black text-slate-900 flex items-center gap-2">
                         {{ formatDateThai(selectedSlot.date) }}
                         <span class="text-sm font-medium text-slate-500">({{ selectedSlot.dayOfWeek }})</span>
                       </span>
                     </div>
-                    <div class="w-px h-10 bg-slate-200 mx-2"></div>
+                    <div class="w-px h-10 bg-slate-200 mx-2" />
                     <div class="flex flex-col">
                       <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">ช่วงเวลา</span>
                       <span class="text-xl font-black text-slate-900">{{ selectedSlot.timeStart }} - {{
@@ -325,40 +590,72 @@
                     </div>
                   </div>
 
-                  <div v-if="selectedSlot.classes && selectedSlot.classes.length > 0"
-                    class="pt-4 border-t border-slate-200/50">
+                  <div
+                    v-if="selectedSlot.classes && selectedSlot.classes.length > 0"
+                    class="pt-4 border-t border-slate-200/50"
+                  >
                     <span
-                      class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">วิชาที่สอน</span>
+                      class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block"
+                    >วิชาที่สอน</span>
                     <div class="flex flex-wrap gap-2">
-                      <span v-for="cls in selectedSlot.classes" :key="cls.subjectId"
-                        class="bg-blue-500/10 text-blue-500 px-3 py-1 rounded-lg text-sm font-bold border border-blue-500/10">
+                      <span
+                        v-for="cls in selectedSlot.classes"
+                        :key="cls.subjectId"
+                        class="bg-blue-500/10 text-blue-500 px-3 py-1 rounded-lg text-sm font-bold border border-blue-500/10"
+                      >
                         {{ cls.subjectName }}
                       </span>
                     </div>
                   </div>
-                  <div v-else-if="selectedSlot.missedClass" class="pt-4 border-t border-slate-200/50">
+                  <div
+                    v-else-if="selectedSlot.missedClass"
+                    class="pt-4 border-t border-slate-200/50"
+                  >
                     <span
-                      class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">วิชาที่สอน</span>
+                      class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block"
+                    >วิชาที่สอน</span>
                     <span class="text-lg font-bold text-blue-500">{{ selectedSlot.missedClass }}</span>
                   </div>
                 </div>
               </div>
 
               <div class="grid grid-cols-1 gap-6">
-                <UFormField label="หมายเหตุ (ถ้ามี)" :ui="{ label: 'text-slate-900 font-bold mb-2 ml-1' }">
-                  <UTextarea v-model="makeupForm.notes" placeholder="ระบุรายละเอียดเพิ่มเติม..." :rows="2" size="xl"
-                    class="rounded-xl" :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }" />
+                <UFormField
+                  label="หมายเหตุ (ถ้ามี)"
+                  :ui="{ label: 'text-slate-900 font-bold mb-2 ml-1' }"
+                >
+                  <UTextarea
+                    v-model="makeupForm.notes"
+                    placeholder="ระบุรายละเอียดเพิ่มเติม..."
+                    :rows="2"
+                    size="xl"
+                    class="rounded-xl"
+                    :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }"
+                  />
                 </UFormField>
               </div>
             </div>
           </div>
           <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex gap-3">
-              <UButton label="ย้อนกลับ" color="neutral" variant="soft" size="xl" block
-                class="rounded-2xl py-4 flex-1 font-bold" @click="confirmMakeupModalOpen = false" />
-              <UButton label="ยืนยันการจัดสอน" color="primary" size="xl" block
-                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold" :loading="saving"
-                @click="saveMakeupClass" />
+              <UButton
+                label="ย้อนกลับ"
+                color="neutral"
+                variant="soft"
+                size="xl"
+                block
+                class="rounded-2xl py-4 flex-1 font-bold"
+                @click="confirmMakeupModalOpen = false"
+              />
+              <UButton
+                label="ยืนยันการจัดสอน"
+                color="primary"
+                size="xl"
+                block
+                class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20 font-bold"
+                :loading="saving"
+                @click="saveMakeupClass"
+              />
             </div>
           </div>
         </div>
@@ -366,19 +663,33 @@
     </UModal>
 
     <!-- Modal รายละเอียด Event -->
-    <UModal v-model:open="viewEventModalOpen"
-      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
+    <UModal
+      v-model:open="viewEventModalOpen"
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }"
+    >
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
-          <div v-if="selectedEvent" class="p-8 overflow-y-auto custom-scrollbar flex-1">
+          <div
+            v-if="selectedEvent"
+            class="p-8 overflow-y-auto custom-scrollbar flex-1"
+          >
             <div class="flex items-center gap-4 mb-8">
-              <div class="w-12 h-12 rounded-xl flex items-center justify-center border"
-                :class="getEventTypeClass(selectedEvent.extendedProps?.eventType, true)">
-                <UIcon :name="getEventTypeIcon(selectedEvent.extendedProps?.eventType)" class="text-2xl" />
+              <div
+                class="w-12 h-12 rounded-xl flex items-center justify-center border"
+                :class="getEventTypeClass(selectedEvent.extendedProps?.eventType, true)"
+              >
+                <UIcon
+                  :name="getEventTypeIcon(selectedEvent.extendedProps?.eventType)"
+                  class="text-2xl"
+                />
               </div>
               <div>
-                <h3 class="text-2xl font-bold text-slate-900 line-clamp-1">{{ selectedEvent.title }}</h3>
-                <p class="text-slate-600 text-sm">{{ getEventTypeLabel(selectedEvent.extendedProps?.eventType) }}</p>
+                <h3 class="text-2xl font-bold text-slate-900 line-clamp-1">
+                  {{ selectedEvent.title }}
+                </h3>
+                <p class="text-slate-600 text-sm">
+                  {{ getEventTypeLabel(selectedEvent.extendedProps?.eventType) }}
+                </p>
               </div>
             </div>
 
@@ -386,61 +697,112 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div class="bg-white/50 p-4 rounded-2xl border border-slate-200">
                   <span
-                    class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">วัน/เวลา</span>
-                  <p class="text-slate-900 font-bold">{{ formatDateThai(selectedEvent.start) }}</p>
+                    class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block"
+                  >วัน/เวลา</span>
+                  <p class="text-slate-900 font-bold">
+                    {{ formatDateThai(selectedEvent.start) }}
+                  </p>
                   <p class="text-slate-600 text-sm mt-0.5">
                     {{ dayjs(selectedEvent.start).format('HH:mm') }}
-                    <template v-if="selectedEvent.end"> - {{ dayjs(selectedEvent.end).format('HH:mm') }}</template>
+                    <template v-if="selectedEvent.end">
+                      - {{ dayjs(selectedEvent.end).format('HH:mm') }}
+                    </template>
                   </p>
                 </div>
 
-                <div v-if="selectedEvent.extendedProps?.teacherName"
-                  class="bg-white/50 p-4 rounded-2xl border border-slate-200">
+                <div
+                  v-if="selectedEvent.extendedProps?.teacherName"
+                  class="bg-white/50 p-4 rounded-2xl border border-slate-200"
+                >
                   <span
-                    class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block">อาจารย์ผู้สอน</span>
-                  <p class="text-slate-900 font-bold">{{ selectedEvent.extendedProps.teacherName }}</p>
-                  <p class="text-slate-600 text-xs mt-0.5">รหัส: {{ selectedEvent.extendedProps.teacherId }}</p>
+                    class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 block"
+                  >อาจารย์ผู้สอน</span>
+                  <p class="text-slate-900 font-bold">
+                    {{ selectedEvent.extendedProps.teacherName }}
+                  </p>
+                  <p class="text-slate-600 text-xs mt-0.5">
+                    รหัส: {{ selectedEvent.extendedProps.teacherId }}
+                  </p>
                 </div>
               </div>
 
-              <div v-if="selectedEvent.extendedProps?.description"
-                class="bg-white/50 p-6 rounded-2xl border border-slate-200">
+              <div
+                v-if="selectedEvent.extendedProps?.description"
+                class="bg-white/50 p-6 rounded-2xl border border-slate-200"
+              >
                 <span
-                  class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">รายละเอียด</span>
-                <p class="text-slate-700 text-sm whitespace-pre-wrap leading-relaxed">{{
-                  selectedEvent.extendedProps.description }}
+                  class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block"
+                >รายละเอียด</span>
+                <p class="text-slate-700 text-sm whitespace-pre-wrap leading-relaxed">
+                  {{
+                    selectedEvent.extendedProps.description }}
                 </p>
               </div>
             </div>
           </div>
-          <div v-if="selectedEvent"
-            class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10 w-full">
+          <div
+            v-if="selectedEvent"
+            class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10 w-full"
+          >
             <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
               <div class="flex gap-3 w-full sm:w-auto">
                 <!-- ปุ่มลบ: แสดงถ้าไม่ใช่ hardcoded holiday หรือถ้ามี ID (วันหยุดที่เพิ่มเอง) -->
                 <UButton
                   v-if="selectedEvent?.id && selectedEvent.extendedProps?.eventType !== 'normal' && !String(selectedEvent.id).startsWith('holiday-')"
-                  label="ลบรายการ" color="error" variant="soft" icon="i-lucide-trash" size="lg"
-                  class="rounded-xl flex-1 font-bold" @click="confirmDeleteEvent" />
+                  label="ลบรายการ"
+                  color="error"
+                  variant="soft"
+                  icon="i-lucide-trash"
+                  size="lg"
+                  class="rounded-xl flex-1 font-bold"
+                  @click="confirmDeleteEvent"
+                />
 
                 <!-- ปุ่มแก้ไข: แสดงเฉพาะวันหยุดที่เพิ่มเอง (มี ID และเป็น holiday) -->
-                <UButton v-if="selectedEvent?.id && selectedEvent.extendedProps?.eventType === 'holiday'" label="แก้ไข"
-                  color="warning" variant="soft" icon="i-lucide-edit" size="lg" class="rounded-xl flex-1 font-bold"
-                  @click="editHoliday" />
+                <UButton
+                  v-if="selectedEvent?.id && selectedEvent.extendedProps?.eventType === 'holiday'"
+                  label="แก้ไข"
+                  color="warning"
+                  variant="soft"
+                  icon="i-lucide-edit"
+                  size="lg"
+                  class="rounded-xl flex-1 font-bold"
+                  @click="editHoliday"
+                />
 
                 <!-- ปุ่มจัดสอนชดเชย: สำหรับ teacher_absence ที่ถูกเพิ่มเข้ามาแต่ยังเลือกเวลาไม่สำเร็จ -->
-                <UButton v-if="selectedEvent?.id && selectedEvent.extendedProps?.eventType === 'teacher_absence'"
-                  label="จัดชดเชย" color="primary" variant="soft" icon="i-heroicons-calendar-days" size="lg"
-                  class="rounded-xl flex-1 font-bold" @click="scheduleMakeupForAbsence" />
+                <UButton
+                  v-if="selectedEvent?.id && selectedEvent.extendedProps?.eventType === 'teacher_absence'"
+                  label="จัดชดเชย"
+                  color="primary"
+                  variant="soft"
+                  icon="i-heroicons-calendar-days"
+                  size="lg"
+                  class="rounded-xl flex-1 font-bold"
+                  @click="scheduleMakeupForAbsence"
+                />
 
                 <!-- ปุ่มเปลี่ยนเวลา (Reschedule): สำหรับ makeup_class -->
-                <UButton v-if="selectedEvent?.id && selectedEvent.extendedProps?.eventType === 'makeup_class'"
-                  label="เปลี่ยนเวลา" color="warning" variant="soft" icon="i-heroicons-clock" size="lg"
-                  class="rounded-xl flex-1 font-bold" @click="confirmRescheduleMakeupClass" />
+                <UButton
+                  v-if="selectedEvent?.id && selectedEvent.extendedProps?.eventType === 'makeup_class'"
+                  label="เปลี่ยนเวลา"
+                  color="warning"
+                  variant="soft"
+                  icon="i-heroicons-clock"
+                  size="lg"
+                  class="rounded-xl flex-1 font-bold"
+                  @click="confirmRescheduleMakeupClass"
+                />
               </div>
 
-              <UButton label="ปิดหน้าต่าง" color="neutral" variant="outline" size="lg"
-                class="rounded-xl w-full sm:w-32 font-bold" @click="viewEventModalOpen = false" />
+              <UButton
+                label="ปิดหน้าต่าง"
+                color="neutral"
+                variant="outline"
+                size="lg"
+                class="rounded-xl w-full sm:w-32 font-bold"
+                @click="viewEventModalOpen = false"
+              />
             </div>
           </div>
         </div>
@@ -448,26 +810,52 @@
     </UModal>
 
     <!-- Modal ยืนยันการดำเนินการ -->
-    <UModal v-model:open="confirmModalOpen"
-      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden max-w-md' }">
+    <UModal
+      v-model:open="confirmModalOpen"
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden max-w-md' }"
+    >
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1 text-center">
-            <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
-              :class="confirmModal.color === 'error' ? 'bg-red-500/10 border border-red-500/20' : 'bg-warning-500/10 border border-warning-500/20'">
-              <UIcon :name="confirmModal.icon" class="text-3xl"
-                :class="confirmModal.color === 'error' ? 'text-red-500' : 'text-warning-500'" />
+            <div
+              class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
+              :class="confirmModal.color === 'error' ? 'bg-red-500/10 border border-red-500/20' : 'bg-warning-500/10 border border-warning-500/20'"
+            >
+              <UIcon
+                :name="confirmModal.icon"
+                class="text-3xl"
+                :class="confirmModal.color === 'error' ? 'text-red-500' : 'text-warning-500'"
+              />
             </div>
-            <h3 class="text-2xl font-bold text-slate-900 mb-2">{{ confirmModal.title }}</h3>
-            <p class="text-slate-600 mb-2">{{ confirmModal.message }}</p>
+            <h3 class="text-2xl font-bold text-slate-900 mb-2">
+              {{ confirmModal.title }}
+            </h3>
+            <p class="text-slate-600 mb-2">
+              {{ confirmModal.message }}
+            </p>
           </div>
           <div
-            class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10 w-full text-center">
+            class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10 w-full text-center"
+          >
             <div class="flex gap-3">
-              <UButton label="ยกเลิก" color="neutral" variant="soft" size="lg" block class="rounded-xl flex-1 font-bold"
-                @click="confirmModalOpen = false" />
-              <UButton :label="confirmModal.confirmText" :color="confirmModal.color" size="lg" block
-                class="rounded-xl flex-1 font-bold" @click="executeConfirm" :loading="confirmModal.loading" />
+              <UButton
+                label="ยกเลิก"
+                color="neutral"
+                variant="soft"
+                size="lg"
+                block
+                class="rounded-xl flex-1 font-bold"
+                @click="confirmModalOpen = false"
+              />
+              <UButton
+                :label="confirmModal.confirmText"
+                :color="confirmModal.color"
+                size="lg"
+                block
+                class="rounded-xl flex-1 font-bold"
+                :loading="confirmModal.loading"
+                @click="executeConfirm"
+              />
             </div>
           </div>
         </div>
@@ -640,6 +1028,55 @@ const termOptions = computed(() => {
   }))
 })
 
+const normalizeAcademicYear = (year) => {
+  if (year === undefined || year === null) return null
+  let y = Number(year)
+  if (Number.isNaN(y)) return null
+  if (y > 0 && y < 100) {
+    // รองรับรูปแบบ 67 -> 2567
+    y += 2500
+  }
+  return y
+}
+
+const findTermByValue = (termValue) => {
+  if (!termValue || !terms.value) return null
+
+  const [termPart, yearPart] = termValue.split('/')
+  const termNumber = Number(termPart)
+  const yearRaw = Number(yearPart)
+
+  if (!Number.isInteger(termNumber) || Number.isNaN(yearRaw)) return null
+
+  const normalizedYear = normalizeAcademicYear(yearRaw)
+  if (normalizedYear === null) return null
+
+  return terms.value.find((t) => {
+    const tTerm = Number(t.term)
+    const tYear = normalizeAcademicYear(t.academic_year)
+    return tTerm === termNumber && tYear === normalizedYear
+  }) || null
+}
+
+const isDateWithinTerm = (dateString, termValue) => {
+  if (!dateString || !termValue) return false
+
+  const term = findTermByValue(termValue)
+  if (!term) return false
+
+  const checked = dayjs(dateString, 'YYYY-MM-DD', true)
+  const start = dayjs(term.start_date, 'YYYY-MM-DD', true)
+  const end = dayjs(term.end_date, 'YYYY-MM-DD', true)
+
+  if (!checked.isValid() || !start.isValid() || !end.isValid()) return false
+
+  if (checked.isSame(start) || checked.isSame(end) || (checked.isAfter(start) && checked.isBefore(end))) {
+    return true
+  }
+
+  return false
+}
+
 // เมื่อเปิด modal อาจารย์ติดราชการ ให้เลือกเทอมแรกถ้ามี
 watch(absenceModalOpen, (isOpen) => {
   if (isOpen && terms.value && terms.value.length > 0) {
@@ -665,14 +1102,14 @@ const filter = ref({
 const filteredEvents = computed(() => {
   if (!events.value) return []
 
-  return events.value.filter(event => {
+  return events.value.filter((event) => {
     // กรองตามอาจารย์
-    const matchTeacher = filter.value.teacherId === 'all' ||
-      event.extendedProps?.teacherId == filter.value.teacherId // ใช้ == เผื่อ type mismatch
+    const matchTeacher = filter.value.teacherId === 'all'
+      || event.extendedProps?.teacherId == filter.value.teacherId // ใช้ == เผื่อ type mismatch
 
     // กรองตามประเภท
-    const matchType = filter.value.type === 'all' ||
-      event.extendedProps?.eventType === filter.value.type
+    const matchType = filter.value.type === 'all'
+      || event.extendedProps?.eventType === filter.value.type
 
     return matchTeacher && matchType
   })
@@ -755,6 +1192,27 @@ const editHoliday = () => {
 const loadMissedClasses = async () => {
   if (!absenceForm.value.teacherId || !absenceForm.value.date || !absenceForm.value.term) {
     missedClasses.value = []
+    return
+  }
+
+  const term = findTermByValue(absenceForm.value.term)
+  if (!term) {
+    missedClasses.value = []
+    toast.add({
+      title: 'ข้อมูลเทอมไม่ถูกต้อง',
+      description: 'ไม่พบข้อมูลเทอมที่เลือก กรุณาตรวจสอบรายการเทอมในหน้าจัดการเทอม',
+      color: 'warning'
+    })
+    return
+  }
+
+  if (!isDateWithinTerm(absenceForm.value.date, absenceForm.value.term)) {
+    missedClasses.value = []
+    toast.add({
+      title: 'วันที่อยู่นอกช่วงเทอม',
+      description: `เทอม ${term.term}/${term.academic_year} อยู่ระหว่าง ${term.start_date} ถึง ${term.end_date}`,
+      color: 'warning'
+    })
     return
   }
 
@@ -869,6 +1327,25 @@ const saveAbsenceAndFindSlots = async () => {
     return
   }
 
+  const term = findTermByValue(absenceForm.value.term)
+  if (!term) {
+    toast.add({
+      title: 'ข้อมูลเทอมไม่ถูกต้อง',
+      description: 'ไม่พบข้อมูลเทอมที่เลือก กรุณาตรวจสอบให้ถูกต้อง',
+      color: 'warning'
+    })
+    return
+  }
+
+  if (!isDateWithinTerm(absenceForm.value.date, absenceForm.value.term)) {
+    toast.add({
+      title: 'วันที่อยู่นอกช่วงเทอม',
+      description: `เทอม ${term.term}/${term.academic_year} อยู่ระหว่าง ${term.start_date} ถึง ${term.end_date}`,
+      color: 'warning'
+    })
+    return
+  }
+
   // เช็คว่ามีวิชาที่เลือกหรือไม่
   const selectedClasses = missedClasses.value.filter(c => c.selected)
   if (missedClasses.value.length > 0 && selectedClasses.length === 0) {
@@ -885,9 +1362,9 @@ const saveAbsenceAndFindSlots = async () => {
   try {
     // 0. เราสามารถบันทึก event ติดราชการไปเลยได้ เพราะเราต้องการ record ว่าวันนี่หยุด
     const existingAbsence = events.value.find(e =>
-      e.extendedProps?.eventType === 'teacher_absence' &&
-      e.extendedProps?.teacherId === absenceForm.value.teacherId &&
-      e.start && (typeof e.start === 'string' ? e.start.split('T')[0] : dayjs(e.start).format('YYYY-MM-DD')) === absenceForm.value.date
+      e.extendedProps?.eventType === 'teacher_absence'
+      && e.extendedProps?.teacherId === absenceForm.value.teacherId
+      && e.start && (typeof e.start === 'string' ? e.start.split('T')[0] : dayjs(e.start).format('YYYY-MM-DD')) === absenceForm.value.date
     )
 
     if (!existingAbsence) {
@@ -918,7 +1395,7 @@ const saveAbsenceAndFindSlots = async () => {
     slotsModalOpen.value = true
 
     // เช็คคลาสสอนชดเชยที่ทับซ้อน (Conflict Resolution) เพื่อนำวิชามาจัดใหม่พร้อมกัน
-    const conflictingEvents = events.value.filter(e => {
+    const conflictingEvents = events.value.filter((e) => {
       if (e.extendedProps?.eventType !== 'makeup_class') return false
       if (Number(e.extendedProps?.teacherId) !== Number(absenceForm.value.teacherId)) return false
       const eventDate = e.start
@@ -927,12 +1404,12 @@ const saveAbsenceAndFindSlots = async () => {
       return eventDate === absenceForm.value.date
     })
 
-    let rescheduledClasses = []
+    const rescheduledClasses = []
     for (const conflict of conflictingEvents) {
       try {
         const rawIds = conflict.extendedProps?.makeupClassIds || conflict.extendedProps?.makeup_class_ids
         if (rawIds) {
-          let makeupIds = typeof rawIds === 'string'
+          const makeupIds = typeof rawIds === 'string'
             ? JSON.parse(rawIds)
             : rawIds
 
@@ -1140,9 +1617,9 @@ const saveMakeupClass = async () => {
     // 0. บันทึก "อาจารย์ติดราชการ" (สีแดง) ถ้ายังไม่มี และไม่ใช่การ reschedule (เพราะ reschedule มีตัวเดิมอยู่แล้ว)
     if (!isRescheduling.value) {
       const existingAbsence = events.value.find(e =>
-        e.extendedProps?.eventType === 'teacher_absence' &&
-        e.extendedProps?.teacherId === absenceForm.value.teacherId &&
-        e.start && (typeof e.start === 'string' ? e.start.split('T')[0] : dayjs(e.start).format('YYYY-MM-DD')) === absenceForm.value.date
+        e.extendedProps?.eventType === 'teacher_absence'
+        && e.extendedProps?.teacherId === absenceForm.value.teacherId
+        && e.start && (typeof e.start === 'string' ? e.start.split('T')[0] : dayjs(e.start).format('YYYY-MM-DD')) === absenceForm.value.date
       )
 
       if (!existingAbsence) {
@@ -1380,7 +1857,7 @@ const rescheduleMakeupClass = async () => {
   if (!props || props.eventType !== 'makeup_class') return
 
   try {
-    // 1. Delete old makeup classes 
+    // 1. Delete old makeup classes
     if (props.makeupClassIds) {
       const ids = JSON.parse(props.makeupClassIds)
       await Promise.all(ids.map(id => $fetch(`/api/makeup-classes/${id}`, { method: 'DELETE' })))
@@ -1426,7 +1903,6 @@ const rescheduleMakeupClass = async () => {
       absenceModalOpen.value = true // Open modal to let user pick classes manually
       // The watcher on absenceForm will trigger loadMissedClasses() automatically
     }
-
   } catch (err) {
     console.error('Error rescheduling:', err)
     toast.add({ title: 'ผิดพลาด', description: 'ไม่สามารถเปลี่ยนเวลาได้', color: 'error' })
@@ -1468,7 +1944,7 @@ const deleteEvent = async () => {
   try {
     const props = selectedEvent.value.extendedProps
 
-    // ถ้าลบคลาสชดเชย ให้ลบข้อมูลใน DB 
+    // ถ้าลบคลาสชดเชย ให้ลบข้อมูลใน DB
     if (props?.eventType === 'makeup_class') {
       // 1. ลบรายการ makeup-classes ใน Database
       if (props.makeupClassIds) {

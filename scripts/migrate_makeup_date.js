@@ -1,12 +1,11 @@
+const db = require('../server/utils/db.js').default
 
-const db = require('../server/utils/db.js').default;
-
-console.log('Starting migration to make makeup_date nullable...');
+console.log('Starting migration to make makeup_date nullable...')
 
 try {
-    db.transaction(() => {
-        // 1. Create new table
-        db.prepare(`
+  db.transaction(() => {
+    // 1. Create new table
+    db.prepare(`
       CREATE TABLE IF NOT EXISTS makeup_classes_new (
         id_makeup INTEGER PRIMARY KEY AUTOINCREMENT,
         original_date TEXT NOT NULL,
@@ -27,10 +26,10 @@ try {
         FOREIGN KEY (subject_id) REFERENCES Subjects(id_subject),
         FOREIGN KEY (room_id) REFERENCES rooms(id_room)
       )
-    `).run();
+    `).run()
 
-        // 2. Copy data
-        db.prepare(`
+    // 2. Copy data
+    db.prepare(`
       INSERT INTO makeup_classes_new (
         id_makeup, original_date, original_time_slot, makeup_date, 
         makeup_time_start, makeup_time_end, teacher_id, section_id, 
@@ -41,23 +40,23 @@ try {
         makeup_time_start, makeup_time_end, teacher_id, section_id, 
         subject_id, room_id, status, notes, created_at, updated_at
       FROM makeup_classes
-    `).run();
+    `).run()
 
-        // 3. Drop old table
-        db.prepare('DROP TABLE makeup_classes').run();
+    // 3. Drop old table
+    db.prepare('DROP TABLE makeup_classes').run()
 
-        // 4. Rename new table
-        db.prepare('ALTER TABLE makeup_classes_new RENAME TO makeup_classes').run();
+    // 4. Rename new table
+    db.prepare('ALTER TABLE makeup_classes_new RENAME TO makeup_classes').run()
 
-        // 5. Re-create index
-        db.prepare(`
+    // 5. Re-create index
+    db.prepare(`
       CREATE INDEX IF NOT EXISTS idx_makeup_makeup_date 
       ON makeup_classes(makeup_date)
-    `).run();
-    })();
+    `).run()
+  })()
 
-    console.log('Migration successful!');
+  console.log('Migration successful!')
 } catch (error) {
-    console.error('Migration failed:', error);
-    process.exit(1);
+  console.error('Migration failed:', error)
+  process.exit(1)
 }

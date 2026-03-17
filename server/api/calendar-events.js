@@ -64,12 +64,12 @@ export default defineEventHandler(async (event) => {
     }
 
     const holidayData = []
-    targetYears.forEach(y => {
+    targetYears.forEach((y) => {
       holidayData.push(...hd.getHolidays(y))
     })
 
     const holidays = holidayData
-      .map(h => {
+      .map((h) => {
         const dateStr = h.date.split(' ')[0]
         return {
           id: `holiday-${h.name}-${dateStr}`,
@@ -86,7 +86,7 @@ export default defineEventHandler(async (event) => {
           }
         }
       })
-      .filter(h => {
+      .filter((h) => {
         // กรองเฉพาะที่อยู่ในช่วงที่ขอมา
         if (!qStart || !qEnd) return true
         return h.start >= qStart && h.start <= qEnd

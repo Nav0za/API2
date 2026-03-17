@@ -203,71 +203,153 @@ function clearForm() {
 </script>
 
 <template>
-  <UForm :validate="validate" :state="state" class="space-y-4" @submit="onSubmit">
+  <UForm
+    :validate="validate"
+    :state="state"
+    class="space-y-4"
+    @submit="onSubmit"
+  >
     <div class="grid grid-cols-2 gap-4">
       <!-- เทอมการศึกษา -->
-      <UFormField label="เทอมที่" name="term" required class="text-lg">
-        <UInput v-model.number="state.term" type="number" min="1" max="3" placeholder="1, 2, หรือ 3"
-          :disabled="isSubmitting" />
+      <UFormField
+        label="เทอมที่"
+        name="term"
+        required
+        class="text-lg"
+      >
+        <UInput
+          v-model.number="state.term"
+          type="number"
+          min="1"
+          max="3"
+          placeholder="1, 2, หรือ 3"
+          :disabled="isSubmitting"
+        />
       </UFormField>
 
       <!-- ปีการศึกษา -->
-      <UFormField label="ปีการศึกษา" name="academic_year" required class="text-lg">
-        <UInput v-model.number="state.academic_year" type="number" placeholder="68 หรือ 2568"
-          :disabled="isSubmitting" />
+      <UFormField
+        label="ปีการศึกษา"
+        name="academic_year"
+        required
+        class="text-lg"
+      >
+        <UInput
+          v-model.number="state.academic_year"
+          type="number"
+          placeholder="68 หรือ 2568"
+          :disabled="isSubmitting"
+        />
       </UFormField>
     </div>
 
     <!-- วันที่เริ่มต้น - สิ้นสุด -->
-    <UFormField label="ช่วงวันเรียน (เริ่มต้น - สิ้นสุด)" name="start_date" required
-      help="กำหนดวันแรกและวันสุดท้ายของเทอมเพื่อใช้คำนวณวันหยุด" class="text-lg">
-      <UInputDate ref="inputDate" v-model="modelValue" range :disabled="isSubmitting"
-        class="rounded-xl overflow-hidden shadow-inner">
+    <UFormField
+      label="ช่วงวันเรียน (เริ่มต้น - สิ้นสุด)"
+      name="start_date"
+      required
+      help="กำหนดวันแรกและวันสุดท้ายของเทอมเพื่อใช้คำนวณวันหยุด"
+      class="text-lg"
+    >
+      <UInputDate
+        ref="inputDate"
+        v-model="modelValue"
+        range
+        :disabled="isSubmitting"
+        class="rounded-xl overflow-hidden shadow-inner"
+      >
         <template #trailing>
           <UPopover :reference="inputDate?.inputsRef[0]?.$el">
-            <UButton color="neutral" variant="link" size="sm" icon="i-lucide-calendar" aria-label="Select a date range"
-              class="px-0" :disabled="isSubmitting" />
+            <UButton
+              color="neutral"
+              variant="link"
+              size="sm"
+              icon="i-lucide-calendar"
+              aria-label="Select a date range"
+              class="px-0"
+              :disabled="isSubmitting"
+            />
 
             <template #content>
-              <UCalendar v-model="modelValue" class="p-2" :number-of-months="2" range />
+              <UCalendar
+                v-model="modelValue"
+                class="p-2"
+                :number-of-months="2"
+                range
+              />
             </template>
           </UPopover>
         </template>
       </UInputDate>
     </UFormField>
 
-    <div v-if="state.term || state.academic_year"
-      class="p-4 bg-slate-800 border border-slate-700 rounded-2xl relative overflow-hidden group/preview shadow-inner">
+    <div
+      v-if="state.term || state.academic_year"
+      class="p-4 bg-slate-800 border border-slate-700 rounded-2xl relative overflow-hidden group/preview shadow-inner"
+    >
       <div
-        class="absolute inset-0 bg-blue-500/10 opacity-0 group-hover/preview:opacity-100 transition-opacity duration-500">
-      </div>
+        class="absolute inset-0 bg-blue-500/10 opacity-0 group-hover/preview:opacity-100 transition-opacity duration-500"
+      />
       <div class="relative z-10">
-        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">แสดงตัวอย่าง (Preview)</p>
+        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+          แสดงตัวอย่าง (Preview)
+        </p>
         <div class="space-y-1">
           <p class="text-xl font-black text-amber-400">
-            <span v-if="state.term" class="text-white">เทอม {{ state.term }}</span>
-            <span v-if="state.term && state.academic_year" class="text-slate-500"> / </span>
+            <span
+              v-if="state.term"
+              class="text-white"
+            >เทอม {{ state.term }}</span>
+            <span
+              v-if="state.term && state.academic_year"
+              class="text-slate-500"
+            > / </span>
             <span v-if="state.academic_year">{{ state.academic_year }}</span>
-            <span v-if="!state.term && !state.academic_year"
-              class="text-slate-500 font-normal italic text-sm">รอกรอกข้อมูล...</span>
+            <span
+              v-if="!state.term && !state.academic_year"
+              class="text-slate-500 font-normal italic text-sm"
+            >รอกรอกข้อมูล...</span>
           </p>
           <div class="flex items-center gap-2 text-xs font-medium text-slate-300">
-            <UIcon name="i-heroicons-calendar-days" class="text-slate-400" />
+            <UIcon
+              name="i-heroicons-calendar-days"
+              class="text-slate-400"
+            />
             {{ formatDateToISO(state.start_date) }}
-            <UIcon name="i-heroicons-arrow-right" class="text-slate-500" /> {{ formatDateToISO(state.end_date) }}
+            <UIcon
+              name="i-heroicons-arrow-right"
+              class="text-slate-500"
+            /> {{ formatDateToISO(state.end_date) }}
           </div>
         </div>
       </div>
     </div>
 
     <div class="flex flex-col gap-3 pt-4">
-      <UButton label="สร้างเทอมการศึกษาใหม่" type="submit" color="primary" size="xl" block
-        icon="i-heroicons-rocket-launch" class="rounded-2xl py-4 shadow-lg shadow-blue-500/20 font-bold"
-        :loading="isSubmitting" :disabled="!state.term || !state.academic_year" />
+      <UButton
+        label="สร้างเทอมการศึกษาใหม่"
+        type="submit"
+        color="primary"
+        size="xl"
+        block
+        icon="i-heroicons-rocket-launch"
+        class="rounded-2xl py-4 shadow-lg shadow-blue-500/20 font-bold"
+        :loading="isSubmitting"
+        :disabled="!state.term || !state.academic_year"
+      />
 
-      <UButton v-if="state.term || state.academic_year" label="รีเซ็ตฟอร์ม" type="button" color="neutral"
-        variant="ghost" block size="sm" class="rounded-xl text-slate-500 hover:text-white" :disabled="isSubmitting"
-        @click="clearForm" />
+      <UButton
+        v-if="state.term || state.academic_year"
+        label="รีเซ็ตฟอร์ม"
+        type="button"
+        color="neutral"
+        variant="ghost"
+        block
+        size="sm"
+        class="rounded-xl text-slate-500 hover:text-white"
+        :disabled="isSubmitting"
+        @click="clearForm"
+      />
     </div>
   </UForm>
 </template>

@@ -45,7 +45,6 @@ try {
 
   // Migration for adding id_room to Subjects (REMOVED: already dropped if exists below)
 
-
   // Create SubjectSections join table
   db.exec(`
     CREATE TABLE IF NOT EXISTS SubjectSections (
@@ -57,13 +56,13 @@ try {
     );
   `)
 
-  // Note: Migration logic that moved data from Subjects.id_section to SubjectSections 
+  // Note: Migration logic that moved data from Subjects.id_section to SubjectSections
   // has been removed since the id_section column is no longer created in Subjects table natively.
 
   // Migration for teachers name structure
   const teacherTableInfo = db.prepare('PRAGMA table_info(teachers)').all()
   const hasPrefix = teacherTableInfo.some(col => col.name === 'prefix')
-  
+
   if (!hasPrefix) {
     db.exec('ALTER TABLE teachers ADD COLUMN prefix TEXT')
     db.exec('ALTER TABLE teachers ADD COLUMN first_name TEXT')
@@ -73,7 +72,7 @@ try {
     // Split existing names
     const teachers = db.prepare('SELECT id_teacher, name FROM teachers').all()
     const updateTeacher = db.prepare('UPDATE teachers SET prefix = ?, first_name = ?, last_name = ? WHERE id_teacher = ?')
-    
+
     db.transaction(() => {
       const thaiPrefixes = ['นาย', 'นาง', 'นางสาว', 'น.ส.', 'ดร.', 'ผศ.', 'รศ.', 'ศ.', 'อาจารย์', 'อ.', 'ครู']
       for (const t of teachers) {
@@ -106,7 +105,6 @@ try {
     db.exec('ALTER TABLE teachers DROP COLUMN subject')
     console.log('Migrated teachers table: removed unused subject column')
   }
-
 } catch (err) {
   console.error('Migration error:', err)
 }
@@ -168,25 +166,25 @@ try {
 
   const hasEventType = tableInfo.some(col => col.name === 'event_type')
   if (!hasEventType) {
-    db.exec("ALTER TABLE calendar_events ADD COLUMN event_type TEXT DEFAULT 'normal'")
+    db.exec('ALTER TABLE calendar_events ADD COLUMN event_type TEXT DEFAULT \'normal\'')
     console.log('Migrated calendar_events table: added event_type')
   }
 
   const hasAllDay = tableInfo.some(col => col.name === 'all_day')
   if (!hasAllDay) {
-    db.exec("ALTER TABLE calendar_events ADD COLUMN all_day INTEGER DEFAULT 0")
+    db.exec('ALTER TABLE calendar_events ADD COLUMN all_day INTEGER DEFAULT 0')
     console.log('Migrated calendar_events table: added all_day')
   }
 
   const hasOriginalDate = tableInfo.some(col => col.name === 'original_date')
   if (!hasOriginalDate) {
-    db.exec("ALTER TABLE calendar_events ADD COLUMN original_date TEXT")
+    db.exec('ALTER TABLE calendar_events ADD COLUMN original_date TEXT')
     console.log('Migrated calendar_events table: added original_date')
   }
 
   const hasMakeupClassIds = tableInfo.some(col => col.name === 'makeup_class_ids')
   if (!hasMakeupClassIds) {
-    db.exec("ALTER TABLE calendar_events ADD COLUMN makeup_class_ids TEXT")
+    db.exec('ALTER TABLE calendar_events ADD COLUMN makeup_class_ids TEXT')
     console.log('Migrated calendar_events table: added makeup_class_ids')
   }
 } catch (err) {
