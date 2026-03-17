@@ -1,16 +1,16 @@
 <template>
-  <div class="min-h-screen bg-slate-900 text-white pb-20">
+  <div class="min-h-screen bg-white text-slate-900 pb-20">
     <!-- Header -->
-    <div class="bg-slate-800 border-b border-slate-700 p-6 sticky top-0 z-10 shadow-lg mb-8">
+    <div class="bg-slate-50 border-b border-slate-200 p-6 sticky top-0 z-10 shadow-sm mb-8">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div class="flex items-center gap-4">
           <UButton icon="i-heroicons-arrow-left" color="gray" variant="ghost" to="/" class="rounded-full" />
           <div>
-            <h1 class="text-2xl font-bold text-white flex items-center gap-2">
-              <UIcon name="i-heroicons-calendar-days" class="text-blue-400" />
+            <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+              <UIcon name="i-heroicons-calendar-days" class="text-blue-500" />
               รายการสอนชดเชย
             </h1>
-            <p class="text-slate-400 text-md">ติดตามและจัดการคำขอสอนชดเชยทั้งหมด</p>
+            <p class="text-slate-500 text-md">ติดตามและจัดการคำขอสอนชดเชยทั้งหมด</p>
           </div>
         </div>
       </div>
@@ -19,17 +19,17 @@
     <!-- Quick Stats -->
     <div class="container mx-auto px-4 mb-8">
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm">
-          <p class="text-slate-400 text-lg font-medium uppercase tracking-wider">ทั้งหมด</p>
-          <p class="text-2xl font-bold text-white mt-1">{{ makeupClasses?.length || 0 }} รายการ</p>
+        <div class="bg-slate-100 p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-slate-500 text-lg font-medium uppercase tracking-wider">ทั้งหมด</p>
+          <p class="text-2xl font-bold text-slate-900 mt-1">{{ makeupClasses?.length || 0 }} รายการ</p>
         </div>
-        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm">
-          <p class="text-slate-400 text-lg font-medium uppercase tracking-wider text-green-500">ยืนยันแล้ว</p>
-          <p class="text-2xl font-bold text-white mt-1">{{ stats.confirmed }}</p>
+        <div class="bg-slate-100 p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-green-600 text-lg font-medium uppercase tracking-wider">ยืนยันแล้ว</p>
+          <p class="text-2xl font-bold text-slate-900 mt-1">{{ stats.confirmed }}</p>
         </div>
-        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-sm">
-          <p class="text-slate-400 text-lg font-medium uppercase tracking-wider text-blue-500">เสร็จสิ้น</p>
-          <p class="text-2xl font-bold text-white mt-1">{{ stats.completed }}</p>
+        <div class="bg-slate-100 p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-blue-600 text-lg font-medium uppercase tracking-wider">เสร็จสิ้น</p>
+          <p class="text-2xl font-bold text-slate-900 mt-1">{{ stats.completed }}</p>
         </div>
       </div>
     </div>
@@ -47,7 +47,7 @@
 
       <div v-else class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div v-for="group in groupedMakeupClasses" :key="group.key"
-          class="bg-slate-800 rounded-3xl border border-slate-700 p-6 shadow-sm hover:shadow-xl hover:border-blue-500/30 transition-all relative overflow-hidden group">
+          class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm hover:shadow-xl hover:border-blue-300 transition-all relative overflow-hidden group">
           <!-- Status Strip -->
           <div :class="['absolute left-0 top-0 bottom-0 w-1.5', getStatusColor(group.status)]"></div>
 
@@ -55,51 +55,51 @@
             <UBadge :color="getStatusBadgeColor(group.status)" variant="subtle" size="md" class="rounded-full px-3">
               {{ getStatusLabel(group.status) }}
             </UBadge>
-            <div class="text-xs font-bold text-slate-500 bg-slate-900 px-2 py-1 rounded">
+            <div class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded">
               {{ group.items.length }} วิชา
             </div>
           </div>
 
           <div class="mb-4">
             <div class="space-y-1 mb-3">
-              <h3 v-for="item in group.items" :key="item.id_makeup" class="font-bold text-lg text-white line-clamp-1"
+              <h3 v-for="item in group.items" :key="item.id_makeup" class="font-bold text-lg text-slate-900 line-clamp-1"
                 :title="item.name_subject">
                 {{ item.name_subject || 'ไม่ระบุวิชา' }}
-                <span class="text-sm font-normal text-slate-400">({{ item.section_name || 'ไม่ระบุกลุ่ม' }})</span>
+                <span class="text-sm font-normal text-slate-500">({{ item.section_name || 'ไม่ระบุกลุ่ม' }})</span>
               </h3>
             </div>
 
-            <div class="text-slate-400 text-sm flex items-center gap-2">
-              <UIcon name="i-heroicons-calendar" class="text-blue-400" />
+            <div class="text-slate-500 text-sm flex items-center gap-2">
+              <UIcon name="i-heroicons-calendar" class="text-blue-500" />
               {{ formatDate(group.makeup_date) }}
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3 mb-6">
-            <div class="bg-slate-900/50 p-3 rounded-2xl border border-slate-700/50">
+            <div class="bg-slate-100 p-3 rounded-2xl border border-slate-200">
               <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">เวลา</p>
-              <p class="text-white text-sm font-medium">{{ group.makeup_time_start }} - {{ group.makeup_time_end }}</p>
+              <p class="text-slate-900 text-sm font-medium">{{ group.makeup_time_start }} - {{ group.makeup_time_end }}</p>
             </div>
-            <div class="bg-slate-900/50 p-3 rounded-2xl border border-slate-700/50">
+            <div class="bg-slate-100 p-3 rounded-2xl border border-slate-200">
               <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">ห้องเรียน</p>
-              <p class="text-white text-sm font-medium line-clamp-1"
+              <p class="text-slate-900 text-sm font-medium line-clamp-1"
                 :title="group.room_names.length ? group.room_names.join(', ') : 'ไม่ระบุห้อง'">
                 {{ group.room_names.length ? group.room_names.join(', ') : 'ไม่ระบุห้อง' }}
               </p>
             </div>
           </div>
 
-          <div class="space-y-3 text-sm text-slate-300 mb-6">
+          <div class="space-y-3 text-sm text-slate-600 mb-6">
             <div class="flex items-center gap-3">
               <UAvatar :alt="group.teacher_name || '?'" size="xs"
-                :class="getStatusBadgeColor(group.status) === 'green' ? 'bg-green-500/20' : 'bg-slate-700'" />
-              <span class="font-medium">{{ group.teacher_name || 'ไม่ระบุอาจารย์' }}</span>
+                :class="getStatusBadgeColor(group.status) === 'green' ? 'bg-green-500/20' : 'bg-slate-200'" />
+              <span class="font-medium text-slate-900">{{ group.teacher_name || 'ไม่ระบุอาจารย์' }}</span>
             </div>
           </div>
 
           <div v-if="group.notes" class="mb-6">
             <p class="text-[10px] text-slate-500 uppercase font-bold mb-2">หมายเหตุ</p>
-            <div class="text-slate-400 text-xs bg-slate-900/50 p-3 rounded-2xl border border-slate-700/30">
+            <div class="text-slate-700 text-xs bg-slate-100 p-3 rounded-2xl border border-slate-200">
               <div v-for="(note, i) in group.notes.split('\n').filter(n => n.trim())" :key="i">
                 {{ note }}
               </div>
@@ -128,7 +128,7 @@
     <!-- Modals -->
     <!-- Cancel Confirm -->
     <UModal v-model:open="showCancelModal"
-      :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
@@ -137,23 +137,23 @@
               <UIcon name="i-heroicons-x-circle" class="text-4xl text-red-500" />
             </div>
 
-            <h3 class="text-2xl font-bold text-white text-center mb-2">ยืนยันการยกเลิก</h3>
-            <p class="text-slate-400 text-center mb-8">คุณต้องการยกเลิกคลาสชดเชยนี้ใช่หรือไม่?
+            <h3 class="text-2xl font-bold text-slate-900 text-center mb-2">ยืนยันการยกเลิก</h3>
+            <p class="text-slate-600 text-center mb-8">คุณต้องการยกเลิกคลาสชดเชยนี้ใช่หรือไม่?
               การยกเลิกจะทำให้ช่วงเวลานี้ว่างลงเพื่อให้สามารถลงตารางใหม่ได้</p>
 
-            <div v-if="selectedItem" class="bg-slate-800/50 border border-slate-700 p-5 rounded-2xl">
+            <div v-if="selectedItem" class="bg-slate-100 border border-slate-200 p-5 rounded-2xl">
               <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">กลุ่มวิชาที่จะยกเลิก</p>
               <div v-for="item in selectedItem.items" :key="item.id_makeup" class="mb-2">
-                <p class="text-sm font-bold text-white">{{ item.name_subject }} <span
-                    class="text-xs text-slate-400 font-normal">({{ item.section_name }})</span></p>
+                <p class="text-sm font-bold text-slate-900">{{ item.name_subject }} <span
+                    class="text-xs text-slate-500 font-normal">({{ item.section_name }})</span></p>
               </div>
-              <div class="mt-3 pt-3 border-t border-slate-700/50">
-                <p class="text-xs text-slate-400">{{ formatDate(selectedItem.makeup_date) }} | {{
+              <div class="mt-3 pt-3 border-t border-slate-300">
+                <p class="text-xs text-slate-600">{{ formatDate(selectedItem.makeup_date) }} | {{
                   selectedItem.makeup_time_start }} - {{ selectedItem.makeup_time_end }}</p>
               </div>
             </div>
           </div>
-          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+          <div class="p-6 border-t border-slate-200 bg-slate-50 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex flex-col sm:flex-row gap-3">
               <UButton label="ย้อนกลับ" color="neutral" variant="soft" size="xl" block
                 class="rounded-2xl py-4 flex-1 font-bold" @click="showCancelModal = false" />
@@ -168,7 +168,7 @@
 
     <!-- Delete Confirm -->
     <UModal v-model:open="showDeleteModal"
-      :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
@@ -177,22 +177,22 @@
               <UIcon name="i-heroicons-trash" class="text-4xl text-red-500" />
             </div>
 
-            <h3 class="text-2xl font-bold text-white text-center mb-2">ลบรายการถาวร</h3>
-            <p class="text-slate-400 text-center mb-8">การลบนี้ไม่สามารถกู้คืนได้
+            <h3 class="text-2xl font-bold text-slate-900 text-center mb-2">ลบรายการถาวร</h3>
+            <p class="text-slate-600 text-center mb-8">การลบนี้ไม่สามารถกู้คืนได้
               คุณแน่ใจหรือไม่ที่จะลบรายการนี้ออกจากระบบอย่างสมบูรณ์?</p>
 
-            <div v-if="selectedItem" class="bg-red-500/5 border border-red-500/20 p-5 rounded-2xl">
-              <p class="text-[10px] font-black uppercase tracking-widest text-red-400/80 mb-2 text-center">
+            <div v-if="selectedItem" class="bg-red-50 border border-red-200 p-5 rounded-2xl">
+              <p class="text-[10px] font-black uppercase tracking-widest text-red-500/75 mb-2 text-center">
                 กลุ่มวิชาที่เลือก
               </p>
               <div v-for="item in selectedItem.items" :key="item.id_makeup" class="mb-1 text-center">
-                <p class="text-sm font-bold text-white">{{ item.name_subject }} <span
-                    class="text-xs text-red-400/80 font-normal">({{ item.section_name }})</span></p>
+                <p class="text-sm font-bold text-slate-900">{{ item.name_subject }} <span
+                    class="text-xs text-red-500/80 font-normal">({{ item.section_name }})</span></p>
               </div>
-              <p class="text-xs text-red-400/60 text-center mt-3">{{ formatDate(selectedItem.makeup_date) }}</p>
+              <p class="text-xs text-red-500/70 text-center mt-3">{{ formatDate(selectedItem.makeup_date) }}</p>
             </div>
           </div>
-          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+          <div class="p-6 border-t border-slate-200 bg-slate-50 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex flex-col sm:flex-row gap-3">
               <UButton label="ยกเลิก" color="neutral" variant="outline" size="xl" block
                 class="rounded-2xl border-slate-700 py-4 flex-1 font-bold" @click="showDeleteModal = false" />
@@ -207,7 +207,7 @@
 
     <!-- Edit Modal -->
     <UModal v-model:open="showEditModal"
-      :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
+      :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
       <template #content>
         <div class="flex flex-col max-h-[85vh]">
           <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
@@ -217,41 +217,41 @@
                 <UIcon name="i-heroicons-pencil-square" class="text-2xl text-amber-500" />
               </div>
               <div>
-                <h3 class="text-2xl font-bold text-white">แก้ไขคลาสชดเชย</h3>
-                <p class="text-slate-400 text-sm">ปรับปรุงรายละเอียด วันที่ เวลา หรือห้องเรียน</p>
+                <h3 class="text-2xl font-bold text-slate-900">แก้ไขคลาสชดเชย</h3>
+                <p class="text-slate-600 text-sm">ปรับปรุงรายละเอียด วันที่ เวลา หรือห้องเรียน</p>
               </div>
             </div>
 
             <div v-if="editingItem" class="space-y-6">
-              <UFormField label="วันที่สอนชดเชย *" :ui="{ label: 'text-white font-bold mb-2' }">
+              <UFormField label="วันที่สอนชดเชย *" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                 <UInput v-model="editingItem.makeup_date" type="date" size="xl" class="rounded-xl"
-                  :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
+                  :ui="{ base: 'bg-slate-100 border-slate-300 text-slate-900 rounded-2xl' }" />
               </UFormField>
 
               <div class="grid grid-cols-2 gap-4">
-                <UFormField label="เวลาเริ่ม *" :ui="{ label: 'text-white font-bold mb-2' }">
+                <UFormField label="เวลาเริ่ม *" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                   <UInput v-model="editingItem.makeup_time_start" type="time" size="xl" class="rounded-xl"
-                    :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
+                    :ui="{ base: 'bg-slate-100 border-slate-300 text-slate-900 rounded-2xl' }" />
                 </UFormField>
-                <UFormField label="เวลาสิ้นสุด *" :ui="{ label: 'text-white font-bold mb-2' }">
+                <UFormField label="เวลาสิ้นสุด *" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                   <UInput v-model="editingItem.makeup_time_end" type="time" size="xl" class="rounded-xl"
-                    :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
+                    :ui="{ base: 'bg-slate-100 border-slate-300 text-slate-900 rounded-2xl' }" />
                 </UFormField>
               </div>
 
-              <UFormField label="ห้องเรียน" :ui="{ label: 'text-white font-bold mb-2' }">
+              <UFormField label="ห้องเรียน" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                 <USelect v-model="editingItem.room_id" :items="rooms || []" label-attribute="room_name"
                   value-attribute="id_room" placeholder="เลือกห้องเรียน" size="xl" class="rounded-xl"
-                  :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
+                  :ui="{ base: 'bg-slate-100 border-slate-300 text-slate-900 rounded-2xl' }" />
               </UFormField>
 
-              <UFormField label="หมายเหตุ (ใช้ทับทั้งหมดในกลุ่ม)" :ui="{ label: 'text-white font-bold mb-2' }">
+              <UFormField label="หมายเหตุ (ใช้ทับทั้งหมดในกลุ่ม)" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                 <UTextarea v-model="editingItem.notes" placeholder="หมายเหตุเพิ่มเติม..." :rows="3" size="xl"
-                  class="rounded-xl" :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }" />
+                  class="rounded-xl" :ui="{ base: 'bg-slate-100 border-slate-300 text-slate-900 rounded-2xl' }" />
               </UFormField>
             </div>
           </div>
-          <div class="p-6 border-t border-slate-800 bg-slate-900/95 backdrop-blur-sm sticky bottom-0 z-10">
+          <div class="p-6 border-t border-slate-200 bg-slate-50 backdrop-blur-sm sticky bottom-0 z-10">
             <div class="flex gap-3">
               <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
                 class="rounded-2xl py-4 flex-1 font-bold" @click="showEditModal = false" />
