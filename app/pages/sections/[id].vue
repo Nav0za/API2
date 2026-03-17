@@ -32,165 +32,6 @@
         </div>
 
         <div class="flex gap-2">
-          <!-- Manage External (Out-of-Department) Subjects -->
-          <UModal
-            v-model:open="extSubjectModalOpen"
-            :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden max-w-lg' }"
-          >
-            <UButton
-              label="วิชานอกสาขา"
-              icon="i-heroicons-book-open"
-              color="primary"
-              variant="solid"
-              size="xl"
-              class="cursor-pointer"
-            />
-            <template #content>
-              <div class="flex flex-col max-h-[85vh]">
-                <!-- Header -->
-                <div class="p-8 pb-4">
-                  <div
-                    class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-200"
-                  >
-                    <UIcon
-                      name="i-heroicons-book-open"
-                      class="text-3xl text-amber-500"
-                    />
-                  </div>
-                  <h3 class="text-2xl font-bold text-slate-800 text-center mb-1">
-                    วิชานอกสาขา
-                  </h3>
-                  <p class="text-slate-500 text-md text-center">
-                    รายวิชาที่ไม่ได้เรียนกับอาจารย์ในสาขา
-                  </p>
-                </div>
-
-                <!-- Scrollable List -->
-                <div class="flex-1 overflow-y-auto custom-scrollbar px-8 space-y-3 pb-4">
-                  <div
-                    v-if="!externalSubjects?.length"
-                    class="text-center text-slate-500 py-8"
-                  >
-                    <UIcon
-                      name="i-heroicons-inbox"
-                      class="text-4xl mb-2"
-                    />
-                    <p>ยังไม่มีรายวิชานอกสาขา</p>
-                  </div>
-                  <div
-                    v-for="ext in externalSubjects"
-                    :key="ext.id_ext_subject"
-                    class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4"
-                  >
-                    <div class="flex-1 min-w-0">
-                      <p
-                        v-if="editingExtId !== ext.id_ext_subject"
-                        class="text-slate-800 font-semibold truncate"
-                      >
-                        {{
-                          ext.name_subject }}
-                      </p>
-                      <p
-                        v-if="editingExtId !== ext.id_ext_subject && ext.instructor_name"
-                        class="text-slate-500 text-xs mt-0.5"
-                      >
-                        อาจารย์: {{ ext.instructor_name }}
-                      </p>
-                      <template v-if="editingExtId === ext.id_ext_subject">
-                        <UInput
-                          v-model="editExtName"
-                          placeholder="ชื่อวิชา"
-                          size="sm"
-                          class="mb-1"
-                        />
-                        <UInput
-                          v-model="editExtInstructor"
-                          placeholder="ชื่ออาจารย์ (ไม่ทำก็ได้)"
-                          size="sm"
-                        />
-                      </template>
-                    </div>
-                    <div class="flex gap-2 shrink-0">
-                      <template v-if="editingExtId === ext.id_ext_subject">
-                        <UButton
-                          icon="i-heroicons-check"
-                          color="primary"
-                          size="sm"
-                          variant="soft"
-                          @click="saveEditExtSubject(ext)"
-                        />
-                        <UButton
-                          icon="i-heroicons-x-mark"
-                          color="neutral"
-                          size="sm"
-                          variant="soft"
-                          @click="editingExtId = null"
-                        />
-                      </template>
-                      <template v-else>
-                        <UButton
-                          icon="i-lucide-pencil"
-                          color="warning"
-                          size="sm"
-                          variant="soft"
-                          @click="startEditExtSubject(ext)"
-                        />
-                        <UButton
-                          icon="i-lucide-trash"
-                          color="error"
-                          size="sm"
-                          variant="soft"
-                          @click="deleteExtSubject(ext.id_ext_subject)"
-                        />
-                      </template>
-                    </div>
-                  </div>
-
-                  <!-- Add New External Subject -->
-                  <div class="bg-amber-500/5 border border-amber-500/15 rounded-2xl p-4 space-y-3">
-                    <p class="text-lg font-bold text-amber-400 uppercase tracking-widest">
-                      เพิ่มวิชาใหม่
-                    </p>
-                    <UInput
-                      v-model="newExtName"
-                      size="xl"
-                      placeholder="ชื่อรายวิชา *"
-                      :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-xl' }"
-                    />
-                    <UInput
-                      v-model="newExtInstructor"
-                      size="xl"
-                      placeholder="ชื่ออาจารย์ผู้สอน (ไม่ทำก็ได้)"
-                      :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-xl' }"
-                    />
-                    <UButton
-                      size="xl"
-                      label="เพิ่มวิชานอกสาขา"
-                      icon="i-heroicons-plus"
-                      color="warning"
-                      block
-                      class="rounded-xl"
-                      :loading="addingExt"
-                      :disabled="!newExtName.trim()"
-                      @click="addExtSubject"
-                    />
-                  </div>
-                </div>
-
-                <!-- Footer -->
-                <div class="p-6 border-t border-slate-800">
-                  <UButton
-                    label="ปิดหน้าต่าง"
-                    color="neutral"
-                    variant="soft"
-                    block
-                    class="rounded-2xl"
-                    @click="extSubjectModalOpen = false"
-                  />
-                </div>
-              </div>
-            </template>
-          </UModal>
 
           <!-- Quick Add Subject to Schedule -->
           <UModal
@@ -393,6 +234,232 @@
         </div>
       </div>
 
+      <!-- External Subjects Grid View -->
+      <div class="w-full mt-6 mb-8">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex justify-between items-center text-slate-900 bg-slate-50/50">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+                <UIcon
+                  name="i-heroicons-book-open"
+                  class="text-xl text-blue-600"
+                />
+              </div>
+              <div>
+                <h1 class="text-xl font-bold text-slate-900">
+                  วิชานอกสาขา
+                </h1>
+                <p class="text-xs text-slate-500">รายวิชาที่ไม่ได้เรียนกับอาจารย์ในสาขา</p>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <UModal
+                v-model:open="extSubjectModalOpen"
+                :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }"
+              >
+                <UButton
+                  label="เพิ่มวิชานอกสาขา"
+                  size="xl"
+                  icon="i-heroicons-plus-circle"
+                  class="cursor-pointer rounded-xl font-bold"
+                />
+                <template #content>
+                  <div class="flex flex-col max-h-[85vh]">
+                    <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+                      <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-100">
+                        <UIcon name="i-heroicons-plus-circle" class="text-3xl text-blue-600" />
+                      </div>
+                      <h3 class="text-2xl font-bold text-slate-900 text-center mb-6">
+                        เพิ่มวิชานอกสาขา
+                      </h3>
+
+                      <div class="space-y-6">
+                        <div>
+                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                            ชื่อรายวิชา <span class="text-red-500">*</span>
+                          </h3>
+                          <UInput
+                            v-model="newExtName"
+                            placeholder="กรอกชื่อรายวิชา"
+                            size="xl"
+                            class="w-full"
+                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl shadow-xs' }"
+                          />
+                        </div>
+
+                        <div>
+                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                            ชื่ออาจารย์ผู้สอน (ไม่ระบุก็ได้)
+                          </h3>
+                          <UInput
+                            v-model="newExtInstructor"
+                            placeholder="กรอกชื่ออาจารย์ผู้สอน"
+                            size="xl"
+                            class="w-full"
+                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl shadow-xs' }"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="p-6 border-t border-slate-100 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10 w-full">
+                      <div class="flex gap-3">
+                        <UButton
+                          label="ยกเลิก"
+                          color="neutral"
+                          variant="soft"
+                          size="xl"
+                          block
+                          class="rounded-2xl py-4 flex-1 font-bold"
+                          @click="extSubjectModalOpen = false"
+                        />
+                        <UButton
+                          label="บันทึกรายวิชา"
+                          color="primary"
+                          size="xl"
+                          block
+                          class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/10 font-bold"
+                          :loading="addingExt"
+                          :disabled="!newExtName.trim()"
+                          @click="async () => {
+                            await addExtSubject()
+                            extSubjectModalOpen = false
+                          }"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </UModal>
+
+              <!-- Modal for editing -->
+              <UModal
+                v-model:open="editExtModalOpen"
+                :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }"
+              >
+                <template #content>
+                  <div class="flex flex-col max-h-[85vh]">
+                    <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+                      <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-100">
+                        <UIcon name="i-lucide-edit" class="text-3xl text-blue-600" />
+                      </div>
+                      <h3 class="text-2xl font-bold text-slate-900 text-center mb-6">
+                        แก้ไขวิชานอกสาขา
+                      </h3>
+
+                      <div class="space-y-6">
+                        <div>
+                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                            ชื่อรายวิชา <span class="text-red-500">*</span>
+                          </h3>
+                          <UInput
+                            v-model="editExtName"
+                            placeholder="กรอกชื่อรายวิชา"
+                            size="xl"
+                            class="w-full"
+                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl shadow-xs' }"
+                          />
+                        </div>
+
+                        <div>
+                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                            ชื่ออาจารย์ผู้สอน (ไม่ระบุก็ได้)
+                          </h3>
+                          <UInput
+                            v-model="editExtInstructor"
+                            placeholder="กรอกชื่ออาจารย์ผู้สอน"
+                            size="xl"
+                            class="w-full"
+                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl shadow-xs' }"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="p-6 border-t border-slate-100 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10 w-full">
+                      <div class="flex gap-3">
+                        <UButton
+                          label="ยกเลิก"
+                          color="neutral"
+                          variant="soft"
+                          size="xl"
+                          block
+                          class="rounded-2xl py-4 flex-1 font-bold"
+                          @click="editExtModalOpen = false"
+                        />
+                        <UButton
+                          label="บันทึกการแก้ไข"
+                          color="primary"
+                          size="xl"
+                          block
+                          class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/10 font-bold"
+                          :disabled="!editExtName.trim()"
+                          @click="async () => {
+                            await saveEditExtSubject()
+                            editExtModalOpen = false
+                          }"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </UModal>
+            </div>
+          </div>
+          <div class="px-5 py-4 border-t border-slate-50 max-h-80 overflow-y-auto custom-scrollbar">
+            <p
+              v-if="!externalSubjects?.length"
+              class="py-10 text-center text-slate-400 font-medium italic"
+            >
+              ยังไม่มีรายวิชานอกสาขา
+            </p>
+
+            <!-- Grid view for external subjects -->
+            <div
+              v-else
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+            >
+              <div
+                v-for="ext in externalSubjects"
+                :key="ext.id_ext_subject"
+                class="group p-4 rounded-2xl bg-slate-100/50 hover:bg-white border border-blue-200 shadow-md shadow-blue-500/5 transition-all duration-300 flex flex-col justify-between"
+              >
+                <div class="mb-3">
+                  <h3 class="font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
+                    {{ ext.name_subject }}
+                  </h3>
+                  <p class="text-xs text-slate-500 mt-1 line-clamp-1">
+                    อาจารย์: {{ ext.instructor_name || 'ไม่ระบุ' }}
+                  </p>
+                </div>
+
+                <div class="flex items-center justify-end gap-1 mt-auto pt-3 border-t border-slate-100">
+                  <UButton
+                    label="แก้ไข"
+                    icon="i-lucide-edit"
+                    color="warning"
+                    variant="outline"
+                    size="xs"
+                    class="cursor-pointer rounded-lg hover:bg-amber-50"
+                    @click="startEditExtSubject(ext)"
+                  />
+                  <UButton
+                    label="ลบ"
+                    icon="i-lucide-trash"
+                    color="error"
+                    variant="ghost"
+                    size="xs"
+                    class="cursor-pointer rounded-lg hover:bg-red-50"
+                    @click="deleteExtSubject(ext.id_ext_subject)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Schedule Table -->
       <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         <div class="overflow-x-auto">
@@ -453,7 +520,7 @@
                       slot.value ? 'bg-blue-100 hover:bg-blue-200' : 'hover:bg-slate-100',
                       isActiveBox(dayIndex, slot.originalIndex) ? 'ring-2 ring-inset ring-blue-500/60 bg-blue-50' : ''
                     ]"
-                    @click="toggleDropdown(dayIndex, slot.originalIndex)"
+                    @click="!isTeacherSubject(slot.value) && toggleDropdown(dayIndex, slot.originalIndex)"
                   >
                     <template v-if="slot.value">
                       <span class="font-bold text-blue-700 line-clamp-1">
@@ -598,6 +665,7 @@ const quickAddSelectedSections = ref([])
 
 // External (Out-of-Department) Subjects states
 const extSubjectModalOpen = ref(false)
+const editExtModalOpen = ref(false)
 const newExtName = ref('')
 const newExtInstructor = ref('')
 const addingExt = ref(false)
@@ -814,12 +882,13 @@ const startEditExtSubject = (ext) => {
   editingExtId.value = ext.id_ext_subject
   editExtName.value = ext.name_subject
   editExtInstructor.value = ext.instructor_name || ''
+  editExtModalOpen.value = true
 }
 
-const saveEditExtSubject = async (ext) => {
-  if (!editExtName.value.trim()) return
+const saveEditExtSubject = async () => {
+  if (!editExtName.value.trim() || !editingExtId.value) return
   try {
-    await $fetch(`/api/external-subjects/${ext.id_ext_subject}`, {
+    await $fetch(`/api/external-subjects/${editingExtId.value}`, {
       method: 'PUT',
       body: {
         name_subject: editExtName.value,
@@ -827,6 +896,7 @@ const saveEditExtSubject = async (ext) => {
       }
     })
     editingExtId.value = null
+    editExtModalOpen.value = false
     toast.add({ title: 'สำเร็จ', description: 'บันทึกวิชานอกสาขาแล้ว', color: 'green' })
     refreshExternalSubjects()
   } catch (e) {
@@ -846,6 +916,15 @@ const deleteExtSubject = async (id) => {
 }
 
 // Methods
+const isTeacherSubject = (val) => {
+  if (!val) return false
+  if (typeof val === 'string' && val.startsWith('ext:')) return false
+  if (staticOptions.some(o => o.value === val)) return false
+  
+  const subj = allSubjects.value?.find(sub => sub.id_subject == val)
+  return subj && subj.id_teacher != null
+}
+
 const isActiveBox = (d, s) => activeBox.value.day === d && activeBox.value.slot === s
 
 const toggleDropdown = (d, s) => {
