@@ -1,12 +1,12 @@
 <template>
-  <div class="min-h-screen bg-linear-to-br from-slate-800 to-slate-900 text-white">
+  <div class="min-h-screen bg-slate-50 text-slate-900">
     <!-- Navbar -->
-    <nav class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50">
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
       <div class="container mx-auto px-4">
         <div class="flex items-center justify-between h-16">
           <div class="flex items-center gap-4">
             <UButton icon="i-lucide-arrow-left" color="gray" variant="ghost" to="/sections" />
-            <h2 class="text-xl font-bold text-blue-400">
+            <h2 class="text-xl font-bold text-slate-800">
               ตารางเรียน - {{ section?.section_name || 'Loading...' }}
             </h2>
           </div>
@@ -29,7 +29,7 @@
         <div class="flex gap-2">
           <!-- Manage External (Out-of-Department) Subjects -->
           <UModal v-model:open="extSubjectModalOpen"
-            :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden max-w-lg' }">
+            :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden max-w-lg' }">
             <UButton label="วิชานอกสาขา" icon="i-heroicons-book-open" color="primary" variant="solid" size="xl"
               class="cursor-pointer" />
             <template #content>
@@ -37,11 +37,11 @@
                 <!-- Header -->
                 <div class="p-8 pb-4">
                   <div
-                    class="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-500/20">
-                    <UIcon name="i-heroicons-book-open" class="text-3xl text-amber-400" />
+                    class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-200">
+                    <UIcon name="i-heroicons-book-open" class="text-3xl text-amber-500" />
                   </div>
-                  <h3 class="text-2xl font-bold text-white text-center mb-1">วิชานอกสาขา</h3>
-                  <p class="text-slate-400 text-md text-center">รายวิชาที่ไม่ได้เรียนกับอาจารย์ในสาขา</p>
+                  <h3 class="text-2xl font-bold text-slate-800 text-center mb-1">วิชานอกสาขา</h3>
+                  <p class="text-slate-500 text-md text-center">รายวิชาที่ไม่ได้เรียนกับอาจารย์ในสาขา</p>
                 </div>
 
                 <!-- Scrollable List -->
@@ -51,12 +51,12 @@
                     <p>ยังไม่มีรายวิชานอกสาขา</p>
                   </div>
                   <div v-for="ext in externalSubjects" :key="ext.id_ext_subject"
-                    class="flex items-center gap-3 bg-slate-800/50 border border-slate-700 rounded-2xl p-4">
+                    class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4">
                     <div class="flex-1 min-w-0">
-                      <p v-if="editingExtId !== ext.id_ext_subject" class="text-white font-semibold truncate">{{
+                      <p v-if="editingExtId !== ext.id_ext_subject" class="text-slate-800 font-semibold truncate">{{
                         ext.name_subject }}</p>
                       <p v-if="editingExtId !== ext.id_ext_subject && ext.instructor_name"
-                        class="text-slate-400 text-xs mt-0.5">อาจารย์: {{ ext.instructor_name }}</p>
+                        class="text-slate-500 text-xs mt-0.5">อาจารย์: {{ ext.instructor_name }}</p>
                       <template v-if="editingExtId === ext.id_ext_subject">
                         <UInput v-model="editExtName" placeholder="ชื่อวิชา" size="sm" class="mb-1" />
                         <UInput v-model="editExtInstructor" placeholder="ชื่ออาจารย์ (ไม่ทำก็ได้)" size="sm" />
@@ -82,9 +82,9 @@
                   <div class="bg-amber-500/5 border border-amber-500/15 rounded-2xl p-4 space-y-3">
                     <p class="text-lg font-bold text-amber-400 uppercase tracking-widest">เพิ่มวิชาใหม่</p>
                     <UInput size="xl" v-model="newExtName" placeholder="ชื่อรายวิชา *"
-                      :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-xl' }" />
+                      :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-xl' }" />
                     <UInput size="xl" v-model="newExtInstructor" placeholder="ชื่ออาจารย์ผู้สอน (ไม่ทำก็ได้)"
-                      :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-xl' }" />
+                      :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-xl' }" />
                     <UButton size="xl" label="เพิ่มวิชานอกสาขา" icon="i-heroicons-plus" color="warning" block
                       class="rounded-xl" @click="addExtSubject" :loading="addingExt" :disabled="!newExtName.trim()" />
                   </div>
@@ -101,7 +101,7 @@
 
           <!-- Quick Add Subject to Schedule -->
           <UModal v-model:open="quickAddOpen"
-            :ui="{ content: 'bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden' }">
+            :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
             <UButton label="เพิ่มรายวิชาในตาราง(ทีละหลายชั่วโมงได้)" icon="i-heroicons-plus" color="primary" size="xl"
               variant="solid" class="cursor-pointer" />
             <template #content>
@@ -109,10 +109,10 @@
                 <!-- Header -->
                 <div class="p-8 pb-4">
                   <div
-                    class="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-500/20">
-                    <UIcon name="i-heroicons-calendar-days" class="text-3xl text-blue-400" />
+                    class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-200">
+                    <UIcon name="i-heroicons-calendar-days" class="text-3xl text-blue-500" />
                   </div>
-                  <h3 class="text-2xl font-bold text-white text-center mb-4">เพิ่มรายวิชาในตารางเรียน</h3>
+                  <h3 class="text-2xl font-bold text-slate-800 text-center mb-4">เพิ่มรายวิชาในตารางเรียน</h3>
                 </div>
 
                 <!-- Scrollable Form Content -->
@@ -186,7 +186,7 @@
                 </div>
 
                 <!-- Sticky Footer Buttons -->
-                <div class="p-6 pt-4 border-t border-slate-800 bg-slate-900 flex gap-3">
+                <div class="p-6 pt-4 border-t border-slate-200 bg-white flex gap-3">
                   <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block class="rounded-2xl py-4 flex-1"
                     @click="quickAddOpen = false" />
                   <UButton label="เพิ่มลงตาราง" color="primary" size="xl" block
@@ -206,19 +206,19 @@
       </div>
 
       <!-- Schedule Table -->
-      <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden shadow-xl">
+      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         <div class="overflow-x-auto">
           <div class="inline-block min-w-full">
             <!-- Header -->
-            <div class="flex border-b border-slate-700 bg-slate-900/50 text-xs sm:text-sm">
+            <div class="flex border-b border-slate-200 bg-slate-100 text-xs sm:text-sm">
               <div
-                class="w-20 shrink-0 p-3 font-bold text-center text-slate-300 border-r border-slate-700 sticky left-0 z-40 bg-slate-900/90">
+                class="w-20 shrink-0 p-3 font-bold text-center text-slate-700 border-r border-slate-200 sticky left-0 z-40 bg-white">
                 วัน/เวลา
               </div>
               <div class="flex flex-1">
                 <div v-for="(time, index) in timeSlots" :key="index"
-                  class="flex-1 min-w-[80px] p-2 text-center text-slate-400 border-r border-slate-700 last:border-r-0">
-                  <span class="block font-bold text-white">คาบที่ {{ index + 1 }}</span>
+                  class="flex-1 min-w-[80px] p-2 text-center text-slate-600 border-r border-slate-200 last:border-r-0">
+                  <span class="block font-bold text-slate-700">คาบที่ {{ index + 1 }}</span>
                   <span class="text-xs">{{ time }}</span>
                 </div>
               </div>
@@ -226,21 +226,21 @@
 
             <!-- Rows -->
             <div v-for="(day, dayIndex) in days" :key="dayIndex"
-              class="flex border-b border-slate-700 last:border-b-0 text-xs sm:text-sm group hover:bg-slate-700/30 transition-colors">
+              class="flex border-b border-slate-200 last:border-b-0 text-xs sm:text-sm group hover:bg-slate-100 transition-colors">
               <!-- Day Header -->
               <div
-                class="w-20 shrink-0 flex items-center justify-center p-2 font-bold bg-slate-800/90 border-r border-slate-700 text-slate-300 sticky left-0 z-40">
+                class="w-20 shrink-0 flex items-center justify-center p-2 font-bold bg-slate-100 border-r border-slate-200 text-slate-700 sticky left-0 z-40">
                 {{ day }}
               </div>
 
               <!-- Slots (แสดงแบบ Merge ตาม displaySlots) -->
               <div class="flex flex-1">
                 <div v-for="(slot, gIndex) in displaySlots[dayIndex]" :key="`${dayIndex}-${slot.originalIndex}`"
-                  class="relative border-r border-slate-700 last:border-r-0"
+                  class="relative border-r border-slate-200 last:border-r-0"
                   :style="{ flex: `${slot.span} 1 0%`, minWidth: `${slot.span * 80}px` }">
                   <!-- พักกลางวัน (Index 4) -->
                   <div v-if="slot.isLunch"
-                    class="h-full min-h-[60px] p-1 flex items-center justify-center text-center bg-slate-900/50 text-slate-500 select-none text-xs">
+                    class="h-full min-h-[60px] p-1 flex items-center justify-center text-center bg-slate-100 text-slate-500 select-none text-xs">
                     พักกลางวัน
                   </div>
 
@@ -248,59 +248,59 @@
                   <div v-else
                     class="h-full min-h-[60px] p-1 cursor-pointer transition-colors flex flex-col items-center justify-center text-center gap-1"
                     :class="[
-                      slot.value ? 'bg-blue-600/20 hover:bg-blue-600/30' : 'hover:bg-slate-700/50',
-                      isActiveBox(dayIndex, slot.originalIndex) ? 'ring-2 ring-inset ring-blue-500 bg-blue-500/10' : ''
+                      slot.value ? 'bg-blue-100 hover:bg-blue-200' : 'hover:bg-slate-100',
+                      isActiveBox(dayIndex, slot.originalIndex) ? 'ring-2 ring-inset ring-blue-500/60 bg-blue-50' : ''
                     ]" @click="toggleDropdown(dayIndex, slot.originalIndex)">
                     <template v-if="slot.value">
-                      <span class="font-bold text-blue-300 line-clamp-1">
+                      <span class="font-bold text-blue-700 line-clamp-1">
                         {{ getSubjectLabel(slot.value, slot.room_id, slot.section_ids) }}
                       </span>
                     </template>
-                    <span v-else class="text-slate-600 text-xs">ว่าง</span>
+                    <span v-else class="text-slate-500 text-xs">ว่าง</span>
                   </div>
 
                   <!-- Dropdown -->
                   <div v-if="!slot.isLunch && isActiveBox(dayIndex, slot.originalIndex)"
-                    class="absolute z-20 w-48 bg-slate-800 border border-slate-600 rounded-lg shadow-xl overflow-hidden"
+                    class="absolute z-20 w-48 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden"
                     :class="[
                       dayIndex >= 4 ? 'bottom-full mb-1' : 'top-full mt-1',
                       slot.originalIndex <= 1 ? 'left-0' : slot.originalIndex >= 10 ? 'right-0' : 'left-1/2 -translate-x-1/2'
                     ]">
                     <div class="max-h-60 overflow-y-auto custom-scrollbar">
                       <button
-                        class="w-full text-left px-3 py-2 hover:bg-slate-700 text-slate-300 text-xs border-b border-slate-700"
+                        class="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 text-xs border-b border-slate-200"
                         @click="setSlotValue(dayIndex, slot.originalIndex, null, slot.span)">
-                        <span class="text-red-400">✖ ล้างข้อมูล</span>
+                        <span class="text-red-500">✖ ล้างข้อมูล</span>
                       </button>
 
                       <div
-                        class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-900/50 uppercase tracking-wider">
+                        class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider">
                         กิจกรรม
                       </div>
                       <button v-for="opt in staticOptions" :key="opt.value"
-                        class="w-full text-left px-3 py-2 hover:bg-slate-700 text-white text-xs truncate"
+                        class="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 text-xs truncate"
                         @click="setSlotValue(dayIndex, slot.originalIndex, opt.value, slot.span)">
                         {{ opt.label }}
                       </button>
 
                       <div
-                        class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-900/50 uppercase tracking-wider mt-1">
+                        class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider mt-1">
                         วิชา (จากอาจารย์)
                       </div>
                       <button v-for="opt in subjectOptions" :key="opt.value"
-                        class="w-full text-left px-3 py-2 hover:bg-slate-700 text-white text-xs truncate"
+                        class="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 text-xs truncate"
                         @click="setSlotValue(dayIndex, slot.originalIndex, opt.value, slot.span)">
                         {{ opt.label }}
                       </button>
 
                       <template v-if="slot.value && !staticOptions.some(o => o.value === slot.value)">
                         <div
-                          class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-900/50 uppercase tracking-wider mt-1">
+                          class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider mt-1">
                           กลุ่มเรียน (Sections)
                         </div>
                         <div v-for="sec in allSubjects.find(s => s.id_subject == slot.value)?.sections"
                           :key="sec.id_section"
-                          class="w-full text-left px-3 py-2 hover:bg-slate-700 text-amber-200 text-xs flex items-center gap-2 cursor-pointer"
+                          class="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 text-xs flex items-center gap-2 cursor-pointer"
                           @click="toggleSlotSection(dayIndex, slot.originalIndex, sec.id_section, slot.span)">
                           <UCheckbox
                             :model-value="(scheduleSlots[dayIndex][slot.originalIndex].section_ids || []).includes(sec.id_section)"
@@ -310,12 +310,12 @@
                         </div>
 
                         <div
-                          class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-900/50 uppercase tracking-wider mt-1">
+                          class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider mt-1">
                           ห้องเรียน (คาบนี้)
                         </div>
                         <button v-for="room in roomOptions" :key="room.value"
-                          class="w-full text-left px-3 py-2 hover:bg-slate-700 text-blue-400 text-xs truncate"
-                          :class="{ 'bg-blue-500/10 text-blue-200': slot.room_id === room.value }"
+                          class="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 text-xs truncate"
+                          :class="{ 'bg-blue-100 text-blue-700': slot.room_id === room.value }"
                           @click="setSlotRoom(dayIndex, slot.originalIndex, room.value, slot.span)">
                           {{ room.label }}
                         </button>
