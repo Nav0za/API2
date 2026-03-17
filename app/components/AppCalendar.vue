@@ -1,10 +1,10 @@
 <template>
-  <div class="w-full bg-white text-slate-900">
+  <div class="w-full bg-white">
     <!-- Header -->
-    <div class="bg-white border-b border-slate-200 p-6 sticky top-0 z-20 shadow-lg mb-8">
+    <div class="bg-white border-b border-slate-200 p-6 z-20 shadow-lg mb-8">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
-          <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 class="text-3xl font-bold flex items-center gap-2">
             <UIcon name="i-heroicons-calendar-days" class="text-blue-400" />
             ปฏิทินการสอน
           </h1>
@@ -12,21 +12,21 @@
         </div>
 
         <div class="flex flex-wrap gap-3 justify-center">
-          <UButton label="เพิ่มวันหยุด" icon="i-lucide-calendar-off" color="primary" variant="solid" size="xl"
-            class="rounded-xl font-bold cursor-pointer !text-slate-900" @click="openHolidayModal" />
-          <UButton label="อาจารย์ติดราชการ" icon="i-lucide-user-x" color="primary" variant="solid" size="xl"
-            class="rounded-xl font-bold cursor-pointer !text-slate-900" @click="openAbsenceModal" />
-          <UButton label="รายการชดเชย" icon="i-heroicons-clipboard-document-list" color="primary" variant="solid"
-            size="xl" class="rounded-xl font-bold !text-slate-900" to="/makeup-classes" />
-          <UButton label="สรุปรายงาน" icon="i-lucide-bar-chart-3" color="primary" variant="solid" size="xl"
-            class="rounded-xl font-bold !text-slate-900" to="/summary" />
+          <UButton label="เพิ่มวันหยุด" icon="i-lucide-calendar-off" color="success" variant="solid" size="xl"
+            class="rounded-xl font-bold cursor-pointer" @click="openHolidayModal" />
+          <UButton label="อาจารย์ติดราชการ" icon="i-lucide-user-x" color="success" variant="solid" size="xl"
+            class="rounded-xl font-bold cursor-pointer" @click="openAbsenceModal" />
+          <UButton label="รายการชดเชย" icon="i-heroicons-clipboard-document-list" color="success" variant="solid"
+            size="xl" class="rounded-xl font-bold" to="/makeup-classes" />
+          <UButton label="สรุปรายงาน" icon="i-lucide-bar-chart-3" color="success" variant="solid" size="xl"
+            class="rounded-xl font-bold" to="/summary" />
         </div>
       </div>
     </div>
 
     <!-- Calendar Container -->
     <div class="container mx-auto px-4">
-      <div class="bg-white border border-slate-200 p-6 shadow-xl rounded-3xl text-slate-900">
+      <div class="bg-white border border-slate-200 p-6 shadow-xl rounded-3xl">
 
         <FullCalendar v-if="events" ref="calendarRef" :options="calendarOptions" />
       </div>
@@ -44,7 +44,8 @@
                 <UIcon name="i-lucide-calendar-off" class="text-2xl text-amber-500" />
               </div>
               <div>
-                <h3 class="text-2xl font-bold text-slate-900">{{ isEditingHoliday ? 'แก้ไขวันหยุด' : 'เพิ่มวันหยุด' }}</h3>
+                <h3 class="text-2xl font-bold text-slate-900">{{ isEditingHoliday ? 'แก้ไขวันหยุด' : 'เพิ่มวันหยุด' }}
+                </h3>
                 <p class="text-slate-600 text-sm">กำหนดวันหยุดพิเศษสำหรับการคำนวณตารางสอน</p>
               </div>
             </div>
@@ -189,7 +190,6 @@
     </UModal>
 
     <!-- Modal แสดงช่วงว่างที่แนะนำ -->
-    <!-- Modal แสดงช่วงว่างที่แนะนำ -->
     <UModal v-model:open="slotsModalOpen"
       :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden', width: 'max-w-4xl' }">
       <template #content>
@@ -290,7 +290,6 @@
     </UModal>
 
     <!-- Modal ยืนยันการจัดสอนชดเชย -->
-    <!-- Modal ยืนยันการจัดสอนชดเชย -->
     <UModal v-model:open="confirmMakeupModalOpen"
       :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
       <template #content>
@@ -322,7 +321,8 @@
                     <div class="w-px h-10 bg-slate-200 mx-2"></div>
                     <div class="flex flex-col">
                       <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">ช่วงเวลา</span>
-                      <span class="text-xl font-black text-slate-900">{{ selectedSlot.timeStart }} - {{ selectedSlot.timeEnd
+                      <span class="text-xl font-black text-slate-900">{{ selectedSlot.timeStart }} - {{
+                        selectedSlot.timeEnd
                       }}</span>
                     </div>
                   </div>
@@ -367,7 +367,6 @@
       </template>
     </UModal>
 
-    <!-- Modal รายละเอียด Event -->
     <!-- Modal รายละเอียด Event -->
     <UModal v-model:open="viewEventModalOpen"
       :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
@@ -691,7 +690,6 @@ const calendarOptions = computed(() => ({
     right: 'dayGridMonth,timeGridWeek,listWeek'
   },
   buttonText: {
-    today: 'วันนี้',
     month: 'เดือน',
     week: 'สัปดาห์',
     list: 'รายการ'
@@ -716,8 +714,8 @@ const calendarOptions = computed(() => ({
     setTimeout(() => {
       const headerCells = document.querySelectorAll('.fc-col-header-cell')
       headerCells.forEach((cell) => {
-        cell.style.backgroundColor = '#1e293b' // slate-800
-        cell.style.borderColor = '#475569' // slate-600
+        cell.style.backgroundColor = '#f8fafc' // slate-50
+        cell.style.borderColor = '#e2e8f0' // slate-200
       })
     }, 100)
   }
@@ -1567,26 +1565,7 @@ const getEventTypeClass = (type, isIconContainer = false) => {
 </script>
 
 <style>
-.fc {
-  font-family: inherit;
-}
-
-.fc .fc-button {
-  background-color: #3b82f6;
-  border-color: #3b82f6;
-  text-transform: capitalize;
-}
-
-.fc .fc-button:hover {
-  background-color: #2563eb;
-  border-color: #2563eb;
-}
-
-.fc .fc-button-primary:not(:disabled).fc-button-active {
-  background-color: #1d4ed8;
-  border-color: #1d4ed8;
-}
-
+/* FullCalendar styling handled in main.css */
 .fc-daygrid-event {
   cursor: pointer;
 }
@@ -1629,7 +1608,7 @@ const getEventTypeClass = (type, isIconContainer = false) => {
 }
 
 .fc-theme-standard th {
-  background-color: #1e293b !important;
+  background-color: #f8fafc !important;
 }
 
 /* แก้ไขส่วนหัวของวันในมุมมองรายการ (List View) */
@@ -1650,7 +1629,7 @@ const getEventTypeClass = (type, isIconContainer = false) => {
 }
 
 .fc-list-event:hover td {
-  background-color: #334155 !important;
-  /* slate-700 */
+  background-color: #f1f5f9 !important;
+  /* slate-100 */
 }
 </style>

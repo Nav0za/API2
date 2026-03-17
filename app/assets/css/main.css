@@ -24,23 +24,28 @@ body {
 }
 
 /* FullCalendar button theme (Premium Light) */
+/* FullCalendar button theme (Primary) */
 .fc .fc-button,
 .fc .fc-button-primary {
-  background: #ffffff !important;
-  color: #0f172a !important;
-  border: 1px solid #cbd5e1 !important;
-  box-shadow: none !important;
+  background-color: var(--color-primary-500, #3b82f6) !important;
+  color: #ffffff !important;
+  border: 1px solid var(--color-primary-600, #2563eb) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  text-transform: capitalize !important;
+  font-weight: 600 !important;
 }
 
-.fc .fc-button:hover,
-.fc .fc-button:focus {
-  background: #f8fafc !important;
-  color: #0f172a !important;
+.fc .fc-button:hover {
+  background-color: var(--color-primary-600, #2563eb) !important;
+  border-color: var(--color-primary-700, #1d4ed8) !important;
+  color: #ffffff !important;
 }
 
-.fc .fc-button-active {
-  background: #e2e8f0 !important;
-  color: #0f172a !important;
+.fc .fc-button-active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: var(--color-primary-700, #1d4ed8) !important;
+  border-color: var(--color-primary-800, #1e40af) !important;
+  color: #ffffff !important;
 }
 
 /* FullCalendar date/holiday text (Premium Light) */
@@ -74,12 +79,7 @@ body {
   color: #0f172a !important;
 }
 
-.fc .fc-button,
-.fc .fc-toolbar button {
-  color: #0f172a !important;
-}
-
-/* Ensure today button & nav icons show in dark color */
-.fc .fc-button.fc-button-primary {
-  color: #0f172a !important;
+/* Ensure today button & nav icons show correctly */
+.fc .fc-button.fc-button-primary .fc-icon {
+  color: #ffffff !important;
 }
