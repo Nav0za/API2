@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-slate-900 pb-20">
+  <div class="min-h-screen bg-white pb-20">
     <!-- ปฏิทินการสอน -->
     <AppCalendar :teachers="teachers || []" />
   </div>
