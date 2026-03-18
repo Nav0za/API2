@@ -39,11 +39,36 @@ export default defineEventHandler(async (event) => {
   const stmt = db.prepare('INSERT INTO terms (term, academic_year, start_date, end_date) VALUES (?, ?, ?, ?)')
   const result = stmt.run(body.term, body.academic_year, body.start_date, body.end_date)
 
+  const newTermId = Number(result.lastInsertRowid)
+  const newTermStr = `${body.term}/${body.academic_year}`
+
+  // Auto-copy sections from the most recent previous term
+  let copiedSections = 0
+  const allTerms = db.prepare('SELECT * FROM terms ORDER BY academic_year DESC, term DESC').all()
+  const previousTerm = allTerms.find(t => t.id_term !== newTermId)
+
+  if (previousTerm) {
+    const prevTermStr = `${previousTerm.term}/${previousTerm.academic_year}`
+    const prevSections = db.prepare('SELECT section_name, description FROM sections WHERE term = ?').all(prevTermStr)
+    const insertSection = db.prepare('INSERT INTO sections (section_name, term, description) VALUES (?, ?, ?)')
+
+    for (const sec of prevSections) {
+      try {
+        insertSection.run(sec.section_name, newTermStr, sec.description)
+        copiedSections++
+      } catch (e) {
+        // Skip if duplicate (UNIQUE constraint on section_name + term)
+        console.warn(`Skipped duplicate section: ${sec.section_name} for term ${newTermStr}`)
+      }
+    }
+  }
+
   return {
-    id_term: Number(result.lastInsertRowid),
+    id_term: newTermId,
     term: body.term,
     academic_year: body.academic_year,
     start_date: body.start_date,
-    end_date: body.end_date
+    end_date: body.end_date,
+    copiedSections
   }
 })
