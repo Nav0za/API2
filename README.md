@@ -1,19 +1,20 @@
+## ระบบจัดวันสอนชดเชยกึ่งอัตโนมัติ คือผลงานโปคเจกต์จบ วิชาโครงงาน
 
-## Deploy your own
+ผู้จัดทำ
+นายธนภัทร  ธงศิลา
+นายธิติ  จันทาสี
+นายปภพ  การดี
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=starter&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fstarter&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fstarter-dark.png&demo-url=https%3A%2F%2Fstarter-template.nuxt.dev%2F&demo-title=Nuxt%20Starter%20Template&demo-description=A%20minimal%20template%20to%20get%20started%20with%20Nuxt%20UI.)
-
-## Setup
-
-Make sure to install the dependencies:
-
-```bash
-pnpm install
+## การติดตั้ง
+1.ต้องติดตั้ง pnpm ลงเครื่องก่อน
+2.Clone โปรเจกต์
+3.เปิด Terminal ใน project รัน ```bash
+pnpm i
 ```
 
 ## Development Server
 
-Start the development server on `http://localhost:3000`:
+เริ่มต้น development server ที่ `http://localhost:3000`:
 
 ```bash
 pnpm dev
@@ -21,13 +22,13 @@ pnpm dev
 
 ## Production
 
-Build the application for production:
+Build แอปพลิเคชันสำหรับ production:
 
 ```bash
 pnpm build
 ```
 
-Locally preview production build:
+preview production ที่ build แบบ local:
 
 ```bash
 pnpm preview
