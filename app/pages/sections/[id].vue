@@ -71,15 +71,15 @@
                     </h3>
                     <USelect
                       v-model="quickAddSubject"
-                      placeholder="เลือกรายวิชา"
-                      :items="allSubjectOptions"
+                      placeholder="เลือกรายวิชานอกสาขา"
+                      :items="externalSubjectOptions"
                       size="xl"
                       class="w-full"
-                      :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }"
+                      :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }"
                     />
                   </div>
 
-                  <div v-if="quickAddSubject && typeof quickAddSubject === 'number'">
+                  <div v-if="quickAddSubject && typeof quickAddSubject === 'string' && quickAddSubject.startsWith('ext:')">
                     <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
                       กลุ่มเรียนที่เรียนด้วยกัน
                       (ถ้ามี)
@@ -128,7 +128,7 @@
                         :items="dayOptions"
                         size="xl"
                         class="w-full"
-                        :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }"
+                        :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }"
                       />
                     </div>
                     <div>
@@ -141,7 +141,7 @@
                         :items="roomOptions"
                         size="xl"
                         class="w-full"
-                        :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }"
+                        :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }"
                       />
                     </div>
                   </div>
@@ -157,7 +157,7 @@
                         :items="timeSlotIndexOptions"
                         size="xl"
                         class="w-full"
-                        :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }"
+                        :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }"
                       />
                     </div>
                     <div>
@@ -169,7 +169,7 @@
                         :items="durationOptions"
                         size="xl"
                         class="w-full"
-                        :ui="{ base: 'bg-slate-800 border-slate-700 text-white rounded-2xl' }"
+                        :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }"
                       />
                     </div>
                   </div>
@@ -515,12 +515,13 @@
                   <!-- ช่วงเวลาปกติ -->
                   <div
                     v-else
-                    class="h-full min-h-[60px] p-1 cursor-pointer transition-colors flex flex-col items-center justify-center text-center gap-1"
+                    class="h-full min-h-[60px] p-1 transition-colors flex flex-col items-center justify-center text-center gap-1"
                     :class="[
-                      slot.value ? 'bg-blue-100 hover:bg-blue-200' : 'hover:bg-slate-100',
+                      slot.value ? 'bg-blue-100' : 'bg-white',
+                      isReadOnlyStudent ? 'cursor-default' : 'cursor-pointer',
                       isActiveBox(dayIndex, slot.originalIndex) ? 'ring-2 ring-inset ring-blue-500/60 bg-blue-50' : ''
                     ]"
-                    @click="!isTeacherSubject(slot.value) && toggleDropdown(dayIndex, slot.originalIndex)"
+                    @click="!isReadOnlyStudent && !isTeacherSubject(slot.value) && toggleDropdown(dayIndex, slot.originalIndex)"
                   >
                     <template v-if="slot.value">
                       <span class="font-bold text-blue-700 line-clamp-1">
@@ -535,7 +536,7 @@
 
                   <!-- Dropdown -->
                   <div
-                    v-if="!slot.isLunch && isActiveBox(dayIndex, slot.originalIndex)"
+                    v-if="!isReadOnlyStudent && !slot.isLunch && isActiveBox(dayIndex, slot.originalIndex)"
                     class="absolute z-20 w-48 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden"
                     :class="[
                       dayIndex >= 4 ? 'bottom-full mb-1' : 'top-full mt-1',
@@ -567,10 +568,10 @@
                       <div
                         class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider mt-1"
                       >
-                        วิชา (จากอาจารย์)
+                        วิชานอกสาขา
                       </div>
                       <button
-                        v-for="opt in subjectOptions"
+                        v-for="opt in externalSubjectOptions"
                         :key="opt.value"
                         class="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 text-xs truncate"
                         @click="setSlotValue(dayIndex, slot.originalIndex, opt.value, slot.span)"
@@ -648,6 +649,7 @@ const staticOptions = [
 ]
 
 // State
+const isReadOnlyStudent = false // if true: no dropdown / no edits; if false: interactive (external-only)
 const activeBox = ref({ day: null, slot: null })
 const saving = ref(false)
 const scheduleSlots = ref(Array.from({ length: 7 }, () =>
@@ -783,7 +785,7 @@ const durationOptions = [
 
 const quickAddPreview = computed(() => {
   if (!quickAddSubject.value || quickAddDay.value === null || quickAddStartTime.value === null || !quickAddDuration.value) return null
-  const allOpts = [...subjectOptions.value, ...externalSubjectOptions.value]
+  const allOpts = [...externalSubjectOptions.value]
   const subjectLabel = allOpts.find(s => s.value === quickAddSubject.value)?.label || '-'
   const dayLabel = dayOptions.value.find(d => d.value === quickAddDay.value)?.label || '-'
   const startTimeLabel = timeSlotIndexOptions.value.find(t => t.value === quickAddStartTime.value)?.label || '-'
@@ -793,9 +795,8 @@ const quickAddPreview = computed(() => {
 
 // Watch subject change in Quick Add
 watch(quickAddSubject, (newVal) => {
-  if (newVal && typeof newVal === 'number') {
-    const subj = allSubjects.value?.find(s => s.id_subject == newVal)
-    quickAddSelectedSections.value = subj ? subj.sections.map(s => s.id_section) : []
+  if (newVal && typeof newVal === 'string' && newVal.startsWith('ext:')) {
+    quickAddSelectedSections.value = [Number(sectionId)]
   } else {
     quickAddSelectedSections.value = []
   }
