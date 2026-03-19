@@ -79,44 +79,6 @@
                     />
                   </div>
 
-                  <div v-if="quickAddSubject && typeof quickAddSubject === 'string' && quickAddSubject.startsWith('ext:')">
-                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
-                      กลุ่มเรียนที่เรียนด้วยกัน
-                      (ถ้ามี)
-                    </h3>
-                    <div
-                      class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar border border-slate-800 rounded-2xl p-4 bg-slate-800/50 shadow-inner"
-                    >
-                      <div
-                        v-for="sec in allSubjects.find(s => s.id_subject == quickAddSubject)?.sections"
-                        :key="sec.id_section"
-                        class="flex items-center gap-3 p-2 hover:bg-slate-700/50 rounded-xl cursor-pointer text-slate-300 transition-colors"
-                        @click="() => {
-                          if (quickAddSelectedSections.includes(sec.id_section)) {
-                            quickAddSelectedSections = quickAddSelectedSections.filter(id => id !== sec.id_section)
-                          }
-                          else {
-                            quickAddSelectedSections = [...quickAddSelectedSections, sec.id_section]
-                          }
-                        }"
-                      >
-                        <UCheckbox
-                          :model-value="quickAddSelectedSections.includes(sec.id_section)"
-                          @update:model-value="(val) => {
-                            if (val) quickAddSelectedSections = [...quickAddSelectedSections, sec.id_section]
-                            else quickAddSelectedSections = quickAddSelectedSections.filter(id => id !== sec.id_section)
-                          }"
-                        />
-                        <span
-                          class="text-sm font-medium"
-                          :class="{ 'text-blue-400': sec.id_section == sectionId }"
-                        >
-                          {{ sec.section_name }} {{ sec.id_section == sectionId ? '(กลุ่มนี้)' : '' }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
                   <div class="grid grid-cols-2 gap-4">
                     <div>
                       <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
@@ -174,17 +136,6 @@
                     </div>
                   </div>
 
-                  <div
-                    v-if="quickAddPreview"
-                    class="bg-blue-500/5 border border-blue-500/10 p-4 rounded-2xl text-center"
-                  >
-                    <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">
-                      แสดงตัวอย่าง
-                    </p>
-                    <p class="text-white font-bold leading-tight">
-                      {{ quickAddPreview }}
-                    </p>
-                  </div>
                 </div>
 
                 <!-- Sticky Footer Buttons -->
@@ -461,119 +412,91 @@
       </div>
 
       <!-- Schedule Table -->
-      <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <div class="overflow-x-auto">
-          <div class="inline-block min-w-full">
-            <!-- Header -->
-            <div class="flex border-b border-slate-200 bg-slate-100 text-xs sm:text-sm">
-              <div
-                class="w-20 shrink-0 p-3 font-bold text-center text-slate-700 border-r border-slate-200 sticky left-0 z-40 bg-white"
-              >
-                วัน/เวลา
-              </div>
-              <div class="flex flex-1">
-                <div
-                  v-for="(time, index) in timeSlots"
-                  :key="index"
-                  class="flex-1 min-w-[80px] p-2 text-center text-slate-600 border-r border-slate-200 last:border-r-0"
-                >
-                  <span class="block font-bold text-slate-700">คาบที่ {{ index + 1 }}</span>
-                  <span class="text-xs">{{ time }}</span>
-                </div>
-              </div>
+      <div class="mt-4 overflow-x-auto pb-6 custom-scrollbar">
+        <div class="min-w-fit md:min-w-full p-1">
+          <div class="grid grid-cols-[80px_repeat(13,minmax(85px,1fr))] text-center border border-slate-200 rounded-2xl overflow-hidden shadow-sm bg-white">
+            <div class="bg-slate-50 font-bold border-r border-b border-slate-200 flex items-center justify-center text-slate-700 sticky left-0 z-40 p-2 text-sm uppercase tracking-wider">
+              วัน / เวลา
             </div>
 
-            <!-- Rows -->
             <div
-              v-for="(day, dayIndex) in days"
-              :key="dayIndex"
-              class="flex border-b border-slate-200 last:border-b-0 text-xs sm:text-sm group hover:bg-slate-100 transition-colors"
+              v-for="time in timeSlots"
+              :key="time"
+              class="bg-slate-50 p-2 text-center text-xs font-bold border-b border-r border-slate-200 last:border-r-0 text-slate-500 uppercase tracking-tighter"
             >
-              <!-- Day Header -->
+              {{ time }}
+            </div>
+
+            <template v-for="(day, dayIndex) in days" :key="dayIndex">
               <div
-                class="w-20 shrink-0 flex items-center justify-center p-2 font-bold bg-slate-100 border-r border-slate-200 text-slate-700 sticky left-0 z-40"
+                class="border-r border-b border-slate-200 p-2 text-center bg-slate-50 text-slate-700 flex items-center justify-center font-bold sticky left-0 z-40 text-lg min-h-[90px]"
               >
                 {{ day }}
               </div>
 
-              <!-- Slots (แสดงแบบ Merge ตาม displaySlots) -->
-              <div class="flex flex-1">
+              <template
+                v-for="(slot, gIndex) in displaySlots[dayIndex]"
+                :key="`${dayIndex}-${slot.originalIndex}`"
+              >
                 <div
-                  v-for="(slot, gIndex) in displaySlots[dayIndex]"
-                  :key="`${dayIndex}-${slot.originalIndex}`"
-                  class="relative border-r border-slate-200 last:border-r-0"
-                  :style="{ flex: `${slot.span} 1 0%`, minWidth: `${slot.span * 80}px` }"
+                  v-if="slot.isLunch"
+                  class="border-r border-b border-slate-200 p-2 bg-slate-100 text-slate-500 text-sm font-semibold flex items-center justify-center"
+                  :style="{ gridColumn: `span ${slot.span}`, minWidth: `${slot.span * 85}px` }"
                 >
-                  <!-- พักกลางวัน (Index 4) -->
-                  <div
-                    v-if="slot.isLunch"
-                    class="h-full min-h-[60px] p-1 flex items-center justify-center text-center bg-slate-100 text-slate-500 select-none text-xs"
-                  >
-                    พักกลางวัน
-                  </div>
+                  พักกลางวัน
+                </div>
 
-                  <!-- ช่วงเวลาปกติ -->
+                <div
+                  v-else
+                  class="relative border-r border-b border-slate-200 min-h-[90px]"
+                  :style="{ gridColumn: `span ${slot.span}`, minWidth: `${slot.span * 85}px` }"
+                >
                   <div
-                    v-else
-                    class="h-full min-h-[60px] p-1 transition-colors flex flex-col items-center justify-center text-center gap-1"
+                    class="absolute inset-0 transition-all flex flex-col items-center justify-center text-center gap-1.5"
                     :class="[
-                      slot.value ? 'bg-blue-100' : 'bg-white',
-                      isReadOnlyStudent ? 'cursor-default' : 'cursor-pointer',
-                      isActiveBox(dayIndex, slot.originalIndex) ? 'ring-2 ring-inset ring-blue-500/60 bg-blue-50' : ''
+                      slot.value ? 'bg-blue-50 hover:bg-blue-100 font-bold text-blue-700 border border-blue-100/50 m-1 rounded-xl shadow-xs' : 'bg-transparent hover:bg-slate-50 text-slate-300',
+                      isActiveBox(dayIndex, slot.originalIndex) ? 'ring-2 ring-inset ring-blue-500 bg-blue-50' : ''
                     ]"
                     @click="!isReadOnlyStudent && !isTeacherSubject(slot.value) && toggleDropdown(dayIndex, slot.originalIndex)"
                   >
                     <template v-if="slot.value">
-                      <span class="font-bold text-blue-700 line-clamp-1">
+                      <span class="text-xs line-clamp-2 leading-tight">
                         {{ getSubjectLabel(slot.value, slot.room_id, slot.section_ids) }}
                       </span>
                     </template>
-                    <span
-                      v-else
-                      class="text-slate-500 text-xs"
-                    >ว่าง</span>
+                    <span v-else class="text-md">ว่าง</span>
                   </div>
 
-                  <!-- Dropdown -->
                   <div
                     v-if="!isReadOnlyStudent && !slot.isLunch && isActiveBox(dayIndex, slot.originalIndex)"
-                    class="absolute z-20 w-48 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden"
+                    class="absolute z-50 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden py-1 animate-in fade-in zoom-in duration-200"
                     :class="[
-                      dayIndex >= 4 ? 'bottom-full mb-1' : 'top-full mt-1',
+                      dayIndex >= 4 ? 'bottom-full mb-2' : 'top-full mt-2',
                       slot.originalIndex <= 1 ? 'left-0' : slot.originalIndex >= 10 ? 'right-0' : 'left-1/2 -translate-x-1/2'
                     ]"
                   >
-                    <div class="max-h-60 overflow-y-auto custom-scrollbar">
+                    <div class="max-h-80 overflow-y-auto custom-scrollbar">
                       <button
-                        class="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 text-xs border-b border-slate-200"
+                        class="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-600 text-[11px] font-bold border-b border-slate-50 flex items-center gap-2 transition-colors"
                         @click="setSlotValue(dayIndex, slot.originalIndex, null, slot.span)"
                       >
-                        <span class="text-red-500">✖ ล้างข้อมูล</span>
+                        <UIcon
+                          name="i-lucide-trash"
+                          class="text-red-500 text-sm"
+                        />
+                        <span>ล้างข้อมูลคาบนี้</span>
                       </button>
 
                       <div
-                        class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider"
-                      >
-                        กิจกรรม
-                      </div>
-                      <button
-                        v-for="opt in staticOptions"
-                        :key="opt.value"
-                        class="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 text-xs truncate"
-                        @click="setSlotValue(dayIndex, slot.originalIndex, opt.value, slot.span)"
-                      >
-                        {{ opt.label }}
-                      </button>
-
-                      <div
-                        class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider mt-1"
+                        class="px-4 py-1.5 text-[9px] font-bold text-slate-400 bg-slate-50/80 uppercase tracking-widest mt-1"
                       >
                         วิชานอกสาขา
                       </div>
                       <button
                         v-for="opt in externalSubjectOptions"
                         :key="opt.value"
-                        class="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 text-xs truncate"
+                        class="w-full text-left px-4 py-2 hover:bg-blue-50 text-slate-700 text-[11px] truncate transition-colors font-medium border-l-4 border-transparent"
+                        :class="{ 'bg-blue-50 border-blue-500 text-blue-700': slot.value === opt.value }"
                         @click="setSlotValue(dayIndex, slot.originalIndex, opt.value, slot.span)"
                       >
                         {{ opt.label }}
@@ -581,37 +504,15 @@
 
                       <template v-if="slot.value && !staticOptions.some(o => o.value === slot.value)">
                         <div
-                          class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider mt-1"
-                        >
-                          กลุ่มเรียน (Sections)
-                        </div>
-                        <div
-                          v-for="sec in allSubjects.find(s => s.id_subject == slot.value)?.sections"
-                          :key="sec.id_section"
-                          class="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 text-xs flex items-center gap-2 cursor-pointer"
-                          @click="toggleSlotSection(dayIndex, slot.originalIndex, sec.id_section, slot.span)"
-                        >
-                          <UCheckbox
-                            :model-value="(scheduleSlots[dayIndex][slot.originalIndex].section_ids || []).includes(sec.id_section)"
-                            @update:model-value="toggleSlotSection(dayIndex, slot.originalIndex, sec.id_section, slot.span)"
-                          />
-                          <span
-                            class="truncate"
-                            :class="{ 'text-blue-400 font-bold': sec.id_section == sectionId }"
-                          >{{
-                            sec.section_name }}</span>
-                        </div>
-
-                        <div
-                          class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider mt-1"
+                          class="px-4 py-1.5 text-[9px] font-bold text-slate-400 bg-slate-50/80 uppercase tracking-widest mt-2"
                         >
                           ห้องเรียน (คาบนี้)
                         </div>
                         <button
                           v-for="room in roomOptions"
                           :key="room.value"
-                          class="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 text-xs truncate"
-                          :class="{ 'bg-blue-100 text-blue-700': slot.room_id === room.value }"
+                          class="w-full text-left px-4 py-2 hover:bg-indigo-50 text-slate-600 text-[11px] truncate transition-colors font-medium"
+                          :class="{ 'bg-indigo-50 text-indigo-700': slot.room_id === room.value }"
                           @click="setSlotRoom(dayIndex, slot.originalIndex, room.value, slot.span)"
                         >
                           {{ room.label }}
@@ -620,8 +521,8 @@
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
+              </template>
+            </template>
           </div>
         </div>
       </div>
