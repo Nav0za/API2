@@ -8,32 +8,36 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
 
     try {
-      const stmt = db.prepare(`
-        UPDATE sections 
-        SET section_name = COALESCE(?, section_name),
-            description = COALESCE(?, description)
-        WHERE id_section = ?
-      `)
+      db.transaction(() => {
+        if (body.section_name || body.description !== undefined) {
+          db.prepare(`
+            UPDATE sections 
+            SET section_name = COALESCE(?, section_name),
+                description = COALESCE(?, description)
+            WHERE id_section = ?
+          `).run(
+            body.section_name || null,
+            body.description !== undefined ? body.description : null,
+            id
+          )
+        }
 
-      const result = stmt.run(
-        body.section_name || null,
-        body.description !== undefined ? body.description : null,
-        id
-      )
+        if (body.terms && Array.isArray(body.terms)) {
+          // Sync terms: delete old, insert new
+          db.prepare('DELETE FROM section_terms WHERE id_section = ?').run(id)
+          const insertTerm = db.prepare('INSERT INTO section_terms (id_section, term) VALUES (?, ?)')
+          for (const t of body.terms) {
+            insertTerm.run(id, t)
+          }
+        }
+      })()
 
-      if (result.changes === 0) {
-        throw createError({
-          statusCode: 404,
-          statusMessage: 'Section not found'
-        })
-      }
-
-      return { success: true, changes: result.changes }
+      return { success: true }
     } catch (error) {
       if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
         throw createError({
           statusCode: 409,
-          statusMessage: 'Section name already exists in this term'
+          statusMessage: 'Section name already exists'
         })
       }
       throw error

@@ -49,18 +49,17 @@ export default defineEventHandler(async (event) => {
 
   if (previousTerm) {
     const prevTermStr = `${previousTerm.term}/${previousTerm.academic_year}`
-    const prevSections = db.prepare('SELECT section_name, description FROM sections WHERE term = ?').all(prevTermStr)
-    const insertSection = db.prepare('INSERT INTO sections (section_name, term, description) VALUES (?, ?, ?)')
+    const prevSections = db.prepare('SELECT s.id_section FROM sections s JOIN section_terms st ON s.id_section = st.id_section WHERE st.term = ?').all(prevTermStr)
+    const insertTerm = db.prepare('INSERT OR IGNORE INTO section_terms (id_section, term) VALUES (?, ?)')
 
-    for (const sec of prevSections) {
-      try {
-        insertSection.run(sec.section_name, newTermStr, sec.description)
-        copiedSections++
-      } catch (e) {
-        // Skip if duplicate (UNIQUE constraint on section_name + term)
-        console.warn(`Skipped duplicate section: ${sec.section_name} for term ${newTermStr}`)
+    db.transaction(() => {
+      for (const sec of prevSections) {
+        const info = insertTerm.run(sec.id_section, newTermStr)
+        if (info.changes > 0) {
+          copiedSections++
+        }
       }
-    }
+    })()
   }
 
   return {

@@ -195,11 +195,19 @@ try {
 db.exec(`
   CREATE TABLE IF NOT EXISTS sections (
     id_section INTEGER PRIMARY KEY AUTOINCREMENT,
-    section_name TEXT NOT NULL,
-    term TEXT NOT NULL,
+    section_name TEXT NOT NULL UNIQUE,
     description TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(section_name, term)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );`)
+
+// section_terms - เทอมที่เปิดสอนของแต่ละกลุ่มเรียน
+db.exec(`
+  CREATE TABLE IF NOT EXISTS section_terms (
+    id_section_term INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_section INTEGER NOT NULL,
+    term TEXT NOT NULL,
+    FOREIGN KEY (id_section) REFERENCES sections(id_section) ON DELETE CASCADE,
+    UNIQUE(id_section, term)
   );`)
 
 // section_schedules - ตารางเรียนของกลุ่ม
@@ -216,10 +224,10 @@ db.exec(`
     UNIQUE(id_section, term)
   );`)
 
-// สร้าง indexes สำหรับ sections
+// สร้าง indexes สำหรับ sections และ section_terms
 db.exec(`
-  CREATE INDEX IF NOT EXISTS idx_sections_term 
-  ON sections(term);`)
+  CREATE INDEX IF NOT EXISTS idx_section_terms_term 
+  ON section_terms(term);`)
 
 db.exec(`
   CREATE INDEX IF NOT EXISTS idx_section_schedules_section 
@@ -318,6 +326,87 @@ try {
   console.error('Cleanup migration error:', err)
   // Fallback for older SQLite versions if DROP COLUMN fails
   console.log('Note: Some columns might not have been dropped if SQLite version < 3.35.0')
+}
+
+// Migration for section_terms
+try {
+  const sectionTableInfo = db.prepare('PRAGMA table_info(sections)').all()
+  if (sectionTableInfo.some(col => col.name === 'term')) {
+    console.log('Migrating sections to section_terms...')
+    
+    // Disable foreign keys temporarily
+    db.pragma('foreign_keys = OFF')
+    
+    db.transaction(() => {
+      // 1. Create temporary tables
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS sections_new (
+          id_section INTEGER PRIMARY KEY AUTOINCREMENT,
+          section_name TEXT NOT NULL UNIQUE,
+          description TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+      `)
+      
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS section_terms_new (
+          id_section_term INTEGER PRIMARY KEY AUTOINCREMENT,
+          id_section INTEGER NOT NULL,
+          term TEXT NOT NULL,
+          FOREIGN KEY (id_section) REFERENCES sections_new(id_section) ON DELETE CASCADE,
+          UNIQUE(id_section, term)
+        );
+      `)
+
+      // 2. Fetch old sections
+      const oldSections = db.prepare('SELECT * FROM sections ORDER BY id_section').all()
+      
+      const insertSection = db.prepare('INSERT OR IGNORE INTO sections_new (section_name, description, created_at) VALUES (?, ?, ?)')
+      const getSectionId = db.prepare('SELECT id_section FROM sections_new WHERE section_name = ?')
+      const insertTerm = db.prepare('INSERT OR IGNORE INTO section_terms_new (id_section, term) VALUES (?, ?)')
+      
+      const updateSubjSec = db.prepare('UPDATE SubjectSections SET id_section = ? WHERE id_section = ?')
+      const updateSecSched = db.prepare('UPDATE section_schedules SET id_section = ? WHERE id_section = ?')
+      const updateExtSubj = db.prepare('UPDATE external_subjects SET id_section = ? WHERE id_section = ?')
+      const updateMakeup = db.prepare('UPDATE makeup_classes SET section_id = ? WHERE section_id = ?')
+
+      for (const row of oldSections) {
+        insertSection.run(row.section_name, row.description, row.created_at)
+        const newSection = getSectionId.get(row.section_name)
+        const newId = newSection.id_section
+        
+        if (row.term) {
+          insertTerm.run(newId, row.term)
+        }
+        
+        if (newId !== row.id_section) {
+          updateSubjSec.run(newId, row.id_section)
+          updateSecSched.run(newId, row.id_section)
+          updateExtSubj.run(newId, row.id_section)
+          // Also ignore error if makeup_classes don't have this row
+          try { updateMakeup.run(newId, row.id_section) } catch(e) {}
+        }
+      }
+
+      // 3. Swap tables
+      db.exec('DROP TABLE sections')
+      db.exec('ALTER TABLE sections_new RENAME TO sections')
+      
+      db.exec('DROP TABLE IF EXISTS section_terms')
+      db.exec('ALTER TABLE section_terms_new RENAME TO section_terms')
+      
+      // 4. Recreate Indexes
+      db.exec('CREATE INDEX IF NOT EXISTS idx_section_terms_term ON section_terms(term)')
+
+      console.log('Migration complete: sections to section_terms.')
+    })()
+    
+    // Re-enable foreign keys
+    db.pragma('foreign_keys = ON')
+  }
+} catch (err) {
+  console.error('Migration error (sections):', err)
+  db.pragma('foreign_keys = ON')
 }
 
 export default db

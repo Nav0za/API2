@@ -106,11 +106,13 @@
                 <h3 class="text-xl font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
                   {{ section.section_name }}
                 </h3>
-                <div class="flex items-center gap-2 mt-2">
+                <div class="flex items-center gap-2 mt-2 flex-wrap">
                   <span
+                    v-for="t in section.terms"
+                    :key="t"
                     class="text-md px-2 py-0.5 bg-blue-500/10 text-blue-600 rounded-full border border-blue-500/20 font-medium lowercase"
                   >
-                    เทอม {{ section.term }}
+                    เทอม {{ t }}
                   </span>
                 </div>
               </div>
@@ -137,7 +139,7 @@
                 variant="solid"
                 size="xl"
                 class="rounded-xl flex-1 font-bold"
-                :to="`/sections/${section.id_section}?term=${section.term}`"
+                :to="`/sections/${section.id_section}?term=${selectedTerm || section.term}`"
               />
             </div>
           </div>
@@ -195,17 +197,34 @@
 
               <UFormField
                 class="text-lg"
-                label="ปีการศึกษา (Term) *"
+                label="ปีการศึกษา (Terms) *"
+                help="เลือกเทอมที่เปิดสอน (เลือกได้มากกว่า 1 เทอม)"
                 :ui="{ label: 'text-slate-900 font-bold mb-2' }"
               >
-                <USelect
-                  v-model="newSection.term"
-                  :items="termOptions"
-                  placeholder="เลือกเทอมที่ต้องการ"
-                  size="xl"
-                  class="rounded-xl"
-                  :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }"
-                />
+                <div class="grid grid-cols-2 gap-3 mt-2">
+                  <div
+                    v-for="t in termOptions"
+                    :key="t.value"
+                    class="flex items-center gap-3 p-3 border rounded-xl transition-colors cursor-pointer"
+                    :class="newSection.terms.includes(t.value) ? 'border-blue-500 bg-blue-50/50' : 'border-slate-200 hover:border-blue-300'"
+                    @click="() => {
+                      if (newSection.terms.includes(t.value)) {
+                        newSection.terms = newSection.terms.filter(x => x !== t.value)
+                      } else {
+                        newSection.terms.push(t.value)
+                      }
+                    }"
+                  >
+                    <UCheckbox
+                      :model-value="newSection.terms.includes(t.value)"
+                      @update:model-value="(val) => {
+                        if (val && !newSection.terms.includes(t.value)) newSection.terms.push(t.value)
+                        else if (!val) newSection.terms = newSection.terms.filter(x => x !== t.value)
+                      }"
+                    />
+                    <span class="text-sm font-medium text-slate-700 select-none">{{ t.label }}</span>
+                  </div>
+                </div>
               </UFormField>
 
               <UFormField
@@ -297,19 +316,34 @@
               </UFormField>
 
               <UFormField
-                label="เทอมปัจจุบัน"
+                label="เทอมที่ใช้งาน"
+                help="สามารถเพิ่มหรือลดเทอมที่กลุ่มเรียนนี้เปิดสอนได้"
                 :ui="{ label: 'text-slate-900 font-bold mb-2' }"
               >
-                <UInput
-                  :model-value="`เทอม ${editingSection.term}`"
-                  disabled
-                  size="xl"
-                  class="rounded-xl opacity-70"
-                  :ui="{ base: 'bg-slate-50 border-slate-200 text-slate-500 rounded-2xl' }"
-                />
-                <p class="text-xs text-slate-500 mt-2">
-                  หมายเหตุ: ไม่สามารถเปลี่ยนเทอมได้หลังจากสร้างแล้วค่ะ
-                </p>
+                <div class="grid grid-cols-2 gap-3 mt-2">
+                  <div
+                    v-for="t in termOptions"
+                    :key="t.value"
+                    class="flex items-center gap-3 p-3 border rounded-xl transition-colors cursor-pointer"
+                    :class="editingSection.terms.includes(t.value) ? 'border-amber-500 bg-amber-50/50' : 'border-slate-200 hover:border-amber-300'"
+                    @click="() => {
+                      if (editingSection.terms.includes(t.value)) {
+                        editingSection.terms = editingSection.terms.filter(x => x !== t.value)
+                      } else {
+                        editingSection.terms.push(t.value)
+                      }
+                    }"
+                  >
+                    <UCheckbox
+                      :model-value="editingSection.terms.includes(t.value)"
+                      @update:model-value="(val) => {
+                        if (val && !editingSection.terms.includes(t.value)) editingSection.terms.push(t.value)
+                        else if (!val) editingSection.terms = editingSection.terms.filter(x => x !== t.value)
+                      }"
+                    />
+                    <span class="text-sm font-medium text-slate-700 select-none">{{ t.label }}</span>
+                  </div>
+                </div>
               </UFormField>
 
               <UFormField
@@ -445,14 +479,14 @@ const selectedTerm = ref('')
 
 const newSection = ref({
   name: '',
-  term: '',
+  terms: [],
   description: ''
 })
 
 const editingSection = ref({ // State for editing
   id: null,
   name: '',
-  term: '',
+  terms: [],
   description: ''
 })
 
@@ -484,8 +518,8 @@ const filterTermOptions = computed(() => {
 watch(termOptions, (opts) => {
   if (opts.length > 0) {
     // Default for new section
-    if (!newSection.value.term) {
-      newSection.value.term = opts[0].value
+    if (newSection.value.terms.length === 0) {
+      newSection.value.terms = [opts[0].value]
     }
     // Default filter (first term)
     if (!selectedTerm.value) {
@@ -499,7 +533,7 @@ const getActionItems = section => [
   [{
     label: 'จัดการตารางเรียน',
     icon: 'i-heroicons-calendar',
-    onSelect: () => navigateTo(`/sections/${section.id_section}?term=${section.term}`)
+    onSelect: () => navigateTo(`/sections/${section.id_section}?term=${selectedTerm.value || section.term}`)
   }],
   [{
     label: 'แก้ไข',
@@ -514,8 +548,8 @@ const getActionItems = section => [
 
 // Handlers
 const handleAddSection = async () => {
-  if (!newSection.value.name || !newSection.value.term) {
-    toast.add({ title: 'กรุณากรอกข้อมูลให้ครบถ้วน', color: 'red' })
+  if (!newSection.value.name || newSection.value.terms.length === 0) {
+    toast.add({ title: 'กรุณากรอกชื่อและเลือกอย่างน้อย 1 เทอม', color: 'red' })
     return
   }
 
@@ -525,7 +559,7 @@ const handleAddSection = async () => {
       method: 'POST',
       body: {
         section_name: newSection.value.name,
-        term: newSection.value.term,
+        terms: newSection.value.terms,
         description: newSection.value.description
       }
     })
@@ -552,7 +586,7 @@ const openEditSectionModal = (section) => {
   editingSection.value = {
     id: section.id_section,
     name: section.section_name,
-    term: section.term,
+    terms: section.terms ? [...section.terms] : [],
     description: section.description
   }
   openEditModal.value = true
@@ -570,6 +604,7 @@ const handleEditSection = async () => {
       method: 'PUT',
       body: {
         section_name: editingSection.value.name,
+        terms: editingSection.value.terms,
         description: editingSection.value.description
       }
     })

@@ -10,13 +10,32 @@ export default defineEventHandler(async (event) => {
     let sections
 
     if (term) {
-      // ดึงตามเทอม
-      stmt = db.prepare('SELECT * FROM sections WHERE term = ? ORDER BY section_name')
-      sections = stmt.all(term)
+      stmt = db.prepare(`
+        SELECT s.*, st.term, (
+          SELECT GROUP_CONCAT(term) FROM section_terms WHERE id_section = s.id_section
+        ) as all_terms
+        FROM sections s
+        JOIN section_terms st ON s.id_section = st.id_section
+        WHERE st.term = ?
+        ORDER BY s.section_name
+      `)
+      sections = stmt.all(term).map(s => ({
+        ...s,
+        terms: s.all_terms ? s.all_terms.split(',') : []
+      }))
     } else {
-      // ดึงทั้งหมด
-      stmt = db.prepare('SELECT * FROM sections ORDER BY term DESC, section_name')
-      sections = stmt.all()
+      stmt = db.prepare(`
+        SELECT s.*, (
+           SELECT GROUP_CONCAT(term) FROM section_terms WHERE id_section = s.id_section
+        ) as all_terms
+        FROM sections s
+        ORDER BY s.section_name
+      `)
+      sections = stmt.all().map(s => ({
+        ...s,
+        terms: s.all_terms ? s.all_terms.split(',') : [],
+        term: s.all_terms ? s.all_terms.split(',')[0] : null
+      }))
     }
 
     return sections
@@ -27,40 +46,50 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
 
     // Validate
-    if (!body.section_name || !body.term) {
+    if (!body.section_name || !body.terms || !Array.isArray(body.terms) || body.terms.length === 0) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'section_name and term are required'
+        statusMessage: 'section_name and terms array are required'
       })
     }
 
     try {
-      const stmt = db.prepare(`
-        INSERT INTO sections (section_name, term, description)
-        VALUES (?, ?, ?)
-      `)
+      let insertedSectionId = null
+      
+      db.transaction(() => {
+        // Try to insert section
+        const insertStmt = db.prepare('INSERT OR IGNORE INTO sections (section_name, description) VALUES (?, ?)')
+        const info = insertStmt.run(body.section_name, body.description || null)
+        
+        let sectionId = info.lastInsertRowid
+        
+        // If it was ignored (already exists), get the existing ID
+        if (info.changes === 0) {
+          const existing = db.prepare('SELECT id_section FROM sections WHERE section_name = ?').get(body.section_name)
+          if (existing) {
+            sectionId = existing.id_section
+          } else {
+             throw new Error('Could not insert or find section')
+          }
+        }
+        
+        insertedSectionId = sectionId
 
-      const result = stmt.run(
-        body.section_name,
-        body.term,
-        body.description || null
-      )
+        const insertTerm = db.prepare('INSERT OR IGNORE INTO section_terms (id_section, term) VALUES (?, ?)')
+        for (const t of body.terms) {
+          insertTerm.run(sectionId, t)
+        }
+      })()
 
       return {
-        id_section: result.lastInsertRowid,
+        id_section: insertedSectionId,
         section_name: body.section_name,
-        term: body.term,
+        terms: body.terms,
         description: body.description || null,
         created_at: new Date().toISOString()
       }
     } catch (error) {
-      if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-        throw createError({
-          statusCode: 409,
-          statusMessage: 'Section name already exists in this term'
-        })
-      }
-      throw error
+       throw error
     }
   }
 })
