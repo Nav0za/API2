@@ -22,12 +22,13 @@ db.exec(`
     last_name TEXT
   );`)
 
-// Subjects - Note: UNIQUE constraint removed to allow duplicate subject names with different sections
+// Subjects - วิชาที่สอน
 db.exec(`
   CREATE TABLE IF NOT EXISTS Subjects (
     id_subject INTEGER PRIMARY KEY AUTOINCREMENT,
     name_subject TEXT NOT NULL,
     id_teacher INTEGER,
+    term TEXT,
     FOREIGN KEY (id_teacher) REFERENCES teachers(id_teacher)
       ON DELETE CASCADE
   );`)
@@ -191,15 +192,24 @@ try {
   console.error('Migration error (calendar_events):', err)
 }
 
-// sections - กลุ่มเรียนนักศึกษา
+// sections - กลุ่มเรียนนักศึกษา (Master Table)
 db.exec(`
   CREATE TABLE IF NOT EXISTS sections (
     id_section INTEGER PRIMARY KEY AUTOINCREMENT,
-    section_name TEXT NOT NULL,
-    term TEXT NOT NULL,
+    section_name TEXT NOT NULL UNIQUE,
     description TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(section_name, term)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );`)
+
+// section_terms - ตารางเชื่อมกลุ่มเรียนกับเทอม
+db.exec(`
+  CREATE TABLE IF NOT EXISTS section_terms (
+    id_section_term INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_section INTEGER NOT NULL,
+    term TEXT NOT NULL,
+    is_active INTEGER DEFAULT 1,
+    FOREIGN KEY (id_section) REFERENCES sections(id_section) ON DELETE CASCADE,
+    UNIQUE(id_section, term)
   );`)
 
 // section_schedules - ตารางเรียนของกลุ่ม
@@ -218,8 +228,8 @@ db.exec(`
 
 // สร้าง indexes สำหรับ sections
 db.exec(`
-  CREATE INDEX IF NOT EXISTS idx_sections_term 
-  ON sections(term);`)
+  CREATE INDEX IF NOT EXISTS idx_section_terms_term 
+  ON section_terms(term);`)
 
 db.exec(`
   CREATE INDEX IF NOT EXISTS idx_section_schedules_section 
@@ -289,35 +299,136 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_makeup_teacher 
   ON makeup_classes(teacher_id);`)
 
-// Migration (Cleanup): Remove redundant columns if they still exist
+// Helper for dropping columns safely
+const safeDropColumn = (tableName, columnName) => {
+  try {
+    const info = db.prepare(`PRAGMA table_info(${tableName})`).all()
+    if (info.some(col => col.name === columnName)) {
+      db.exec(`ALTER TABLE ${tableName} DROP COLUMN ${columnName}`)
+      console.log(`Cleaned up ${tableName} table: removed ${columnName} column`)
+    }
+  } catch (err) {
+    console.error(`Error dropping ${columnName} from ${tableName}:`, err.message)
+  }
+}
+
+// Migration (Cleanup & Restructure)
 try {
-  const teacherTableInfo = db.prepare('PRAGMA table_info(teachers)').all()
-  if (teacherTableInfo.some(col => col.name === 'name')) {
-    db.exec('ALTER TABLE teachers DROP COLUMN name')
-    console.log('Cleaned up teachers table: removed name column')
+  // 1. Existing cleanups
+  safeDropColumn('teachers', 'name')
+  safeDropColumn('calendar_events', 'teacher_name')
+  safeDropColumn('rooms', 'capacity')
+  safeDropColumn('Subjects', 'id_room')
+  safeDropColumn('teachers', 'subject')
+
+  // Add term column to Subjects if missing
+  const subjectInfo = db.prepare('PRAGMA table_info(Subjects)').all()
+  if (!subjectInfo.some(col => col.name === 'term')) {
+    db.exec('ALTER TABLE Subjects ADD COLUMN term TEXT')
+    console.log('Migrated Subjects table: added term column')
   }
 
-  const eventTableInfo = db.prepare('PRAGMA table_info(calendar_events)').all()
-  if (eventTableInfo.some(col => col.name === 'teacher_name')) {
-    db.exec('ALTER TABLE calendar_events DROP COLUMN teacher_name')
-    console.log('Cleaned up calendar_events table: removed teacher_name column')
-  }
+  // Add index for Subjects term
+  db.exec('CREATE INDEX IF NOT EXISTS idx_subjects_term ON Subjects(term)')
 
-  const roomTableInfo = db.prepare('PRAGMA table_info(rooms)').all()
-  if (roomTableInfo.some(col => col.name === 'capacity')) {
-    db.exec('ALTER TABLE rooms DROP COLUMN capacity')
-    console.log('Cleaned up rooms table: removed capacity column')
-  }
+  // 2. Sections/Terms Restructuring
+  const sectionInfo = db.prepare('PRAGMA table_info(sections)').all()
+  if (sectionInfo.some(col => col.name === 'term')) {
+    console.log('Starting Sections/Terms migration...')
 
-  const subjectTableInfo = db.prepare('PRAGMA table_info(Subjects)').all()
-  if (subjectTableInfo.some(col => col.name === 'id_room')) {
-    db.exec('ALTER TABLE Subjects DROP COLUMN id_room')
-    console.log('Cleaned up Subjects table: removed id_room column')
+    // Get all old section data
+    const oldSections = db.prepare('SELECT * FROM sections').all()
+
+    db.transaction(() => {
+      // --- CRITICAL FIX: Fetch all data BEFORE any deletions ---
+      const oldSubjectSections = db.prepare('SELECT * FROM SubjectSections').all()
+      const oldSchedules = db.prepare('SELECT * FROM section_schedules').all()
+      const oldExtSubjects = db.prepare('SELECT * FROM external_subjects').all()
+      const oldMakeup = db.prepare('SELECT * FROM makeup_classes').all()
+
+      // Create mapping and master list
+      const masterSections = {}
+      for (const s of oldSections) {
+        if (!masterSections[s.section_name]) {
+          masterSections[s.section_name] = {
+            name: s.section_name,
+            description: s.description,
+            created_at: s.created_at,
+            oldIds: []
+          }
+        }
+        masterSections[s.section_name].oldIds.push({ id: s.id_section, term: s.term })
+      }
+
+      const mapping = {} // old_id -> new_master_id
+
+      // Now it's safe to clear
+      db.exec('DELETE FROM sections')
+
+      const insertMaster = db.prepare('INSERT INTO sections (section_name, description, created_at) VALUES (?, ?, ?)')
+      const insertTerm = db.prepare('INSERT OR IGNORE INTO section_terms (id_section, term) VALUES (?, ?)')
+
+      for (const name in masterSections) {
+        const m = masterSections[name]
+        const res = insertMaster.run(m.name, m.description, m.created_at)
+        const newId = res.lastInsertRowid
+
+        for (const old of m.oldIds) {
+          mapping[old.id] = newId
+          insertTerm.run(newId, old.term)
+        }
+      }
+
+      // Re-insert or Update all tables
+      // 1. SubjectSections
+      const insSS = db.prepare('INSERT OR IGNORE INTO SubjectSections (id_subject, id_section) VALUES (?, ?)')
+      for (const r of oldSubjectSections) {
+        const newSecId = mapping[r.id_section] || r.id_section
+        insSS.run(r.id_subject, newSecId)
+      }
+
+      // 2. section_schedules
+      const updSch = db.prepare('INSERT INTO section_schedules (scheduleData, term, id_section, created_at, updated_at) VALUES (?, ?, ?, ?, ?)')
+      for (const r of oldSchedules) {
+        updSch.run(r.scheduleData, r.term, mapping[r.id_section] || r.id_section, r.created_at, r.updated_at)
+      }
+
+      // 3. external_subjects
+      const updExt = db.prepare('INSERT INTO external_subjects (name_subject, id_section, term, instructor_name, created_at) VALUES (?, ?, ?, ?, ?)')
+      for (const r of oldExtSubjects) {
+        updExt.run(r.name_subject, mapping[r.id_section] || r.id_section, r.term, r.instructor_name, r.created_at)
+      }
+
+      // 4. makeup_classes
+      const updMakeup = db.prepare('UPDATE makeup_classes SET section_id = ? WHERE id_makeup = ?')
+      for (const r of oldMakeup) {
+        if (mapping[r.section_id]) {
+          updMakeup.run(mapping[r.section_id], r.id_makeup)
+        }
+      }
+    })()
+
+    // Finalize: Remove 'term' from sections table
+    safeDropColumn('sections', 'term')
+    console.log('Sections/Terms migration completed successfully.')
+
+    // 2.5 Subjects table migration (Populate term if missing)
+    // Run this AFTER section_terms is populated
+    console.log('Finalizing Subjects term data...')
+    db.exec(`
+      UPDATE Subjects 
+      SET term = (
+        SELECT st.term 
+        FROM SubjectSections ss
+        JOIN section_terms st ON ss.id_section = st.id_section
+        WHERE ss.id_subject = Subjects.id_subject
+        LIMIT 1
+      )
+      WHERE term IS NULL OR term = ''
+    `)
   }
 } catch (err) {
-  console.error('Cleanup migration error:', err)
-  // Fallback for older SQLite versions if DROP COLUMN fails
-  console.log('Note: Some columns might not have been dropped if SQLite version < 3.35.0')
+  console.error('Migration error:', err)
 }
 
 export default db
