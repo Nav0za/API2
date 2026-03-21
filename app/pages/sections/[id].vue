@@ -20,217 +20,52 @@
     </nav>
 
     <div class="container mx-auto px-2 sm:px-4 py-8">
-      <!-- Info & Controls -->
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        <div>
-          <h1 class="text-2xl font-bold">
-            จัดการตารางเรียน: {{ section?.section_name }}
-          </h1>
-          <p class="text-slate-400">
-            ภาคการศึกษา: {{ term }}
-          </p>
+      <!-- แสดงรายละเอียดกลุ่มเรียน -->
+      <div class="flex flex-col md:flex-row gap-6 mb-8 mt-2">
+        <!-- Profile Card -->
+        <div class="flex-1 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-6">
+          <div
+            class="w-20 h-20 rounded-full bg-blue-100 text-slate-800 font-bold flex items-center justify-center text-3xl shadow-sm border border-blue-200"
+          >
+            <!-- Show initial of section -->
+            {{ section?.section_name ? section.section_name.substring(0, 2) : 'S' }}
+          </div>
+          <div>
+            <h1 class="text-3xl font-bold text-slate-900">
+              {{ section?.section_name || 'Loading...' }}
+            </h1>
+            <p class="text-slate-500 mt-1">
+              กลุ่มเรียน
+            </p>
+          </div>
         </div>
 
-        <div class="flex gap-2">
-
-          <!-- Quick Add Subject to Schedule -->
-          <UModal
-            v-model:open="quickAddOpen"
-            :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }"
-          >
-            <UButton
-              label="เพิ่มรายวิชาในตาราง(ทีละหลายชั่วโมงได้)"
-              icon="i-heroicons-plus"
-              color="primary"
-              size="xl"
-              variant="solid"
-              class="cursor-pointer"
-            />
-            <template #content>
-              <div class="flex flex-col max-h-[90vh]">
-                <!-- Header -->
-                <div class="p-8 pb-4">
-                  <div
-                    class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-200"
-                  >
-                    <UIcon
-                      name="i-heroicons-calendar-days"
-                      class="text-3xl text-blue-500"
-                    />
-                  </div>
-                  <h3 class="text-2xl font-bold text-slate-800 text-center mb-4">
-                    เพิ่มรายวิชาในตารางเรียน
-                  </h3>
-                </div>
-
-                <!-- Scrollable Form Content -->
-                <div class="flex-1 overflow-y-auto custom-scrollbar px-8 space-y-6 pb-4">
-                  <div>
-                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
-                      เลือกวิชา
-                    </h3>
-                    <USelect
-                      v-model="quickAddSubject"
-                      placeholder="เลือกรายวิชานอกสาขา"
-                      :items="externalSubjectOptions"
-                      size="xl"
-                      class="w-full"
-                      :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }"
-                    />
-                  </div>
-
-                  <div v-if="quickAddSubject && typeof quickAddSubject === 'string' && quickAddSubject.startsWith('ext:')">
-                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
-                      กลุ่มเรียนที่เรียนด้วยกัน
-                      (ถ้ามี)
-                    </h3>
-                    <div
-                      class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar border border-slate-800 rounded-2xl p-4 bg-slate-800/50 shadow-inner"
-                    >
-                      <div
-                        v-for="sec in allSubjects.find(s => s.id_subject == quickAddSubject)?.sections"
-                        :key="sec.id_section"
-                        class="flex items-center gap-3 p-2 hover:bg-slate-700/50 rounded-xl cursor-pointer text-slate-300 transition-colors"
-                        @click="() => {
-                          if (quickAddSelectedSections.includes(sec.id_section)) {
-                            quickAddSelectedSections = quickAddSelectedSections.filter(id => id !== sec.id_section)
-                          }
-                          else {
-                            quickAddSelectedSections = [...quickAddSelectedSections, sec.id_section]
-                          }
-                        }"
-                      >
-                        <UCheckbox
-                          :model-value="quickAddSelectedSections.includes(sec.id_section)"
-                          @update:model-value="(val) => {
-                            if (val) quickAddSelectedSections = [...quickAddSelectedSections, sec.id_section]
-                            else quickAddSelectedSections = quickAddSelectedSections.filter(id => id !== sec.id_section)
-                          }"
-                        />
-                        <span
-                          class="text-sm font-medium"
-                          :class="{ 'text-blue-400': sec.id_section == sectionId }"
-                        >
-                          {{ sec.section_name }} {{ sec.id_section == sectionId ? '(กลุ่มนี้)' : '' }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
-                        วัน
-                      </h3>
-                      <USelect
-                        v-model="quickAddDay"
-                        placeholder="เลือกวัน"
-                        :items="dayOptions"
-                        size="xl"
-                        class="w-full"
-                        :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }"
-                      />
-                    </div>
-                    <div>
-                      <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
-                        ห้องเรียน
-                      </h3>
-                      <USelect
-                        v-model="quickAddRoom"
-                        placeholder="ไม่ระบุ"
-                        :items="roomOptions"
-                        size="xl"
-                        class="w-full"
-                        :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
-                        เวลาเริ่ม
-                      </h3>
-                      <USelect
-                        v-model="quickAddStartTime"
-                        placeholder="เลือกเวลา"
-                        :items="timeSlotIndexOptions"
-                        size="xl"
-                        class="w-full"
-                        :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }"
-                      />
-                    </div>
-                    <div>
-                      <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
-                        จำนวนชั่วโมง
-                      </h3>
-                      <USelect
-                        v-model="quickAddDuration"
-                        :items="durationOptions"
-                        size="xl"
-                        class="w-full"
-                        :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }"
-                      />
-                    </div>
-                  </div>
-
-                  <div
-                    v-if="quickAddPreview"
-                    class="bg-blue-500/5 border border-blue-500/10 p-4 rounded-2xl text-center"
-                  >
-                    <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">
-                      แสดงตัวอย่าง
-                    </p>
-                    <p class="text-white font-bold leading-tight">
-                      {{ quickAddPreview }}
-                    </p>
-                  </div>
-                </div>
-
-                <!-- Sticky Footer Buttons -->
-                <div class="p-6 pt-4 border-t border-slate-200 bg-white flex gap-3">
-                  <UButton
-                    label="ยกเลิก"
-                    color="neutral"
-                    variant="soft"
-                    size="xl"
-                    block
-                    class="rounded-2xl py-4 flex-1"
-                    @click="quickAddOpen = false"
-                  />
-                  <UButton
-                    label="เพิ่มลงตาราง"
-                    color="primary"
-                    size="xl"
-                    block
-                    class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20"
-                    @click="async () => {
-                      await addToSchedule()
-                      quickAddOpen = false
-                    }"
-                  />
-                </div>
-              </div>
-            </template>
-          </UModal>
-          <UButton
-            class="cursor-pointer"
-            label="บันทึกตาราง"
-            icon="i-heroicons-document-check"
-            color="primary"
-            size="xl"
-            :loading="saving"
-            @click="saveSchedule"
-          />
-          <UButton
-            class="cursor-pointer"
-            label="ล้างตาราง"
-            icon="i-lucide-trash"
-            color="error"
-            variant="soft"
-            size="xl"
-            @click="clearSchedule"
-          />
+        <!-- Quick Stats -->
+        <div class="flex-[2] grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-slate-500 text-sm font-medium">
+              วิชาในตาราง
+            </p>
+            <p class="text-2xl font-bold text-blue-600 mt-1">
+              {{ totalSubjectsInSchedule }} วิชา
+            </p>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-slate-500 text-sm font-medium">
+              ชั่วโมงเรียน/สัปดาห์
+            </p>
+            <p class="text-2xl font-bold text-green-600 mt-1">
+              {{ totalStudyHours }} ชม.
+            </p>
+          </div>
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-slate-500 text-sm font-medium">
+              เทอมที่แสดง
+            </p>
+            <p class="text-xl font-bold text-amber-500 mt-1">
+              {{ term || 'ยังไม่เลือก' }}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -426,10 +261,10 @@
                 class="group p-4 rounded-2xl bg-slate-100/50 hover:bg-white border border-blue-200 shadow-md shadow-blue-500/5 transition-all duration-300 flex flex-col justify-between"
               >
                 <div class="mb-3">
-                  <h3 class="font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
+                  <h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
                     {{ ext.name_subject }}
                   </h3>
-                  <p class="text-xs text-slate-500 mt-1 line-clamp-1">
+                  <p class="text-sm text-slate-500 mt-1 line-clamp-1">
                     อาจารย์: {{ ext.instructor_name || 'ไม่ระบุ' }}
                   </p>
                 </div>
@@ -459,6 +294,209 @@
           </div>
         </div>
       </div>
+
+    <!-- ตารางสอน Section Header -->
+    <div
+      class="flex flex-col md:flex-row justify-between items-center mt-12 mb-6 gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"
+    >
+      <div class="flex-1">
+        <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+          <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100">
+            <UIcon
+              name="i-heroicons-calendar-days"
+              class="text-xl text-indigo-600"
+            />
+          </div>
+          ตารางสอน
+        </h2>
+        <p class="text-slate-500 text-md mt-1 ml-13">
+          จัดการคาบเรียนของกลุ่มเรียนในแต่ละเทอม
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-4">
+        <!-- ปุ่มจัดการตารางสอน -->
+        <div class="flex gap-2">
+          <!-- Quick Add Subject to Schedule -->
+          <UModal
+            v-model:open="quickAddOpen"
+            :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }"
+          >
+            <UButton
+              label="ลงวิชาทีละหลายชั่วโมง"
+              icon="i-heroicons-calendar-days"
+              color="primary"
+              size="xl"
+              variant="solid"
+              class="cursor-pointer rounded-xl font-bold"
+            />
+            <template #content>
+              <div class="flex flex-col max-h-[90vh]">
+                <!-- Header -->
+                <div class="p-8 pb-4">
+                  <div
+                    class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-200"
+                  >
+                    <UIcon
+                      name="i-heroicons-calendar-days"
+                      class="text-3xl text-blue-500"
+                    />
+                  </div>
+                  <h3 class="text-2xl font-bold text-slate-800 text-center mb-4">
+                    เพิ่มรายวิชาในตารางเรียน
+                  </h3>
+                </div>
+
+                <!-- Scrollable Form Content -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar px-8 space-y-6 pb-4">
+                  <div>
+                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
+                      เลือกวิชา
+                    </h3>
+                    <USelect
+                      v-model="quickAddSubject"
+                      placeholder="เลือกรายวิชานอกสาขา"
+                      :items="externalSubjectOptions"
+                      size="xl"
+                      class="w-full"
+                      :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl', placeholder: 'text-slate-900' }"
+                    />
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
+                        วัน
+                      </h3>
+                      <USelect
+                        v-model="quickAddDay"
+                        placeholder="เลือกวัน"
+                        :items="dayOptions"
+                        size="xl"
+                        class="w-full"
+                        :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl', placeholder: 'text-slate-900' }"
+                      />
+                    </div>
+                    <div>
+                      <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
+                        ห้องเรียน
+                      </h3>
+                      <USelect
+                        v-model="quickAddRoom"
+                        placeholder="ไม่ระบุ"
+                        :items="roomOptions"
+                        size="xl"
+                        class="w-full"
+                        :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl', placeholder: 'text-slate-900' }"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
+                        เวลาเริ่ม
+                      </h3>
+                      <USelect
+                        v-model="quickAddStartTime"
+                        placeholder="เลือกเวลา"
+                        :items="timeSlotIndexOptions"
+                        size="xl"
+                        class="w-full"
+                        :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl', placeholder: 'text-slate-900' }"
+                      />
+                    </div>
+                    <div>
+                      <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
+                        จำนวนชั่วโมง
+                      </h3>
+                      <USelect
+                        v-model="quickAddDuration"
+                        :items="durationOptions"
+                        size="xl"
+                        class="w-full"
+                        :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl', placeholder: 'text-slate-900' }"
+                      />
+                    </div>
+                  </div>
+
+                  <div
+                    v-if="quickAddPreview"
+                    class="bg-blue-500/5 border border-blue-500/10 p-4 rounded-2xl text-center"
+                  >
+                    <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">
+                      แสดงตัวอย่าง
+                    </p>
+                    <p class="text-slate-900 font-bold leading-tight">
+                      {{ quickAddPreview }}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Sticky Footer Buttons -->
+                <div class="p-6 pt-4 border-t border-slate-200 bg-white flex gap-3">
+                  <UButton
+                    label="ยกเลิก"
+                    color="neutral"
+                    variant="soft"
+                    size="xl"
+                    block
+                    class="rounded-2xl py-4 flex-1"
+                    @click="quickAddOpen = false"
+                  />
+                  <UButton
+                    label="เพิ่มลงตาราง"
+                    color="primary"
+                    size="xl"
+                    block
+                    class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/20"
+                    @click="async () => {
+                      await addToSchedule()
+                      quickAddOpen = false
+                    }"
+                  />
+                </div>
+              </div>
+            </template>
+          </UModal>
+          <UButton
+            label="บันทึกตาราง"
+            color="primary"
+            icon="i-heroicons-check-circle"
+            size="xl"
+            class="cursor-pointer px-6 rounded-xl font-bold shadow-lg shadow-blue-500/20"
+            :loading="saving"
+            @click="saveSchedule"
+          />
+          <UButton
+            label="ล้างตาราง"
+            color="error"
+            variant="soft"
+            icon="i-heroicons-trash"
+            size="xl"
+            class="cursor-pointer px-4 rounded-xl font-bold"
+            @click="clearSchedule"
+          />
+        </div>
+
+        <div class="h-8 w-px bg-slate-200 mx-2 hidden md:block" />
+
+        <div class="min-w-[200px]">
+          <label class="block text-lg font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">เทอมที่แสดง</label>
+          <USelect
+            v-model="selectedTerm"
+            placeholder="เลือกภาคการศึกษา"
+            color="primary"
+            variant="outline"
+            size="xl"
+            :items="termOptions"
+            class="w-full"
+            icon="i-heroicons-academic-cap"
+            :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl shadow-xs' }"
+          />
+        </div>
+      </div>
+    </div>
 
       <!-- Schedule Table -->
       <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
@@ -554,20 +592,6 @@
                       <div
                         class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider"
                       >
-                        กิจกรรม
-                      </div>
-                      <button
-                        v-for="opt in staticOptions"
-                        :key="opt.value"
-                        class="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 text-xs truncate"
-                        @click="setSlotValue(dayIndex, slot.originalIndex, opt.value, slot.span)"
-                      >
-                        {{ opt.label }}
-                      </button>
-
-                      <div
-                        class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider mt-1"
-                      >
                         วิชานอกสาขา
                       </div>
                       <button
@@ -580,28 +604,6 @@
                       </button>
 
                       <template v-if="slot.value && !staticOptions.some(o => o.value === slot.value)">
-                        <div
-                          class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider mt-1"
-                        >
-                          กลุ่มเรียน (Sections)
-                        </div>
-                        <div
-                          v-for="sec in allSubjects.find(s => s.id_subject == slot.value)?.sections"
-                          :key="sec.id_section"
-                          class="w-full text-left px-3 py-2 hover:bg-slate-100 text-slate-700 text-xs flex items-center gap-2 cursor-pointer"
-                          @click="toggleSlotSection(dayIndex, slot.originalIndex, sec.id_section, slot.span)"
-                        >
-                          <UCheckbox
-                            :model-value="(scheduleSlots[dayIndex][slot.originalIndex].section_ids || []).includes(sec.id_section)"
-                            @update:model-value="toggleSlotSection(dayIndex, slot.originalIndex, sec.id_section, slot.span)"
-                          />
-                          <span
-                            class="truncate"
-                            :class="{ 'text-blue-400 font-bold': sec.id_section == sectionId }"
-                          >{{
-                            sec.section_name }}</span>
-                        </div>
-
                         <div
                           class="px-3 py-1 text-[10px] font-bold text-slate-500 bg-slate-50 uppercase tracking-wider mt-1"
                         >
@@ -633,6 +635,26 @@
 const route = useRoute()
 const sectionId = route.params.id
 const term = route.query.term
+
+const { data: terms } = await useFetch('/api/terms')
+const termOptions = computed(() => {
+  if (!terms.value || terms.value.length === 0) return []
+  return terms.value.map(t => ({
+    label: `เทอม ${t.term}/${t.academic_year}`,
+    value: `${t.term}/${t.academic_year}`
+  }))
+})
+
+const selectedTerm = ref(term || '')
+
+watch(selectedTerm, (newVal, oldVal) => {
+  if (newVal && newVal !== oldVal && newVal !== term) {
+    navigateTo({
+      path: route.path,
+      query: { term: newVal }
+    })
+  }
+})
 const toast = useToast()
 
 // Constants
@@ -647,6 +669,33 @@ const staticOptions = [
   { value: 'busy', label: 'ไม่ว่าง (ติดกิจกรรมอื่น)' },
   { value: 'lunch', label: 'พักกลางวัน' }
 ]
+
+
+const totalSubjectsInSchedule = computed(() => {
+  if (!scheduleSlots.value) return 0
+  const uniqueSubjects = new Set()
+  scheduleSlots.value.forEach(day => {
+    day.forEach(slot => {
+      if (slot.value && !staticOptions.some(o => o.value === slot.value)) {
+        uniqueSubjects.add(slot.value)
+      }
+    })
+  })
+  return uniqueSubjects.size
+})
+
+const totalStudyHours = computed(() => {
+  if (!scheduleSlots.value) return 0
+  let hours = 0
+  scheduleSlots.value.forEach(day => {
+    day.forEach(slot => {
+      if (slot.value && !staticOptions.some(o => o.value === slot.value)) {
+        hours++
+      }
+    })
+  })
+  return hours
+})
 
 // State
 const isReadOnlyStudent = false // if true: no dropdown / no edits; if false: interactive (external-only)
