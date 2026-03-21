@@ -51,7 +51,6 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Section not found'
       })
     }
-
-    return { success: true, deleted: result.changes > 0 }
+    return { success: true, deleted: true }
   }
 })

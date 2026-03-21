@@ -632,8 +632,21 @@
 <script setup>
 const route = useRoute()
 const sectionId = route.params.id
-const term = route.query.term
 const toast = useToast()
+
+// Fetch all terms to find default if missing
+const { data: allTerms } = await useFetch('/api/terms')
+const termOptions = computed(() => allTerms.value?.map(t => ({
+  value: `${t.term}/${t.academic_year}`,
+  label: `เทอม ${t.term}/${t.academic_year}`
+})) || [])
+
+// Handle missing term: default to latest term
+const term = ref(route.query.term)
+if (!term.value && termOptions.value.length > 0) {
+  const defaultTerm = termOptions.value[0].value
+  navigateTo(`/sections/${sectionId}?term=${defaultTerm}`, { replace: true })
+}
 
 // Constants
 const timeSlots = [
@@ -684,7 +697,7 @@ const roomOptions = computed(() => {
 // Fetch Data
 // 1. Get Section Info (Just filter from list for now or assume ID is valid)
 // Ideally we should have a GET /api/sections/:id, but we can list all and find
-const { data: sections } = await useFetch('/api/sections', { query: { term } })
+const { data: sections } = await useFetch('/api/sections', { query: { term: term.value } })
 const section = computed(() => sections.value?.find(s => s.id_section == sectionId))
 
 // 2. Get Subjects for this section (To show in dropdown)
@@ -703,7 +716,7 @@ const subjectOptions = computed(() =>
 )
 
 // 2.5 Get External Subjects for this section
-const { data: externalSubjects, refresh: refreshExternalSubjects } = await useFetch('/api/external-subjects', { query: { id_section: sectionId, term } })
+const { data: externalSubjects, refresh: refreshExternalSubjects } = await useFetch('/api/external-subjects', { query: { id_section: sectionId, term: term.value } })
 const externalSubjectOptions = computed(() =>
   externalSubjects.value?.map(ext => ({
     value: `ext:${ext.id_ext_subject}`,
@@ -804,7 +817,7 @@ watch(quickAddSubject, (newVal) => {
 
 // 3. Load existing schedule
 const { data: existingSchedule, refresh: refreshSchedule } = await useFetch('/api/section-schedules', {
-  query: { id_section: sectionId, term }
+  query: { id_section: sectionId, term: term.value }
 })
 
 watch(existingSchedule, (data) => {
@@ -863,7 +876,7 @@ const addExtSubject = async () => {
       method: 'POST',
       body: {
         id_section: sectionId,
-        term,
+        term: term.value,
         name_subject: newExtName.value,
         instructor_name: newExtInstructor.value
       }
@@ -1070,7 +1083,7 @@ const saveSchedule = async () => {
       method: 'POST',
       body: {
         id_section: sectionId,
-        term: term,
+        term: term.value,
         schedule: scheduleSlots.value
       }
     })

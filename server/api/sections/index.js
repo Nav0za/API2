@@ -1,24 +1,9 @@
 import db from '../../utils/db.js'
 
 export default defineEventHandler(async (event) => {
-  const query = getQuery(event)
-  const { term } = query
-
-  // GET - ดึงข้อมูลกลุ่มเรียน
+  // GET - ดึงกลุ่มเรียนทั้งหมด (ไม่แยกเทอม)
   if (event.node.req.method === 'GET') {
-    let stmt
-    let sections
-
-    if (term) {
-      // ดึงตามเทอม
-      stmt = db.prepare('SELECT * FROM sections WHERE term = ? ORDER BY section_name')
-      sections = stmt.all(term)
-    } else {
-      // ดึงทั้งหมด
-      stmt = db.prepare('SELECT * FROM sections ORDER BY term DESC, section_name')
-      sections = stmt.all()
-    }
-
+    const sections = db.prepare('SELECT * FROM sections ORDER BY section_name').all()
     return sections
   }
 
@@ -26,40 +11,42 @@ export default defineEventHandler(async (event) => {
   if (event.node.req.method === 'POST') {
     const body = await readBody(event)
 
-    // Validate
-    if (!body.section_name || !body.term) {
+    if (!body.section_name) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'section_name and term are required'
+        statusMessage: 'section_name is required'
       })
     }
 
     try {
-      const stmt = db.prepare(`
-        INSERT INTO sections (section_name, term, description)
-        VALUES (?, ?, ?)
-      `)
+      // เช็คว่ามีกลุ่มเรียนชื่อนี้อยู่แล้วหรือไม่
+      const existing = db.prepare('SELECT id_section FROM sections WHERE section_name = ?').get(body.section_name)
+      
+      if (existing) {
+        // อัปเดตคำอธิบายถ้ามี
+        if (body.description) {
+          db.prepare('UPDATE sections SET description = ? WHERE id_section = ?').run(body.description, existing.id_section)
+        }
+        return {
+          id_section: existing.id_section,
+          section_name: body.section_name,
+          description: body.description || null,
+          message: 'กลุ่มเรียนนี้มีอยู่แล้ว อัปเดตข้อมูลแล้ว'
+        }
+      }
 
-      const result = stmt.run(
+      const res = db.prepare('INSERT INTO sections (section_name, description) VALUES (?, ?)').run(
         body.section_name,
-        body.term,
         body.description || null
       )
 
       return {
-        id_section: result.lastInsertRowid,
+        id_section: res.lastInsertRowid,
         section_name: body.section_name,
-        term: body.term,
         description: body.description || null,
         created_at: new Date().toISOString()
       }
     } catch (error) {
-      if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-        throw createError({
-          statusCode: 409,
-          statusMessage: 'Section name already exists in this term'
-        })
-      }
       throw error
     }
   }
