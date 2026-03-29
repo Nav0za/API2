@@ -106,13 +106,7 @@
                 <h3 class="text-xl font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">
                   {{ section.section_name }}
                 </h3>
-                <div class="flex items-center gap-2 mt-2">
-                  <span
-                    class="text-md px-2 py-0.5 bg-blue-500/10 text-blue-600 rounded-full border border-blue-500/20 font-medium lowercase"
-                  >
-                    เทอม {{ section.term }}
-                  </span>
-                </div>
+
               </div>
               <UDropdownMenu :items="getActionItems(section)">
                 <UButton
@@ -137,7 +131,7 @@
                 variant="solid"
                 size="xl"
                 class="rounded-xl flex-1 font-bold"
-                :to="`/sections/${section.id_section}?term=${section.term}`"
+                :to="`/sections/${section.id_section}?term=${selectedTerm || (termOptions.length > 0 ? termOptions[0].value : '')}`"
               />
             </div>
           </div>
@@ -193,20 +187,7 @@
                 />
               </UFormField>
 
-              <UFormField
-                class="text-lg"
-                label="ปีการศึกษา (Term) *"
-                :ui="{ label: 'text-slate-900 font-bold mb-2' }"
-              >
-                <USelect
-                  v-model="newSection.term"
-                  :items="termOptions"
-                  placeholder="เลือกเทอมที่ต้องการ"
-                  size="xl"
-                  class="rounded-xl"
-                  :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }"
-                />
-              </UFormField>
+
 
               <UFormField
                 class="text-lg"
@@ -459,10 +440,7 @@ const editingSection = ref({ // State for editing
 const deletingSection = ref(null) // State for deleting
 
 // Fetch sections based on selected term
-const { data: sections, pending, refresh } = await useFetch('/api/sections', {
-  query: computed(() => ({ term: selectedTerm.value })),
-  watch: [selectedTerm]
-})
+const { data: sections, pending, refresh } = await useFetch('/api/sections')
 
 // Options
 const termOptions = computed(() => {
@@ -499,7 +477,7 @@ const getActionItems = section => [
   [{
     label: 'จัดการตารางเรียน',
     icon: 'i-heroicons-calendar',
-    onSelect: () => navigateTo(`/sections/${section.id_section}?term=${section.term}`)
+    onSelect: () => navigateTo(`/sections/${section.id_section}?term=${selectedTerm.value || (termOptions.value.length > 0 ? termOptions.value[0].value : '')}`)
   }],
   [{
     label: 'แก้ไข',
@@ -514,8 +492,8 @@ const getActionItems = section => [
 
 // Handlers
 const handleAddSection = async () => {
-  if (!newSection.value.name || !newSection.value.term) {
-    toast.add({ title: 'กรุณากรอกข้อมูลให้ครบถ้วน', color: 'red' })
+  if (!newSection.value.name) {
+    toast.add({ title: 'กรุณากรอกชื่อกลุ่มเรียน', color: 'red' })
     return
   }
 
@@ -525,7 +503,6 @@ const handleAddSection = async () => {
       method: 'POST',
       body: {
         section_name: newSection.value.name,
-        term: newSection.value.term,
         description: newSection.value.description
       }
     })

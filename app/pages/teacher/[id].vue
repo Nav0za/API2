@@ -35,7 +35,7 @@
               วิชาที่สอน
             </p>
             <p class="text-2xl font-bold text-blue-600 mt-1">
-              {{ subjects.length }} วิชา
+              {{ subjects?.length || 0 }} วิชา
             </p>
           </div>
           <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
@@ -316,7 +316,7 @@
                           class="bg-blue-50 border border-blue-100 p-3 rounded-xl text-center"
                         >
                           <p class="text-sm text-blue-600 font-medium">
-                            เลือกแล้ว {{ selectedSections.length }}
+                            เลือกแล้ว {{ selectedSections?.length || 0 }}
                             กลุ่มเรียน
                           </p>
                         </div>
@@ -450,7 +450,7 @@
             </div>
             <div v-else>
               <p
-                v-if="subjects.length === 0"
+                v-if="!subjects || subjects.length === 0"
                 class="py-10 text-center text-slate-400 font-medium italic"
               >
                 ยังไม่มีรายวิชาที่สอน
@@ -772,12 +772,15 @@ const toast = useToast()
 // --- Data Fetching ---
 // ข้อมูลวิชาที่อาจารย์สอน
 const { data: subjects, refresh: refreshSubjects } = await useFetch('/api/Subjects', {
-  query: computed(() => ({ id_teacher: id })),
-  watch: false
+  query: computed(() => ({ id_teacher: id, term: selectedTerm.value })),
+  watch: [selectedTerm]
 })
 const { data: teachers, pending } = await useFetch('/api/teachers')
 const { data: terms } = await useFetch('/api/terms')
-const { data: sections } = await useFetch('/api/sections')
+const { data: sections } = await useFetch('/api/sections', {
+  query: computed(() => ({ term: selectedTerm.value })),
+  watch: [selectedTerm]
+})
 
 // ข้อมูลตารางสอน
 const scheduleSlots = useState(`schedule-slots-${id}`, () => Array.from({ length: 7 }, () =>
@@ -829,7 +832,7 @@ const sectionOptions = computed(() => {
   if (!sections.value) return []
   return sections.value.map(s => ({
     value: s.id_section,
-    label: `${s.section_name} (${s.term})`
+    label: s.section_name
   }))
 })
 
