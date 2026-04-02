@@ -566,7 +566,10 @@ const subjectOptions = computed(() =>
 )
 
 // 2.5 Get External Subjects for this section
-const { data: externalSubjects, refresh: refreshExternalSubjects } = await useFetch('/api/external-subjects', { query: { id_section: sectionId, term: term.value } })
+const { data: externalSubjects, refresh: refreshExternalSubjects } = await useFetch('/api/external-subjects', {
+  query: computed(() => ({ id_section: sectionId, term: term.value }))
+})
+
 const externalSubjectOptions = computed(() =>
   externalSubjects.value?.map(ext => ({
     value: `ext:${ext.id_ext_subject}`,
@@ -667,7 +670,13 @@ watch(quickAddSubject, (newVal) => {
 
 // 3. Load existing schedule
 const { data: existingSchedule, refresh: refreshSchedule } = await useFetch('/api/section-schedules', {
-  query: { id_section: sectionId, term: term.value }
+  query: computed(() => ({ id_section: sectionId, term: term.value }))
+})
+
+// Watch term เพื่อ refresh ข้อมูลเมื่อเปลี่ยนเทอม
+watch(term, () => {
+  refreshExternalSubjects()
+  refreshSchedule()
 })
 
 watch(existingSchedule, (data) => {

@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
 
     // 1. Get IDs before deletion so we know what to clean up
     const teacherIdsInTerm = db.prepare('SELECT DISTINCT id_teacher FROM schedules WHERE term = ?').all(termStr).map(r => r.id_teacher)
-    const sectionIdsInTerm = db.prepare('SELECT id_section FROM sections WHERE term = ?').all(termStr).map(r => r.id_section)
+    const sectionIdsInTerm = db.prepare('SELECT id_section FROM section_terms WHERE term = ?').all(termStr).map(r => r.id_section)
 
     // 2. Identify and Delete makeup_classes AND their associated Calendar Events
     const combinedMakeupIds = []
@@ -64,8 +64,13 @@ export default defineEventHandler(async (event) => {
     // 4. Delete section_schedules
     db.prepare('DELETE FROM section_schedules WHERE term = ?').run(termStr)
 
-    // 5. Delete sections (this will CASCADE to SubjectSections automatically via DB ForeignKey)
-    db.prepare('DELETE FROM sections WHERE term = ?').run(termStr)
+    // 5. Delete section_terms for this term, then delete orphaned sections
+    db.prepare('DELETE FROM section_terms WHERE term = ?').run(termStr)
+    // Delete sections that no longer belong to any term
+    db.prepare(`
+      DELETE FROM sections
+      WHERE id_section NOT IN (SELECT DISTINCT id_section FROM section_terms)
+    `).run()
 
     // 6. Delete schedules (teacher timetables)
     db.prepare('DELETE FROM schedules WHERE term = ?').run(termStr)
