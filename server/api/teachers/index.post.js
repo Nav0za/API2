@@ -12,11 +12,11 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Construct full name for backward compatibility
+    // Construct full name for response
     const fullName = [prefix, first_name, last_name].filter(Boolean).join(' ').trim()
 
-    const stmt = db.prepare('INSERT INTO teachers (name, prefix, first_name, last_name) VALUES (?, ?, ?, ?)')
-    const result = stmt.run(fullName, prefix || '', first_name, last_name || '')
+    const stmt = db.prepare('INSERT INTO teachers (prefix, first_name, last_name) VALUES (?, ?, ?)')
+    const result = stmt.run(prefix || '', first_name, last_name || '')
 
     return {
       id_teacher: result.lastInsertRowid,
