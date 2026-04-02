@@ -457,10 +457,19 @@ const termOptions = computed(() => allTerms.value?.map(t => ({
 
 // Handle missing term: default to latest term
 const term = ref(route.query.term)
+const selectedTerm = ref(route.query.term) // Add missing selectedTerm variable
+
 if (!term.value && termOptions.value.length > 0) {
   const defaultTerm = termOptions.value[0].value
   navigateTo(`/sections/${sectionId}?term=${defaultTerm}`, { replace: true })
 }
+
+// Watch for selectedTerm changes and update term
+watch(selectedTerm, (newVal) => {
+  if (newVal) {
+    term.value = newVal
+  }
+}, { immediate: true })
 
 // Constants
 const timeSlots = [
@@ -711,12 +720,16 @@ const displaySlots = computed(() => {
 // --- External Subjects CRUD ---
 const addExtSubject = async () => {
   if (!newExtName.value.trim()) return
+  if (!term.value) {
+    toast.add({ title: 'เกิดข้อผิดพลาด', description: 'กรุณาเลือกเทอมก่อน', color: 'red' })
+    return
+  }
   addingExt.value = true
   try {
     await $fetch('/api/external-subjects', {
       method: 'POST',
       body: {
-        id_section: sectionId,
+        id_section: Number(sectionId),
         term: term.value,
         name_subject: newExtName.value,
         instructor_name: newExtInstructor.value
