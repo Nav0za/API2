@@ -221,7 +221,7 @@
             <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100">
               <UIcon name="i-heroicons-calendar-days" class="text-xl text-indigo-600" />
             </div>
-            ตารางสอน
+            ตารางเรียน
           </h2>
           <p class="text-slate-500 text-md mt-1 ml-13">
             จัดการคาบเรียนของกลุ่มเรียนในแต่ละเทอม
