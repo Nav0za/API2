@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-linear-to-br from-slate-800 to-slate-900 text-white">
     <!-- แถบนำทาง -->
-    <nav class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700 sticky top-0 z-50">
+    <nav class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700">
       <div class="container mx-auto px-4">
         <div class="flex items-center justify-between h-16">
           <h2 class="text-xl font-bold text-blue-400">
