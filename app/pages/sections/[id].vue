@@ -383,9 +383,9 @@
                   <div v-else
                     class="h-full min-h-[60px] p-1 transition-colors flex flex-col items-center justify-center text-center gap-1"
                     :class="[
-                      slot.value ? 'bg-blue-100' : 'bg-white',
-                      isReadOnlyStudent ? 'cursor-default' : 'cursor-pointer',
-                      isActiveBox(dayIndex, slot.originalIndex) ? 'ring-2 ring-inset ring-blue-500/60 bg-blue-50' : ''
+                      slot.value ? 'bg-blue-100' : (isActiveBox(dayIndex, slot.originalIndex) ? 'bg-blue-100' : 'bg-white hover:bg-indigo-50/80'),
+                      (isReadOnlyStudent || isTeacherSubject(slot.value)) ? 'cursor-default' : 'cursor-pointer',
+                      isActiveBox(dayIndex, slot.originalIndex) ? 'ring-2 ring-inset ring-blue-500/60' : ''
                     ]"
                     @click="!isReadOnlyStudent && !isTeacherSubject(slot.value) && toggleDropdown(dayIndex, slot.originalIndex)">
                     <template v-if="slot.value">
