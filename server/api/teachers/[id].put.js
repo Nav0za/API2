@@ -12,9 +12,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const fullName = [prefix, first_name, last_name].filter(Boolean).join(' ').trim()
-
-  const stmt = db.prepare('UPDATE teachers SET name = ?, prefix = ?, first_name = ?, last_name = ? WHERE id_teacher = ?')
-  const result = stmt.run(fullName, prefix || '', first_name, last_name || '', id)
+  const stmt = db.prepare('UPDATE teachers SET prefix = ?, first_name = ?, last_name = ? WHERE id_teacher = ?')
+  const result = stmt.run(prefix || '', first_name, last_name || '', id)
   return { changes: result.changes }
 })
