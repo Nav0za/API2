@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-slate-50 text-slate-900">
     <!-- Navbar -->
-    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <nav class="bg-white border-b border-slate-200 shadow-sm">
       <div class="container mx-auto px-4">
         <div class="flex items-center justify-between h-16">
           <div class="flex items-center gap-4">

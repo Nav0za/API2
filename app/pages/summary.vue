@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-white text-slate-900 pb-20">
     <!-- Header -->
-    <div class="bg-white border-b border-slate-200 p-6 sticky top-0 z-10 shadow-lg mb-8">
+    <div class="bg-white border-b border-slate-200 p-6 shadow-lg mb-8">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
           <h1 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
