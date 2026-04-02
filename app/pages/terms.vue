@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-white text-slate-900 pb-20">
     <!-- Header -->
-    <div class="bg-white border-b border-slate-200 p-6 sticky top-0 z-20 shadow-lg mb-8 no-print">
+    <div class="bg-white border-b border-slate-200 p-6 shadow-lg mb-8 no-print">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
           <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-2">
@@ -73,14 +73,14 @@
           <div class="space-y-4">
             <div
               v-if="!terms || terms.length === 0"
-              class="text-center py-24 bg-slate-50 rounded-3xl border border-dashed border-slate-200"
+              class="text-center py-32 bg-slate-100 rounded-[40px] relative overflow-hidden"
             >
               <div
-                class="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border border-slate-200"
+                class="bg-white w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-200"
               >
                 <UIcon
                   name="i-heroicons-calendar-days"
-                  class="text-4xl text-slate-400"
+                  class="text-4xl text-slate-500"
                 />
               </div>
               <p class="text-slate-600 font-medium">

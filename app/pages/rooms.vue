@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-white text-slate-900 pb-20">
     <!-- Header -->
-    <div class="bg-white border-b border-slate-200 p-6 sticky top-0 z-30 shadow-lg mb-8 no-print">
+    <div class="bg-white border-b border-slate-200 p-6 shadow-lg mb-8 no-print">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
           <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-2">
@@ -63,16 +63,15 @@
         <!-- Empty State -->
         <div
           v-if="!rooms || rooms.length === 0"
-          class="text-center py-32 bg-slate-50 rounded-[40px] border border-dashed border-slate-200 relative overflow-hidden"
+          class="text-center py-32 bg-slate-100 rounded-[40px] relative overflow-hidden"
         >
-          <div class="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent" />
           <div class="relative z-10">
             <div
-              class="bg-white w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl border border-slate-200"
+              class="bg-white w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-200"
             >
               <UIcon
                 name="i-heroicons-building-office-2"
-                class="w-12 h-12 text-slate-400"
+                class="w-12 h-12 text-slate-500"
               />
             </div>
             <h3 class="text-2xl font-bold text-slate-600 mb-2">
@@ -82,11 +81,12 @@
               เริ่มสร้างห้องเรียนเพื่อจัดตารางสอนได้ทันทีค่ะ
             </p>
             <UButton
+              variant="solid"
               color="primary"
               size="xl"
               label="เริ่มสร้างห้องเรียนแรก"
               icon="i-heroicons-plus-circle"
-              class="rounded-2xl px-10 shadow-xl shadow-blue-500/10"
+              class="rounded-full px-10 font-bold"
               @click="openAddModal"
             />
           </div>

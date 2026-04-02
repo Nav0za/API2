@@ -66,26 +66,29 @@
       <!-- Empty State -->
       <div
         v-else-if="!sections || sections.length === 0"
-        class="text-center py-24 bg-slate-50 rounded-3xl border border-dashed border-slate-200"
+        class="text-center py-32 bg-slate-100 rounded-[40px] relative overflow-hidden"
       >
         <div
-          class="bg-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200"
+          class="bg-white w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-200"
         >
           <UIcon
             name="i-heroicons-user-group"
-            class="text-3xl text-slate-400"
+            class="w-12 h-12 text-slate-500"
           />
         </div>
-        <h3 class="text-xl font-bold text-slate-900 mb-2">
+        <h3 class="text-2xl font-bold text-slate-600 mb-2">
           ยังไม่มีกลุ่มเรียน
         </h3>
-        <p class="text-slate-500 mb-6">
+        <p class="text-slate-500 mb-8">
           เริ่มสร้างกลุ่มเรียนแรกเพื่อจัดการตารางสอนได้เลย
         </p>
         <UButton
           label="สร้างกลุ่มเรียนแรก"
+          icon="i-heroicons-plus-circle"
+          variant="solid"
           color="primary"
-          variant="soft"
+          size="xl"
+          class="rounded-full px-10 font-bold shadow-none"
           @click="openAddModal = true"
         />
       </div>
