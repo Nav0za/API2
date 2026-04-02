@@ -179,16 +179,15 @@
         <!-- Empty State -->
         <div
           v-else
-          class="text-center py-32 bg-slate-50 rounded-[40px] border border-dashed border-slate-200 relative overflow-hidden"
+          class="text-center py-32 bg-slate-100 rounded-[40px] relative overflow-hidden"
         >
-          <div class="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent" />
           <div class="relative z-10">
             <div
-              class="bg-white w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl border border-slate-200"
+              class="bg-white w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm border border-slate-200"
             >
               <UIcon
                 name="i-heroicons-users"
-                class="w-12 h-12 text-slate-400"
+                class="w-12 h-12 text-slate-500"
               />
             </div>
             <h3 class="text-2xl font-bold text-slate-600 mb-2">
