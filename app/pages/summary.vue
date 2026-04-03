@@ -1,4 +1,5 @@
 <template>
+  <BackButton to="/" />
   <div class="min-h-screen bg-white text-slate-900 pb-20">
     <!-- Header -->
     <div class="bg-white border-b border-slate-200 p-6 shadow-lg mb-8">

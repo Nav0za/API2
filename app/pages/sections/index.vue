@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-white text-slate-900 pb-20">
     <!-- Navbar -->
-    <nav class="bg-white border-b border-slate-200 p-4 shadow-lg">
+    <nav class="bg-white border-b border-slate-200 p-4 sticky top-0 z-50 shadow-lg">
       <div class="container mx-auto flex items-center justify-between">
         <div class="flex items-center gap-4">
           <UButton icon="i-lucide-arrow-left" color="gray" variant="ghost" to="/" />
@@ -53,7 +53,7 @@
           เริ่มสร้างกลุ่มเรียนแรกเพื่อจัดการตารางสอนได้เลย
         </p>
         <UButton label="สร้างกลุ่มเรียนแรก" icon="i-heroicons-plus-circle" variant="solid" color="primary" size="xl"
-          class="rounded-full px-10 font-bold" @click="openAddModal = true" />
+          class="rounded-full px-10 font-bold shadow-none" @click="openAddModal = true" />
       </div>
 
       <!-- Section List -->
@@ -209,7 +209,7 @@
             </h3>
             <p class="text-slate-500 text-center mb-8">
               คุณแน่ใจหรือไม่ที่จะลบกลุ่มเรียน <span class="text-slate-900 font-bold">{{ deletingSection?.section_name
-                }}</span>?
+              }}</span>?
               การดำเนินการนี้ไม่สามารถย้อนคืนได้
             </p>
 
