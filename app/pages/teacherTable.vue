@@ -1,4 +1,5 @@
 <template>
+  <BackButton color="white" />
   <div class="min-h-screen bg-linear-to-br from-slate-800 to-slate-900 text-white">
     <!-- แถบนำทาง -->
     <nav class="bg-slate-900/80 backdrop-blur-sm border-b border-slate-700">

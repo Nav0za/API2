@@ -1,4 +1,5 @@
 <template>
+  <BackButton to="/" />
   <div class="min-h-screen bg-white text-slate-900 pb-20">
     <!-- Hero Section -->
     <div class="relative py-20 overflow-hidden">

@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-white text-slate-900 pb-20">
     <!-- Navbar -->
-    <nav class="bg-white border-b border-slate-200 p-4 shadow-lg">
+    <nav class="bg-white border-b border-slate-200 p-4 sticky top-0 z-50 shadow-lg">
       <div class="container mx-auto flex items-center justify-between">
         <div class="flex items-center gap-4">
           <UButton
@@ -88,7 +88,7 @@
           variant="solid"
           color="primary"
           size="xl"
-          class="rounded-full px-10 font-bold"
+          class="rounded-full px-10 font-bold shadow-none"
           @click="openAddModal = true"
         />
       </div>
