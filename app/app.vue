@@ -42,6 +42,16 @@ useHead({
         />
         <UButton
           class="text-white"
+          label="ปฏิทิน"
+          size="xl"
+          icon="i-heroicons-calendar"
+          color="primary"
+          variant="ghost"
+          :ui="{ leadingIcon: 'text-primary' }"
+          to="/"
+        />
+        <UButton
+          class="text-white"
           label="เทอม"
           size="xl"
           icon="i-lucide-layers"
