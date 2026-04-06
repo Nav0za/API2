@@ -19,6 +19,7 @@
         <!-- Filters & Actions -->
         <div class="flex flex-wrap items-center justify-center gap-4">
           <USelect
+            v-if="termOptions.length > 0"
             v-model="selectedTerm"
             :items="termOptions"
             value-key="value"
