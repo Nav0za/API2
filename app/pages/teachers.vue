@@ -147,6 +147,7 @@
               <!-- Actions -->
               <div class="flex items-center gap-3 w-full">
                 <UButton
+                  v-if="terms && terms.length > 0"
                   label="ดูตารางสอน"
                   icon="i-heroicons-calendar-days"
                   color="primary"
@@ -390,6 +391,7 @@
 </template>
 
 <script setup>
+const { data: terms } = await useFetch('/api/terms')
 const { data: teachers, pending, refresh: refreshTeachers } = await useFetch('/api/teachers')
 
 const newPrefix = ref('')
