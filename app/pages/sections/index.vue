@@ -30,6 +30,7 @@
         </div>
         <div class="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200">
           <USelect
+            v-if="termOptions.length > 0"
             v-model="selectedTerm"
             :items="filterTermOptions"
             placeholder="เลือกเทอม"
@@ -127,6 +128,7 @@
 
             <div class="flex gap-3 mt-auto">
               <UButton
+                v-if="terms && terms.length > 0"
                 block
                 label="จัดการตารางเรียน"
                 icon="i-heroicons-calendar"
@@ -476,13 +478,16 @@ watch(termOptions, (opts) => {
 }, { immediate: true })
 
 // Actions for Dropdown
-const getActionItems = section => [
-  [{
-    label: 'จัดการตารางเรียน',
-    icon: 'i-heroicons-calendar',
-    onSelect: () => navigateTo(`/sections/${section.id_section}?term=${selectedTerm.value || (termOptions.value.length > 0 ? termOptions.value[0].value : '')}`)
-  }],
-  [{
+const getActionItems = section => {
+  const items = []
+  if (terms.value && terms.value.length > 0) {
+    items.push([{
+      label: 'จัดการตารางเรียน',
+      icon: 'i-heroicons-calendar',
+      onSelect: () => navigateTo(`/sections/${section.id_section}?term=${selectedTerm.value || (termOptions.value.length > 0 ? termOptions.value[0].value : '')}`)
+    }])
+  }
+  items.push([{
     label: 'แก้ไข',
     icon: 'i-heroicons-pencil-square',
     onSelect: () => openEditSectionModal(section)
@@ -490,8 +495,9 @@ const getActionItems = section => [
     label: 'ลบ',
     icon: 'i-heroicons-trash',
     onSelect: () => confirmDeleteSection(section)
-  }]
-]
+  }])
+  return items
+}
 
 // Handlers
 const handleAddSection = async () => {
