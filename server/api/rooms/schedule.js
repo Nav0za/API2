@@ -4,10 +4,10 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const { date, term } = query
 
-  if (!date || !term) {
+  if (!date) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'date and term are required'
+      statusMessage: 'date is required'
     })
   }
 
@@ -70,12 +70,15 @@ export default defineEventHandler(async (event) => {
     }
 
     // 3. Fetch Regular Teacher Schedules (Since Teacher Schedules are synced with Section Schedules)
-    const teacherSchedules = db.prepare(`
-            SELECT s.id_teacher, t.prefix, t.first_name, t.last_name, s.scheduleData 
-            FROM schedules s
-            LEFT JOIN teachers t ON s.id_teacher = t.id_teacher
-            WHERE s.term = ?
-        `).all(term)
+    let teacherSchedules = []
+    if (term) {
+      teacherSchedules = db.prepare(`
+              SELECT s.id_teacher, t.prefix, t.first_name, t.last_name, s.scheduleData 
+              FROM schedules s
+              LEFT JOIN teachers t ON s.id_teacher = t.id_teacher
+              WHERE s.term = ?
+          `).all(term)
+    }
 
     // Lookup table for subjects to get their default rooms
     const subjectsRaw = db.prepare('SELECT id_subject, name_subject FROM Subjects').all()

@@ -64,13 +64,8 @@ export default defineEventHandler(async (event) => {
     // 4. Delete section_schedules
     db.prepare('DELETE FROM section_schedules WHERE term = ?').run(termStr)
 
-    // 5. Delete section_terms for this term, then delete orphaned sections
+    // 5. Delete section_terms for this term
     db.prepare('DELETE FROM section_terms WHERE term = ?').run(termStr)
-    // Delete sections that no longer belong to any term
-    db.prepare(`
-      DELETE FROM sections
-      WHERE id_section NOT IN (SELECT DISTINCT id_section FROM section_terms)
-    `).run()
 
     // 6. Delete schedules (teacher timetables)
     db.prepare('DELETE FROM schedules WHERE term = ?').run(termStr)
@@ -93,51 +88,8 @@ export default defineEventHandler(async (event) => {
     // 8. Delete the term itself
     db.prepare('DELETE FROM terms WHERE id_term = ?').run(id)
 
-    // --- Cleanup Orphans (Subjects, Teachers, Rooms) ---
-    // Only delete them if they are no longer associated with any remaining terms!
-
-    // A. Delete orphaned Subjects (ones that no longer have any sections mapped to them)
-    db.prepare(`
-      DELETE FROM Subjects 
-      WHERE id_subject NOT IN (SELECT DISTINCT id_subject FROM SubjectSections)
-    `).run()
-
-    // B. Delete orphaned Teachers (ones that no longer have any schedules anywhere)
-    db.prepare(`
-      DELETE FROM teachers 
-      WHERE id_teacher NOT IN (SELECT DISTINCT id_teacher FROM schedules)
-    `).run()
-
-    // C. Delete orphaned Rooms (ones no longer used in any remaining schedules or makeup classes)
-    const allRemainingSchedules = db.prepare('SELECT scheduleData FROM schedules').all()
-    const usedRoomIds = new Set()
-
-    allRemainingSchedules.forEach((s) => {
-      try {
-        if (!s.scheduleData) return
-        const parsed = JSON.parse(s.scheduleData)
-        for (const day of parsed) {
-          if (!Array.isArray(day)) continue
-          for (const slot of day) {
-            if (slot && slot.room_id) {
-              usedRoomIds.add(Number(slot.room_id))
-            }
-          }
-        }
-      } catch (e) {}
-    })
-
-    const makeupRooms = db.prepare('SELECT DISTINCT room_id FROM makeup_classes WHERE room_id IS NOT NULL').all()
-    makeupRooms.forEach(r => usedRoomIds.add(Number(r.room_id)))
-
-    if (usedRoomIds.size > 0) {
-      const usedIdsArray = Array.from(usedRoomIds)
-      const ph = usedIdsArray.map(() => '?').join(',')
-      db.prepare(`DELETE FROM rooms WHERE id_room NOT IN (${ph})`).run(...usedIdsArray)
-    } else {
-      // If absolutely no rooms are used anywhere in the DB anymore, wipe them all
-      db.prepare('DELETE FROM rooms').run()
-    }
+    // --- Note: Cleanup Orphans (Subjects, Teachers, Rooms) has been removed ---
+    // We intentionally keep master data (sections, teachers, rooms, subjects) even if they belong to no active term.
   })
 
   cascadeDelete()

@@ -290,24 +290,37 @@
                           <div
                             class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar border border-slate-200 rounded-2xl p-4 bg-slate-50 shadow-inner"
                           >
+                            <!-- Loading state -->
                             <div
-                              v-for="section in sections"
-                              :key="section.id_section"
-                              class="flex items-center gap-3 p-2.5 hover:bg-slate-100/50 rounded-xl cursor-pointer text-slate-700 transition-colors"
-                              @click="toggleSection(section.id_section)"
+                              v-if="sectionsStatus === 'pending'"
+                              class="flex items-center justify-center gap-2 py-4 text-slate-400 text-sm"
                             >
-                              <UCheckbox
-                                :model-value="selectedSections.includes(section.id_section)"
-                                @update:model-value="toggleSection(section.id_section)"
-                              />
-                              <span class="text-sm font-medium">{{ section.section_name }} ({{ section.term }})</span>
+                              <UIcon name="i-heroicons-arrow-path" class="animate-spin" />
+                              กำลังโหลดกลุ่มเรียน...
                             </div>
-                            <p
-                              v-if="!sections || sections.length === 0"
-                              class="text-slate-400 text-sm text-center py-4 italic"
+                            <!-- Empty state -->
+                            <div
+                              v-else-if="!sections || sections.length === 0"
+                              class="text-center py-4"
                             >
-                              ไม่มีกลุ่มเรียนในระบบ
-                            </p>
+                              <p class="text-slate-400 text-sm italic">ไม่มีกลุ่มเรียนในระบบ</p>
+                              <p class="text-xs text-slate-300 mt-1">กรุณาเพิ่มกลุ่มเรียนในหน้าจัดการกลุ่มเรียนก่อน</p>
+                            </div>
+                            <!-- Section list -->
+                            <template v-else>
+                              <div
+                                v-for="section in sections"
+                                :key="section.id_section"
+                                class="flex items-center gap-3 p-2.5 hover:bg-slate-100/50 rounded-xl cursor-pointer text-slate-700 transition-colors"
+                                @click="toggleSection(section.id_section)"
+                              >
+                                <UCheckbox
+                                  :model-value="selectedSections.includes(section.id_section)"
+                                  @update:model-value="toggleSection(section.id_section)"
+                                />
+                                <span class="text-sm font-medium">{{ section.section_name }}</span>
+                              </div>
+                            </template>
                           </div>
                         </div>
 
@@ -392,18 +405,36 @@
                           <div
                             class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar border border-slate-200 rounded-2xl p-4 bg-slate-50 shadow-inner"
                           >
+                            <!-- Loading state -->
                             <div
-                              v-for="section in sections"
-                              :key="section.id_section"
-                              class="flex items-center gap-3 p-2.5 hover:bg-slate-100/50 rounded-xl cursor-pointer text-slate-700 transition-colors"
-                              @click="toggleEditSection(section.id_section)"
+                              v-if="sectionsStatus === 'pending'"
+                              class="flex items-center justify-center gap-2 py-4 text-slate-400 text-sm"
                             >
-                              <UCheckbox
-                                :model-value="editSelectedSections.includes(section.id_section)"
-                                @update:model-value="toggleEditSection(section.id_section)"
-                              />
-                              <span class="text-sm font-medium">{{ section.section_name }} ({{ section.term }})</span>
+                              <UIcon name="i-heroicons-arrow-path" class="animate-spin" />
+                              กำลังโหลดกลุ่มเรียน...
                             </div>
+                            <!-- Empty state -->
+                            <p
+                              v-else-if="!sections || sections.length === 0"
+                              class="text-slate-400 text-sm text-center py-4 italic"
+                            >
+                              ไม่มีกลุ่มเรียนในระบบ
+                            </p>
+                            <!-- Section list -->
+                            <template v-else>
+                              <div
+                                v-for="section in sections"
+                                :key="section.id_section"
+                                class="flex items-center gap-3 p-2.5 hover:bg-slate-100/50 rounded-xl cursor-pointer text-slate-700 transition-colors"
+                                @click="toggleEditSection(section.id_section)"
+                              >
+                                <UCheckbox
+                                  :model-value="editSelectedSections.includes(section.id_section)"
+                                  @update:model-value="toggleEditSection(section.id_section)"
+                                />
+                                <span class="text-sm font-medium">{{ section.section_name }}</span>
+                              </div>
+                            </template>
                           </div>
                         </div>
                       </div>
@@ -777,10 +808,8 @@ const { data: subjects, refresh: refreshSubjects } = await useFetch('/api/Subjec
 })
 const { data: teachers, pending } = await useFetch('/api/teachers')
 const { data: terms } = await useFetch('/api/terms')
-const { data: sections } = await useFetch('/api/sections', {
-  query: computed(() => ({ term: selectedTerm.value })),
-  watch: [selectedTerm]
-})
+// sections เป็น master table ไม่ขึ้นกับ term — fetch ครั้งเดียวพอ
+const { data: sections, refresh: refreshSections, status: sectionsStatus } = await useFetch('/api/sections')
 
 // ข้อมูลตารางสอน
 const scheduleSlots = useState(`schedule-slots-${id}`, () => Array.from({ length: 7 }, () =>
