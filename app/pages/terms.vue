@@ -1,8 +1,14 @@
 <template>
-  <BackButton to="/" />
   <div class="min-h-screen bg-white text-slate-900 pb-20">
-    <!-- Header -->
-    <div class="bg-white border-b border-slate-200 p-6 shadow-lg mb-8 no-print">
+    <!-- Navbar (Sticky) -->
+    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200 p-3 shadow-sm no-print">
+      <div class="container mx-auto flex items-center">
+        <UButton icon="i-lucide-arrow-left" label="ย้อนกลับ" color="gray" variant="ghost" size="lg" to="/" class="font-bold text-md cursor-pointer hover:bg-slate-100" />
+      </div>
+    </nav>
+    
+    <!-- Header (Not sticky) -->
+    <div class="bg-white border-b border-slate-200 p-6 shadow-sm mb-8 no-print">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
           <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-2">
@@ -17,7 +23,7 @@
           </p>
         </div>
         <!-- Quick Stats -->
-        <div class="flex gap-4">
+        <div class="flex flex-wrap gap-4">
           <div class="bg-slate-50 px-6 py-3 rounded-2xl border border-slate-200 backdrop-blur-sm">
             <p class="text-lg font-black uppercase tracking-widest text-slate-500 mb-1">
               จำนวนเทอมทั้งหมด

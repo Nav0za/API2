@@ -1,22 +1,18 @@
 <template>
   <div class="min-h-screen bg-white text-slate-900 pb-20">
-    <!-- Navbar -->
-    <nav class="bg-white border-b border-slate-200 p-4 sticky top-0 z-50 shadow-lg">
-      <div class="container mx-auto flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <UButton icon="i-lucide-arrow-left" color="gray" variant="ghost" to="/" />
-          <h2 class="text-xl font-bold text-blue-600">
-            จัดการกลุ่มเรียน (Sections)
-          </h2>
-        </div>
+    <!-- Navbar (Sticky) -->
+    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200 p-3 shadow-sm no-print">
+      <div class="container mx-auto flex items-center">
+        <UButton icon="i-lucide-arrow-left" label="ย้อนกลับ" color="gray" variant="ghost" size="lg" to="/" class="font-bold text-md cursor-pointer hover:bg-slate-100" />
       </div>
     </nav>
-
-    <div class="container mx-auto px-4 py-8">
-      <!-- Header & Add Button -->
-      <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+      
+    <!-- Header (Not sticky) -->
+    <div class="bg-white border-b border-slate-200 p-6 shadow-sm mb-8 no-print">
+      <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div>
-          <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h1 class="text-3xl font-bold text-slate-900 flex items-center gap-2">
+            <UIcon name="i-heroicons-user-group" class="text-blue-600" />
             รายชื่อกลุ่มเรียน
           </h1>
           <p class="text-slate-600 mt-1">
@@ -30,6 +26,9 @@
             class="px-6 rounded-xl shadow-lg shadow-blue-500/20 cursor-pointer" @click="openAddModal = true" />
         </div>
       </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
 
       <!-- Loading State -->
       <div v-if="pending" class="flex flex-col items-center justify-center py-20">
