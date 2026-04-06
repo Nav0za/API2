@@ -975,7 +975,18 @@ watch(quickAddSubject, (newVal) => {
   }
 })
 
-// Logic สำหรับการ Merge ช่องที่วิชาเหมือนกันและติดกัน
+// Helper: เปรียบเทียบว่าสองช่องสามารถ merge ได้หรือไม่
+// เงื่อนไข: วิชา + ห้องเรียน + กลุ่มนักศึกษา ต้องตรงกันทั้งหมด
+const slotsCanMerge = (a, b) => {
+  if (!a.value || a.value !== b.value) return false
+  if (a.room_id !== b.room_id) return false
+  const aIds = [...(a.section_ids || [])].sort((x, y) => x - y)
+  const bIds = [...(b.section_ids || [])].sort((x, y) => x - y)
+  if (aIds.length !== bIds.length) return false
+  return aIds.every((id, idx) => id === bIds[idx])
+}
+
+// Logic สำหรับการ Merge ช่องที่วิชา + ห้อง + กลุ่มนักศึกษาเหมือนกันและติดกัน
 const displaySlots = computed(() => {
   if (!scheduleSlots.value) return []
   return scheduleSlots.value.map((daySlots) => {
@@ -990,8 +1001,7 @@ const displaySlots = computed(() => {
       while (
         i + span < daySlots.length
         && i + span !== 4 // ไม่ Merge ข้ามพักเที่ยง
-        && daySlots[i + span].value === current.value
-        && current.value !== null // รวมเฉพาะที่มีวิชา (หรือจะรวมช่องว่างด้วยก็ได้ถ้าต้องการ)
+        && slotsCanMerge(current, daySlots[i + span])
       ) {
         span++
       }
