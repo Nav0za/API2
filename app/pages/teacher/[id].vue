@@ -541,7 +541,7 @@
       class="container mx-auto flex flex-col md:flex-row justify-between items-center mt-12 mb-6 gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm"
     >
       <div class="flex-1">
-        <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3">
+        <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3 uppercase">
           <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100">
             <UIcon
               name="i-heroicons-calendar-days"
