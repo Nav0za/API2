@@ -977,7 +977,8 @@ const getSubjectLabel = (val, roomId = null, sectionIds = null) => {
     const extSubj = externalSubjects.value?.find(e => e.id_ext_subject === extId)
     const roomText = roomId ? ` [${rooms.value?.find(r => r.id_room == roomId)?.room_name || ''}]` : ''
     if (!extSubj) return `Unknown (ถูกลบ)${roomText}`
-    return `${extSubj.name_subject} [นอกสาขา]${roomText}`
+    const instructor = extSubj.instructor_name ? ` (${extSubj.instructor_name})` : ''
+    return `${extSubj.name_subject}${instructor} [นอกสาขา]${roomText}`
   }
 
   const subj = allSubjects.value?.find(s => s.id_subject == val)
@@ -1002,7 +1003,12 @@ const getSubjectLabel = (val, roomId = null, sectionIds = null) => {
     if (r) roomName = r.room_name
   }
 
-  return `${subj.name_subject} ${sectionDisplay} ${roomName ? `[${roomName}]` : ''}`
+  let teacherName = ''
+  if (subj.first_name || subj.last_name) {
+    teacherName = ` (${[subj.prefix, subj.first_name, subj.last_name].filter(Boolean).join(' ').trim()})`
+  }
+
+  return `${subj.name_subject}${teacherName} ${sectionDisplay} ${roomName ? `[${roomName}]` : ''}`
 }
 
 const clearSchedule = (noConfirm = false) => {
