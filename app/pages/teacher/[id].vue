@@ -851,7 +851,6 @@ const subjectToDelete = ref(null)
 const subjectName = ref('')
 const selectedSections = ref([])
 const editSelectedSections = ref([])
-const selectedTerm = ref(null)
 const saving = ref(false)
 
 // Quick Add Subject to Schedule states
@@ -866,15 +865,33 @@ const quickAddSelectedSections = ref([])
 const toast = useToast()
 
 // --- Data Fetching ---
-// ข้อมูลวิชาที่อาจารย์สอน
-const { data: subjects, refresh: refreshSubjects } = await useFetch('/api/Subjects', {
-  query: computed(() => ({ id_teacher: id, term: selectedTerm.value })),
-  watch: [selectedTerm]
-})
 const { data: teachers, pending } = await useFetch('/api/teachers')
 const { data: terms } = await useFetch('/api/terms')
 // sections เป็น master table ไม่ขึ้นกับ term — fetch ครั้งเดียวพอ
 const { data: sections, refresh: refreshSections, status: sectionsStatus } = await useFetch('/api/sections')
+
+const termOptions = computed(() => {
+  if (!terms.value || terms.value.length === 0) return []
+  return terms.value.map(t => ({
+    label: `เทอม ${t.term}/${t.academic_year}`,
+    value: `${t.term}/${t.academic_year}`
+  }))
+})
+
+// Initialize selectedTerm before fetching subjects and schedule
+const selectedTerm = ref(route.query.term || (termOptions.value.length > 0 ? termOptions.value[0].value : null))
+
+// Sync selectedTerm changes to URL implicitly
+watch(selectedTerm, (newVal) => {
+  if (newVal && newVal !== route.query.term) {
+    navigateTo({ query: { ...route.query, term: newVal } }, { replace: true })
+  }
+})
+
+// ข้อมูลวิชาที่อาจารย์สอน
+const { data: subjects, refresh: refreshSubjects } = await useFetch('/api/Subjects', {
+  query: { id_teacher: id, term: selectedTerm }
+})
 
 // ข้อมูลตารางสอน
 const scheduleSlots = useState(`schedule-slots-${id}`, () => Array.from({ length: 7 }, () =>
@@ -908,18 +925,10 @@ const hoursPerWeek = computed(() => {
   let count = 0
   scheduleSlots.value.forEach((day) => {
     day.forEach((slot) => {
-      if (slot.value) count++
+      if (slot.value && slot.value !== 'lunch') count++
     })
   })
   return count
-})
-
-const termOptions = computed(() => {
-  if (!terms.value || terms.value.length === 0) return []
-  return terms.value.map(t => ({
-    label: `เทอม ${t.term}/${t.academic_year}`,
-    value: `${t.term}/${t.academic_year}`
-  }))
 })
 
 const sectionOptions = computed(() => {
@@ -1076,11 +1085,6 @@ const displaySlots = computed(() => {
     return grouped
   })
 })
-
-// เลือกเทอมแรกเป็นค่าเริ่มต้น
-if (terms.value && terms.value.length > 0 && !selectedTerm.value) {
-  selectedTerm.value = `${terms.value[0].term}/${terms.value[0].academic_year}`
-}
 
 // --- Logic & Methods ---
 const toggleSection = (sectionId) => {
@@ -1360,8 +1364,7 @@ const addToSchedule = async () => {
 
 // --- Data Synchronization ---
 const { data: scheduleData, error: scheduleError } = await useFetch('/api/schedules', {
-  query: computed(() => ({ id_teacher: id, term: selectedTerm.value })),
-  watch: [selectedTerm],
+  query: { id_teacher: id, term: selectedTerm },
   immediate: true
 })
 

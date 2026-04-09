@@ -25,16 +25,6 @@
 
         <!-- Filters & Actions -->
         <div class="flex flex-wrap items-center justify-center gap-4">
-          <USelect
-            v-if="termOptions.length > 0"
-            v-model="selectedTerm"
-            :items="termOptions"
-            value-key="value"
-            label-key="label"
-            placeholder="เลือกเทอม"
-            size="xl"
-            class="min-w-[150px]"
-          />
           <UInput
             v-model="selectedDate"
             type="date"
@@ -108,11 +98,11 @@
           <!-- Guide Legend -->
           <div class="flex gap-6 p-4 border-b border-slate-200 bg-slate-50 sticky left-0 z-20">
             <div class="flex items-center gap-2 text-lg font-bold text-slate-700">
-              <div class="w-4 h-4 rounded-md bg-amber-500/20 border border-amber-500/50" />
+              <div class="w-4 h-4 rounded-md bg-indigo-50 border-l-4 border-indigo-500 shadow-sm" />
               เรียนปกติ
             </div>
             <div class="flex items-center gap-2 text-lg font-bold text-slate-700">
-              <div class="w-4 h-4 rounded-md bg-red-500/20 border border-red-500/50" />
+              <div class="w-4 h-4 rounded-md bg-rose-50 border-l-4 border-rose-500 shadow-sm" />
               สอนชดเชย
             </div>
           </div>
@@ -166,22 +156,21 @@
                   >
                     <div
                       v-if="slot"
-                      class="w-full h-full p-2.5 rounded-xl flex flex-col justify-center gap-1 shadow-sm group/slot transition-all hover:scale-105 hover:z-20 cursor-default"
-                      :class="slot.type === 'makeup' ? 'bg-red-500/10 border border-red-500/30 text-red-200' : 'bg-amber-500/10 border border-amber-500/30 text-amber-200'"
+                      class="w-full h-full p-2.5 rounded-xl flex flex-col justify-center gap-1 shadow-sm group/slot transition-all hover:scale-105 hover:z-20 cursor-default border"
+                      :class="slot.type === 'makeup' ? 'bg-rose-50/80 border-l-[3px] border-l-rose-500 border-rose-200 text-rose-900' : 'bg-indigo-50/80 border-l-[3px] border-l-indigo-500 border-indigo-200 text-indigo-900'"
                     >
                       <!-- Hover Details Popup -->
                       <div
                         class="absolute inset-0 z-30 hidden group-hover/slot:flex items-center justify-center p-3 rounded-xl shadow-2xl backdrop-blur-md"
-                        :class="slot.type === 'makeup' ? 'bg-red-950/90 border border-red-500/50 text-red-100' : 'bg-amber-950/90 border border-amber-500/50 text-amber-100'"
+                        :class="slot.type === 'makeup' ? 'bg-rose-900 border border-rose-700 text-rose-50' : 'bg-indigo-900 border border-indigo-700 text-indigo-50'"
                       >
                         <div class="text-center w-full relative z-40">
                           <p
-                            class="font-bold text-xs line-clamp-2 leading-snug break-words whitespace-normal"
-                            :class="slot.type === 'makeup' ? 'text-red-400' : 'text-amber-400'"
+                            class="font-bold text-[11px] line-clamp-2 leading-snug break-words whitespace-normal text-white"
                           >
                             {{ slot.subjectName }}
                           </p>
-                          <p class="text-[10px] mt-1 text-slate-300 line-clamp-1 whitespace-normal text-opacity-80">
+                          <p class="text-[10px] mt-1 line-clamp-1 whitespace-normal text-slate-300">
                             {{
                               slot.teacherName }}
                           </p>
@@ -189,18 +178,24 @@
                             v-if="slot.type === 'makeup'"
                             size="xs"
                             color="red"
-                            variant="soft"
-                            class="mt-1.5 mx-auto w-fit scale-[0.85] origin-top"
+                            variant="subtle"
+                            class="mt-1.5 mx-auto w-fit scale-[0.85] origin-top bg-red-500/20 text-red-200"
                           >
                             ชดเชย (-{{ slot.timeEnd }})
                           </UBadge>
                         </div>
                       </div>
 
-                      <p class="text-[11px] font-bold truncate">
+                      <p
+                        class="text-[11px] font-bold truncate leading-tight"
+                        :class="slot.type === 'makeup' ? 'text-rose-700' : 'text-indigo-800'"
+                      >
                         {{ slot.subjectName }}
                       </p>
-                      <p class="text-[10px] truncate opacity-80">
+                      <p
+                        class="text-[10px] truncate"
+                        :class="slot.type === 'makeup' ? 'text-rose-600/80' : 'text-indigo-600/80'"
+                      >
                         {{ slot.teacherName }}
                       </p>
                     </div>
@@ -406,7 +401,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed } from 'vue'
 import dayjs from 'dayjs'
 
 const times = [
@@ -415,32 +410,14 @@ const times = [
   '18:00', '19:00', '20:00', '21:00'
 ]
 
-// Terms
-const { data: termsData } = await useFetch('/api/terms')
-const termOptions = computed(() => {
-  if (!termsData.value) return []
-  return termsData.value.map(t => ({
-    label: `เทอม ${t.term}/${t.academic_year}`,
-    value: `${t.term}/${t.academic_year}`
-  }))
-})
-
-const selectedTerm = ref('')
 const selectedDate = ref(dayjs().format('YYYY-MM-DD'))
-
-watchEffect(() => {
-  if (termOptions.value.length > 0 && !selectedTerm.value) {
-    selectedTerm.value = termOptions.value[0].value
-  }
-})
 
 // Rooms Schedule Data
 const { data: scheduleData, pending, refresh: refreshRooms } = await useFetch('/api/rooms/schedule', {
   query: {
-    term: selectedTerm,
     date: selectedDate
   },
-  watch: [selectedTerm, selectedDate]
+  watch: [selectedDate]
 })
 
 const rooms = computed(() => scheduleData.value?.data || [])
