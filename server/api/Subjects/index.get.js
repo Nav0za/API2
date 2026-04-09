@@ -8,6 +8,7 @@ export default defineEventHandler((event) => {
   let subjects
   let baseQuery = `
     SELECT s.*,
+    t.prefix, t.first_name, t.last_name,
     (
       SELECT GROUP_CONCAT(sec.section_name, ', ')
       FROM SubjectSections ss
@@ -22,6 +23,7 @@ export default defineEventHandler((event) => {
       WHERE ss.id_subject = s.id_subject
     ) as sections_json
     FROM Subjects s
+    LEFT JOIN teachers t ON s.id_teacher = t.id_teacher
   `
 
   let whereClauses = []
