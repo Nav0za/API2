@@ -71,13 +71,22 @@ export default defineEventHandler(async (event) => {
 
     // 3. Fetch Regular Teacher Schedules (Since Teacher Schedules are synced with Section Schedules)
     let teacherSchedules = []
-    if (term) {
+    
+    let activeTermStr = term
+    if (!activeTermStr) {
+      const activeTerm = db.prepare('SELECT term, academic_year FROM terms WHERE ? >= start_date AND ? <= end_date').get(date, date)
+      if (activeTerm) {
+        activeTermStr = `${activeTerm.term}/${activeTerm.academic_year}`
+      }
+    }
+
+    if (activeTermStr) {
       teacherSchedules = db.prepare(`
               SELECT s.id_teacher, t.prefix, t.first_name, t.last_name, s.scheduleData 
               FROM schedules s
               LEFT JOIN teachers t ON s.id_teacher = t.id_teacher
               WHERE s.term = ?
-          `).all(term)
+          `).all(activeTermStr)
     }
 
     // Lookup table for subjects to get their default rooms
