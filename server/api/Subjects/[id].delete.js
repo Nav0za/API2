@@ -4,23 +4,24 @@ export default defineEventHandler(async (event) => {
   const { id } = event.context.params
   const subjectId = Number(id)
 
-  // 1. Get subject details before deletion to know which teacher/section is affected
-  const subject = db.prepare('SELECT id_teacher, id_section FROM Subjects WHERE id_subject = ?').get(subjectId)
+  // 1. Get subject details before deletion to know which teacher/sections are affected
+  const subject = db.prepare('SELECT id_teacher FROM Subjects WHERE id_subject = ?').get(subjectId)
 
-  // 2. Delete the subject
+  // Also get all sections linked to this subject via SubjectSections join table
+  const linkedSections = db.prepare('SELECT id_section FROM SubjectSections WHERE id_subject = ?').all(subjectId)
+
+  // 2. Delete the subject (cascades to SubjectSections via FK)
   const stmt = db.prepare('DELETE FROM Subjects WHERE id_subject = ?')
   const result = stmt.run(subjectId)
 
   if (result.changes > 0 && subject) {
     // 3. Clean up Teacher Schedules
-    // Find all schedules that might contain this subject
-    const teacherSchedules = db.prepare('SELECT id_schedule, scheduleData, term, id_teacher FROM schedules WHERE id_teacher = ?').all(subject.id_teacher)
+    const teacherSchedules = db.prepare('SELECT id_schedule, scheduleData FROM schedules WHERE id_teacher = ?').all(subject.id_teacher)
 
     for (const sched of teacherSchedules) {
       let data = JSON.parse(sched.scheduleData)
       let modified = false
 
-      // Remove subject from all slots
       for (let d = 0; d < 7; d++) {
         for (let s = 0; s < 13; s++) {
           if (data[d][s].value === subjectId) {
@@ -36,10 +37,9 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // 4. Clean up Section Schedules
-    // If subject was assigned to a section, clean that section's schedule too
-    if (subject.id_section) {
-      const sectionSchedules = db.prepare('SELECT id_section_schedule, scheduleData FROM section_schedules WHERE id_section = ?').all(subject.id_section)
+    // 4. Clean up Section Schedules for all linked sections
+    for (const { id_section } of linkedSections) {
+      const sectionSchedules = db.prepare('SELECT id_section_schedule, scheduleData FROM section_schedules WHERE id_section = ?').all(id_section)
 
       for (const sched of sectionSchedules) {
         let data = JSON.parse(sched.scheduleData)
