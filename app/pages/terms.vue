@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-white text-slate-900 pb-20">
-    <!-- Navbar (Sticky) -->
-    <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200 p-3 shadow-sm no-print">
+    <!-- Navbar -->
+    <nav class="sticky top-16 z-50 bg-white border-b border-slate-200 p-3 shadow-sm no-print">
       <div class="container mx-auto flex items-center">
         <UButton icon="i-lucide-arrow-left" label="ย้อนกลับ" color="gray" variant="ghost" size="lg" to="/" class="font-bold text-md cursor-pointer hover:bg-slate-100" />
       </div>
