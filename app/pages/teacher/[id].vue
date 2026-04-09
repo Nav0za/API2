@@ -467,6 +467,69 @@
                   </div>
                 </template>
               </UModal>
+
+              <!-- ลบรายวิชา -->
+              <UModal
+                v-model:open="deleteOpen"
+                :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }"
+              >
+                <template #content>
+                  <div class="flex flex-col max-h-[85vh]">
+                    <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+                      <div
+                        class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20"
+                      >
+                        <UIcon
+                          name="i-heroicons-exclamation-triangle"
+                          class="text-4xl text-red-500"
+                        />
+                      </div>
+
+                      <h3 class="text-2xl font-bold text-slate-900 text-center mb-2">
+                        ยืนยันการลบรายวิชา
+                      </h3>
+                      <p class="text-slate-600 text-center mb-8">
+                        การดำเนินการนี้จะลบรายวิชาออกจากระบบและตารางสอน อาจารย์/กลุ่มเรียน จะได้รับผลกระทบ
+                      </p>
+
+                      <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-2xl text-center relative overflow-hidden">
+                        <div class="relative z-10">
+                          <p class="text-xs font-black uppercase tracking-widest text-red-400/80 mb-1">
+                            วิชาที่เลือก
+                          </p>
+                          <p class="text-xl font-bold text-slate-900 line-clamp-2">
+                            {{ subjectToDelete?.name_subject }}
+                          </p>
+                          <p class="text-sm text-slate-500 mt-1">
+                            {{ subjectToDelete?.section_names || 'ไม่ระบุกลุ่ม' }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
+                      <div class="flex flex-col sm:flex-row gap-3">
+                        <UButton
+                          label="ยกเลิก"
+                          color="neutral"
+                          variant="outline"
+                          size="xl"
+                          block
+                          class="rounded-2xl border-slate-200 py-4 flex-1"
+                          @click="deleteOpen = false"
+                        />
+                        <UButton
+                          label="ยืนยันการลบถาวร"
+                          color="error"
+                          size="xl"
+                          block
+                          class="rounded-2xl py-4 flex-1 shadow-lg shadow-red-500/20 font-bold"
+                          @click="deleteSubject"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </UModal>
             </div>
           </div>
           <div class="px-5 py-4 border-t border-slate-50 max-h-80 overflow-y-auto custom-scrollbar">
@@ -525,7 +588,7 @@
                       variant="ghost"
                       size="xs"
                       class="cursor-pointer rounded-lg hover:bg-red-50"
-                      @click="deleteSubject(subject.id_subject)"
+                      @click="confirmDeleteSubject(subject)"
                     />
                   </div>
                 </div>
@@ -783,6 +846,8 @@ const activeBox = ref({ day: null, slot: null })
 const editOpen = ref(false)
 const editSubjectName = ref('')
 const currentEditSubject = ref(null)
+const deleteOpen = ref(false)
+const subjectToDelete = ref(null)
 const subjectName = ref('')
 const selectedSections = ref([])
 const editSelectedSections = ref([])
@@ -1085,8 +1150,14 @@ const addSubject = async () => {
   }
 }
 
-const deleteSubject = async (subjectId) => {
-  if (!confirm('ยืนยันการลบรายวิชา?')) return
+const confirmDeleteSubject = (subject) => {
+  subjectToDelete.value = subject
+  deleteOpen.value = true
+}
+
+const deleteSubject = async () => {
+  if (!subjectToDelete.value) return
+  const subjectId = subjectToDelete.value.id_subject
   try {
     await $fetch(`/api/Subjects/${subjectId}`, { method: 'DELETE' })
     await refreshSubjects()
@@ -1099,6 +1170,8 @@ const deleteSubject = async (subjectId) => {
         }
       })
     })
+    deleteOpen.value = false
+    subjectToDelete.value = null
     toast.add({ title: 'สำเร็จ', description: 'ลบรายวิชาเรียบร้อยแล้ว' })
   } catch (err) {
     console.error(err)
