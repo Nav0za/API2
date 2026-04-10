@@ -119,7 +119,7 @@
                   <th
                     v-for="time in times"
                     :key="time"
-                    class="p-4 whitespace-nowrap text-center w-[120px] border-l border-slate-200"
+                    class="p-4 whitespace-nowrap text-center w-[140px] border-l border-slate-200"
                   >
                     {{ time }}
                   </th>
@@ -152,7 +152,7 @@
                   <td
                     v-for="(slot, idx) in room.slots"
                     :key="idx"
-                    class="p-2 border-l border-slate-700/30 align-top relative min-w-[120px] max-w-[120px] h-[90px]"
+                    class="p-2 border-l border-slate-700/30 align-top relative min-w-[140px] max-w-[140px] h-[90px]"
                   >
                     <div
                       v-if="slot"
@@ -405,9 +405,9 @@ import { ref, computed } from 'vue'
 import dayjs from 'dayjs'
 
 const times = [
-  '08:00', '09:00', '10:00', '11:00', '12:00',
-  '13:00', '14:00', '15:00', '16:00', '17:00',
-  '18:00', '19:00', '20:00', '21:00'
+  '08:00 - 09:00', '09:00 - 10:00', '10:00 - 11:00', '11:00 - 12:00', '12:00 - 13:00',
+  '13:00 - 14:00', '14:00 - 15:00', '15:00 - 16:00', '16:00 - 17:00', '17:00 - 18:00',
+  '18:00 - 19:00', '19:00 - 20:00', '20:00 - 21:00', '21:00 - 22:00'
 ]
 
 const selectedDate = ref(dayjs().format('YYYY-MM-DD'))
