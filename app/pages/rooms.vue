@@ -143,8 +143,8 @@
                     <p class="font-bold text-slate-900 truncate max-w-[160px]">
                       {{ room.room_name }}
                     </p>
-                    <p class="text-md text-slate-500 truncate max-w-[160px]">
-                      {{ room.building || 'ไม่ระบุอาคาร' }}
+                    <p v-if="room.building" class="text-md text-slate-500 truncate max-w-[160px]">
+                      {{ room.building }}
                     </p>
                   </td>
 
@@ -275,17 +275,7 @@
                 />
               </UFormField>
 
-              <UFormField
-                class="text-lg"
-                label="อาคาร (Building)"
-              >
-                <UInput
-                  v-model="formData.building"
-                  placeholder="เช่น อาคาร EN"
-                  size="xl"
-                  class="rounded-xl"
-                />
-              </UFormField>
+
 
               <UFormField
                 class="text-lg"
@@ -361,9 +351,6 @@
                 </p>
                 <p class="text-3xl font-black text-slate-900">
                   {{ roomToDelete?.room_name }}
-                </p>
-                <p class="text-sm text-slate-500 mt-2">
-                  {{ roomToDelete?.building }}
                 </p>
               </div>
             </div>

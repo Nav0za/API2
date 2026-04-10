@@ -1087,7 +1087,7 @@ watch(absenceModalOpen, (isOpen) => {
 const roomOptions = computed(() => {
   if (!rooms.value) return [{ label: 'ไม่ระบุห้องเรียน', value: null }]
   const opts = rooms.value.map(r => ({
-    label: `${r.room_name}${r.building ? ` (${r.building})` : ''}`,
+    label: r.room_name,
     value: r.id_room
   }))
   return [{ label: 'ไม่ระบุห้องเรียน', value: null }, ...opts]
