@@ -1372,7 +1372,7 @@ const saveAbsenceAndFindSlots = async () => {
       await $fetch('/api/calendar-events', {
         method: 'POST',
         body: {
-          title: `${teacher?.name} - ติดราชการ`,
+          title: `${formatName(teacher)} - ติดราชการ`,
           start: absenceForm.value.date,
           end: absenceForm.value.date,
           backgroundColor: '#ef4444',
@@ -1381,7 +1381,7 @@ const saveAbsenceAndFindSlots = async () => {
           extendedProps: {
             eventType: 'teacher_absence',
             teacherId: absenceForm.value.teacherId,
-            teacherName: teacher?.name,
+            teacherName: formatName(teacher),
             term: absenceForm.value.term, // เก็บ term เพื่อใช้อ้างอิงตอนจัดชดเชยทีหลัง
             description: absenceForm.value.reason
           }
@@ -1626,7 +1626,7 @@ const saveMakeupClass = async () => {
         await $fetch('/api/calendar-events', {
           method: 'POST',
           body: {
-            title: `${teacher?.name} - ติดราชการ`,
+            title: `${formatName(teacher)} - ติดราชการ`,
             start: absenceForm.value.date,
             end: absenceForm.value.date,
             backgroundColor: '#ef4444',
@@ -1635,7 +1635,7 @@ const saveMakeupClass = async () => {
             extendedProps: {
               eventType: 'teacher_absence',
               teacherId: absenceForm.value.teacherId,
-              teacherName: teacher?.name,
+              teacherName: formatName(teacher),
               description: absenceForm.value.reason
             }
           }
@@ -1723,7 +1723,7 @@ const saveMakeupClass = async () => {
         await $fetch('/api/calendar-events', {
           method: 'POST',
           body: {
-            title: `สอนชดเชย - ${teacher?.name} (${cls.subjectName})`,
+            title: `สอนชดเชย - ${formatName(teacher)} (${cls.subjectName})`,
             start: `${selectedSlot.value.date}T${currentTime}:00`,
             end: `${selectedSlot.value.date}T${endTime}:00`,
             backgroundColor: '#10b981',
@@ -1731,7 +1731,7 @@ const saveMakeupClass = async () => {
             extendedProps: {
               eventType: 'makeup_class',
               teacherId: absenceForm.value.teacherId,
-              teacherName: teacher?.name,
+              teacherName: formatName(teacher),
               originalDate: selectedSlot.value.missedDate || absenceForm.value.date,
               term: absenceForm.value.term,
               classes: JSON.stringify([cls]),
@@ -1750,7 +1750,7 @@ const saveMakeupClass = async () => {
       await $fetch('/api/calendar-events', {
         method: 'POST',
         body: {
-          title: `สอนชดเชย - ${teacher?.name}`,
+          title: `สอนชดเชย - ${formatName(teacher)}`,
           start: `${selectedSlot.value.date}T${selectedSlot.value.timeStart}:00`,
           end: `${selectedSlot.value.date}T${selectedSlot.value.timeEnd}:00`,
           backgroundColor: '#10b981',
@@ -1758,7 +1758,7 @@ const saveMakeupClass = async () => {
           extendedProps: {
             eventType: 'makeup_class',
             teacherId: absenceForm.value.teacherId,
-            teacherName: teacher?.name,
+            teacherName: formatName(teacher),
             originalDate: selectedSlot.value.missedDate || absenceForm.value.date,
             term: absenceForm.value.term,
             classes: JSON.stringify([]),
