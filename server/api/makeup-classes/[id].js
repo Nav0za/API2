@@ -70,20 +70,26 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // 2. Check Room Availability (if room, date, or time is changing)
+    // 2. Check Room Availability (only if room, date, or time is actually being changed)
     const newRoomId = body.room_id !== undefined ? body.room_id : oldData.room_id
     const newStart = body.makeup_time_start !== undefined ? body.makeup_time_start : oldData.makeup_time_start
     const newEnd = body.makeup_time_end !== undefined ? body.makeup_time_end : oldData.makeup_time_end
 
-    if (newRoomId && newRoomId !== 'null' && newDate && newStart && newEnd) {
+    // Only check room availability if there's an actual change to room, date, or time AND room is assigned
+    const hasRoomChange = body.room_id !== undefined && body.room_id !== oldData.room_id
+    const hasDateChange = body.makeup_date !== undefined && body.makeup_date !== oldData.makeup_date
+    const hasTimeChange = (body.makeup_time_start !== undefined && body.makeup_time_start !== oldData.makeup_time_start) || 
+                          (body.makeup_time_end !== undefined && body.makeup_time_end !== oldData.makeup_time_end)
+
+    if ((hasRoomChange || hasDateChange || hasTimeChange) && newRoomId && newRoomId !== 'null' && newStart && newEnd) {
       // We need term for room check
       let term = body.term
       if (!term) {
-        const teacherSchedule = db.prepare('SELECT term FROM schedules WHERE id_teacher = ? ORDER BY created_at DESC LIMIT 1').get(oldData.teacher_id)
+        const teacherSchedule = db.prepare('SELECT term FROM schedules WHERE id_teacher = ? ORDER BY id_schedule DESC LIMIT 1').get(oldData.teacher_id)
         term = teacherSchedule?.term
       }
 
-      if (term) {
+      if (term && newDate) {
         const availability = checkRoomAvailability({
           room_id: newRoomId,
           date: newDate,
