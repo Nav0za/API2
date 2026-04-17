@@ -945,7 +945,7 @@ const roomOptions = computed(() => {
     { label: 'ไม่ระบุห้อง', value: null },
     ...rooms.value.map(r => ({
       value: r.id_room,
-      label: `${r.room_name}${r.building ? ` (${r.building})` : ''}`
+      label: r.room_name
     }))
   ]
 })

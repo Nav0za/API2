@@ -605,7 +605,7 @@ const extSubjectToDelete = ref(null)
 
 const { data: rooms } = await useFetch('/api/rooms')
 const roomOptions = computed(() => {
-  const opts = rooms.value?.map(r => ({ value: r.id_room, label: `${r.room_name}${r.building ? ` (${r.building})` : ''}` })) || []
+  const opts = rooms.value?.map(r => ({ value: r.id_room, label: r.room_name })) || []
   return [{ value: null, label: 'ไม่ระบุห้อง' }, ...opts]
 })
 

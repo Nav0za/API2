@@ -258,7 +258,6 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS rooms (
     id_room INTEGER PRIMARY KEY AUTOINCREMENT,
     room_name TEXT NOT NULL UNIQUE,
-    building TEXT,
     description TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );`)
@@ -318,6 +317,7 @@ try {
   safeDropColumn('teachers', 'name')
   safeDropColumn('calendar_events', 'teacher_name')
   safeDropColumn('rooms', 'capacity')
+  safeDropColumn('rooms', 'building')
   safeDropColumn('Subjects', 'id_room')
   safeDropColumn('teachers', 'subject')
 

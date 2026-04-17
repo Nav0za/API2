@@ -143,9 +143,7 @@
                     <p class="font-bold text-slate-900 truncate max-w-[160px]">
                       {{ room.room_name }}
                     </p>
-                    <p v-if="room.building" class="text-md text-slate-500 truncate max-w-[160px]">
-                      {{ room.building }}
-                    </p>
+
                   </td>
 
                   <!-- Slots -->
@@ -416,7 +414,6 @@ const saving = ref(false)
 
 const formData = ref({
   room_name: '',
-  building: '',
   description: ''
 })
 
@@ -424,7 +421,6 @@ const openAddModal = () => {
   editingRoom.value = null
   formData.value = {
     room_name: '',
-    building: '',
     description: ''
   }
   modalOpen.value = true
@@ -434,7 +430,6 @@ const openEditModal = (room) => {
   editingRoom.value = room
   formData.value = {
     room_name: room.room_name,
-    building: room.building || '',
     description: room.description || ''
   }
   modalOpen.value = true
