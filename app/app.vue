@@ -21,8 +21,8 @@ useHead({
           to="/"
         >
           <img
-            src="/image/rmutiLogo.png"
-            class="h-12 w-auto mx-5"
+            src="/image/logo it.png"
+            class="h-11 w-auto mx-5"
             alt="RMUTI logo"
           >
           <span class="text-2xl">ระบบจัดวันสอนชดเชยกึ่งอัตโนมัติ</span>
