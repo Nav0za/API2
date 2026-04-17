@@ -180,15 +180,7 @@
 
           <div class="pt-4 border-t border-slate-700 flex justify-between items-center">
             <div class="flex gap-1">
-              <UButton
-                v-if="group.status !== 'cancelled' && group.status !== 'completed'"
-                size="sm"
-                color="primary"
-                variant="ghost"
-                icon="i-heroicons-pencil-square"
-                square
-                @click="openEditModal(group)"
-              />
+
               <UButton
                 size="sm"
                 color="error"

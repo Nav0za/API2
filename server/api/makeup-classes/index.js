@@ -82,7 +82,7 @@ export default defineEventHandler(async (event) => {
       // We need term for room check. If not provided, try to find teacher's current term.
       let term = body.term
       if (!term) {
-        const teacherSchedule = db.prepare('SELECT term FROM schedules WHERE id_teacher = ? ORDER BY created_at DESC LIMIT 1').get(body.teacher_id)
+        const teacherSchedule = db.prepare('SELECT term FROM schedules WHERE id_teacher = ? ORDER BY id_schedule DESC LIMIT 1').get(body.teacher_id)
         term = teacherSchedule?.term
       }
 
