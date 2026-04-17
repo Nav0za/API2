@@ -11,14 +11,12 @@ export default defineEventHandler(async (event) => {
       const stmt = db.prepare(`
         UPDATE rooms 
         SET room_name = COALESCE(?, room_name),
-            building = COALESCE(?, building),
             description = COALESCE(?, description)
         WHERE id_room = ?
       `)
 
       const result = stmt.run(
         body.room_name || null,
-        body.building !== undefined ? body.building : null,
         body.description !== undefined ? body.description : null,
         id
       )
