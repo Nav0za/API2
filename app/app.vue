@@ -90,16 +90,6 @@ useHead({
           :ui="{ leadingIcon: 'text-primary' }"
           to="/teachers"
         />
-        <UButton
-          class="text-white"
-          label="สรุปผล"
-          size="xl"
-          icon="i-heroicons-chart-bar"
-          color="primary"
-          variant="ghost"
-          :ui="{ leadingIcon: 'text-primary' }"
-          to="/summary"
-        />
       </template>
     </UHeader>
 
