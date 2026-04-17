@@ -107,8 +107,8 @@
             </div>
           </div>
 
-          <div class="overflow-x-auto w-full custom-scrollbar">
-            <table class="w-full text-left border-collapse min-w-[1200px]">
+          <div class="w-full overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-slate-100 border-b border-slate-200 text-sm font-black text-slate-600">
                   <th
@@ -541,20 +541,20 @@ const deleteRoom = async () => {
 <style scoped>
 /* Scrollbar Styling for Table */
 .custom-scrollbar::-webkit-scrollbar {
-  height: 8px;
-  width: 8px;
+  height: 12px;
+  width: 12px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(30, 41, 59, 1);
+  background: #f1f5f9;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 1);
+  background: #94a3b8;
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(71, 85, 105, 1);
+  background: #64748b;
 }
 </style>
