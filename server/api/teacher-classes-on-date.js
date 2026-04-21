@@ -55,6 +55,7 @@ export default defineEventHandler(async (event) => {
   // นับจำนวนชั่วโมงติดต่อกันของแต่ละวิชา
   let currentSubject = null
   let currentRoom = null
+  let currentSectionIdsStr = null
   let startSlot = 0
   let duration = 0
 
@@ -62,47 +63,58 @@ export default defineEventHandler(async (event) => {
     const slot = daySchedule[i]
     const slotValue = slot?.value
     const slotRoom = slot?.room_id || null
+    const slotSectionIds = slot?.section_ids || null
 
     // แปลงเป็น String เพื่อความชัวร์ในการเปรียบเทียบ (null/undefined จะกลายเป็น "null"/"undefined")
     const valStr = slotValue ? String(slotValue) : null
+    const secStr = slotSectionIds ? JSON.stringify(slotSectionIds) : null
 
     if (valStr && valStr !== 'null') {
-      // ถ้าเป็นวิชาเดิมและห้องเดิม
-      if (valStr === currentSubject && slotRoom === currentRoom) {
+      // ถ้าเป็นวิชาเดิมและห้องเดิมและกลุ่มเดิม
+      if (valStr === currentSubject && slotRoom === currentRoom && secStr === currentSectionIdsStr) {
         duration++
       } else {
         // จบวิชาก่อนหน้า
         if (currentSubject) {
-          classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date, currentRoom))
+          classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date, currentRoom, currentSectionIdsStr ? JSON.parse(currentSectionIdsStr) : null))
         }
 
         // เริ่มวิชาใหม่
         currentSubject = valStr
         currentRoom = slotRoom
+        currentSectionIdsStr = secStr
         startSlot = i
         duration = 1
       }
     } else {
       // เจอช่องว่าง
       if (currentSubject) {
-        classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date, currentRoom))
+        classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date, currentRoom, currentSectionIdsStr ? JSON.parse(currentSectionIdsStr) : null))
         currentSubject = null
         currentRoom = null
+        currentSectionIdsStr = null
       }
     }
   }
 
   // เก็บตกตัวสุดท้าย
   if (currentSubject) {
-    classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date, currentRoom))
+    classes.push(createClassObj(currentSubject, startSlot, duration, teacher_id, date, currentRoom, currentSectionIdsStr ? JSON.parse(currentSectionIdsStr) : null))
   }
 
   console.log('[teacher-classes-on-date] Merged classes:', classes)
   return classes
 })
 
-function createClassObj(subjectId, startSlot, duration, teacherId, date, roomId) {
-  const sectionId = getSectionForSubject(subjectId)
+function createClassObj(subjectId, startSlot, duration, teacherId, date, roomId, slotSectionIds) {
+  let sectionIds = []
+  if (Array.isArray(slotSectionIds) && slotSectionIds.length > 0) {
+    sectionIds = slotSectionIds
+  } else {
+    sectionIds = getSectionsForSubjectArray(subjectId)
+  }
+
+  const sectionId = sectionIds[0] || null
 
   let hasMakeup = false
   if (teacherId && date) {
@@ -121,7 +133,8 @@ function createClassObj(subjectId, startSlot, duration, teacherId, date, roomId)
     subjectId,
     subjectName: getSubjectName(subjectId),
     sectionId,
-    sectionName: getSectionName(sectionId, subjectId),
+    sectionIds,
+    sectionName: sectionIds.map(id => getSectionNameByKey(id)).join(', ') || getSectionName(sectionId, subjectId),
     roomId: finalRoomId,
     startSlot,
     duration,
@@ -137,14 +150,17 @@ function getSubjectName(subjectId) {
   return result?.name_subject || 'ไม่ทราบชื่อวิชา'
 }
 
-function getSectionForSubject(subjectId) {
-  const stmt = db.prepare('SELECT id_section FROM SubjectSections WHERE id_subject = ? LIMIT 1')
-  const result = stmt.get(subjectId)
-  if (result) return result.id_section
+function getSectionsForSubjectArray(subjectId) {
+  const stmt = db.prepare('SELECT id_section FROM SubjectSections WHERE id_subject = ?')
+  const results = stmt.all(subjectId)
+  return results.map(r => r.id_section)
+}
 
-  const fallbackStmt = db.prepare('SELECT id_section FROM Subjects WHERE id_subject = ?')
-  const fallbackResult = fallbackStmt.get(subjectId)
-  return fallbackResult?.id_section || null
+function getSectionNameByKey(sectionId) {
+  if (!sectionId) return ''
+  const stmt = db.prepare('SELECT section_name FROM sections WHERE id_section = ?')
+  const result = stmt.get(sectionId)
+  return result?.section_name || ''
 }
 
 function getSectionName(sectionId, subjectId) {
