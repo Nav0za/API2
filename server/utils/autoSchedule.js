@@ -189,6 +189,7 @@ function getClassesOnDate(schedule, dateStr, subjectNameMap) {
 
   // นับจำนวนชั่วโมงติดต่อกันของแต่ละวิชา
   let currentSubject = null
+  let currentSectionIdsStr = null
   let startSlot = 0
   let duration = 0
 
@@ -197,22 +198,25 @@ function getClassesOnDate(schedule, dateStr, subjectNameMap) {
   for (let i = 0; i < daySchedule.length; i++) {
     const slot = daySchedule[i]
     const slotValue = slot?.value
+    const slotSectionIds = slot?.section_ids || null
 
     // แปลงเป็น String เพื่อความชัวร์ในการเปรียบเทียบ
     const valStr = slotValue ? String(slotValue) : null
+    const secStr = slotSectionIds ? JSON.stringify(slotSectionIds) : null
 
     if (valStr) {
       // ถ้าเป็นวิชาเดิม
-      if (valStr === currentSubject) {
+      if (valStr === currentSubject && secStr === currentSectionIdsStr) {
         duration++
       } else {
         // จบวิชาก่อนหน้า
         if (currentSubject) {
-          classes.push(createClassObj(currentSubject, startSlot, duration, subjectNameMap))
+          classes.push(createClassObj(currentSubject, currentSectionIdsStr ? JSON.parse(currentSectionIdsStr) : null, startSlot, duration, subjectNameMap))
         }
 
         // เริ่มวิชาใหม่
         currentSubject = valStr
+        currentSectionIdsStr = secStr
         startSlot = i
         duration = 1
       }
@@ -222,12 +226,14 @@ function getClassesOnDate(schedule, dateStr, subjectNameMap) {
         if (i === LUNCH_SLOT) {
           const nextSlot = daySchedule[i + 1]
           const nextVal = nextSlot?.value ? String(nextSlot.value) : null
-          if (nextVal === currentSubject) {
+          const nextSecStr = nextSlot?.section_ids ? JSON.stringify(nextSlot.section_ids) : null
+          if (nextVal === currentSubject && nextSecStr === currentSectionIdsStr) {
             continue // ข้าม lunch slot แล้ววิชายังต่อเนื่อง
           }
         }
-        classes.push(createClassObj(currentSubject, startSlot, duration, subjectNameMap))
+        classes.push(createClassObj(currentSubject, currentSectionIdsStr ? JSON.parse(currentSectionIdsStr) : null, startSlot, duration, subjectNameMap))
         currentSubject = null
+        currentSectionIdsStr = null
         duration = 0
       }
     }
@@ -235,7 +241,7 @@ function getClassesOnDate(schedule, dateStr, subjectNameMap) {
 
   // เก็บตกตัวสุดท้าย
   if (currentSubject) {
-    classes.push(createClassObj(currentSubject, startSlot, duration, subjectNameMap))
+    classes.push(createClassObj(currentSubject, currentSectionIdsStr ? JSON.parse(currentSectionIdsStr) : null, startSlot, duration, subjectNameMap))
   }
 
   // รวมวิชาเดิมที่แยกเป็นหลาย block (กรณีสอนกระจาย)
@@ -253,8 +259,13 @@ function getClassesOnDate(schedule, dateStr, subjectNameMap) {
   return merged
 }
 
-function createClassObj(subjectId, startSlot, duration, subjectNameMap) {
-  const sectionIds = getSectionsForSubject(subjectId)
+function createClassObj(subjectId, slotSectionIds, startSlot, duration, subjectNameMap) {
+  let sectionIds = []
+  if (Array.isArray(slotSectionIds) && slotSectionIds.length > 0) {
+    sectionIds = slotSectionIds
+  } else {
+    sectionIds = getSectionsForSubject(subjectId)
+  }
   return {
     subjectId,
     subjectName: subjectNameMap[subjectId] || getSubjectName(subjectId),
@@ -474,7 +485,7 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
   }
 
   const totalDuration = classes.reduce((sum, c) => sum + c.duration, 0)
-  const allSectionIds = [...new Set(classes.map(c => c.sectionId).filter(Boolean))]
+  const allSectionIds = [...new Set(classes.flatMap(c => c.sectionIds || [c.sectionId]).filter(Boolean))]
 
   const teacherSchedulesRaw = db.prepare('SELECT id_teacher, scheduleData FROM schedules WHERE term = ?').all(term)
   const allTeacherSchedules = teacherSchedulesRaw.map((ts) => {

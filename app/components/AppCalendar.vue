@@ -1454,6 +1454,7 @@ const saveAbsenceAndFindSlots = async () => {
         classes: selectedClasses.map(c => ({
           subjectId: c.subjectId,
           sectionId: c.sectionId,
+          sectionIds: c.sectionIds,
           roomId: c.roomId,
           duration: c.duration,
           subjectName: c.subjectName
@@ -1498,6 +1499,7 @@ const saveAbsenceAndFindSlots = async () => {
         classes: JSON.stringify(rescheduledClasses.map(c => ({
           subjectId: c.subjectId,
           sectionId: c.sectionId,
+          sectionIds: c.sectionIds,
           roomId: c.roomId,
           duration: c.duration,
           subjectName: c.subjectName
@@ -1657,32 +1659,41 @@ const saveMakeupClass = async () => {
         let endTime = addHours(currentTime, cls.duration)
 
         // ถ้าเวลาจบคร่อม 12:00 (หมายถึงช่วง 12:00-13:00) ให้บวกเพิ่มอีก 1 ชม. เพื่อข้ามพักเที่ยง
-        // เช่น เริ่ม 11:00 เรียน 2 ชม. ปกติจบ 13:00 แต่ต้องจบ 14:00 เพราะพัก 12:00-13:00
         const startHour = parseInt(currentTime.split(':')[0])
         const endHour = parseInt(endTime.split(':')[0])
         if (startHour < 12 && endHour > 12) {
           endTime = addHours(endTime, 1)
         }
 
-        const res = await $fetch('/api/makeup-classes', {
-          method: 'POST',
-          body: {
-            original_date: selectedSlot.value.missedDate || absenceForm.value.date,
-            original_time_slot: '',
-            makeup_date: selectedSlot.value.date,
-            makeup_time_start: currentTime,
-            makeup_time_end: endTime,
-            teacher_id: absenceForm.value.teacherId,
-            section_id: cls.sectionId,
-            subject_id: cls.subjectId,
-            room_id: cls.roomId || null,
-            term: absenceForm.value.term,
-            status: 'confirmed',
-            notes: makeupForm.value.notes,
-            exclude_makeup_ids: createdIds // ป้องกัน false-positive จากวิชาก่อนหน้าในกลุ่มเดียวกัน
-          }
-        })
-        createdIds.push(res.id_makeup)
+        const sectionIds = cls.sectionIds && cls.sectionIds.length > 0 ? cls.sectionIds : [cls.sectionId]
+        const makeupIdsForThisClass = []
+
+        for (const secId of sectionIds) {
+          if (!secId) continue
+          const res = await $fetch('/api/makeup-classes', {
+            method: 'POST',
+            body: {
+              original_date: selectedSlot.value.missedDate || absenceForm.value.date,
+              original_time_slot: '',
+              makeup_date: selectedSlot.value.date,
+              makeup_time_start: currentTime,
+              makeup_time_end: endTime,
+              teacher_id: absenceForm.value.teacherId,
+              section_id: secId,
+              subject_id: cls.subjectId,
+              room_id: cls.roomId || null,
+              term: absenceForm.value.term,
+              status: 'confirmed',
+              notes: makeupForm.value.notes,
+              exclude_makeup_ids: createdIds // ป้องกัน false-positive จากวิชาก่อนหน้าในกลุ่มเดียวกัน
+            }
+          })
+          createdIds.push(res.id_makeup)
+          makeupIdsForThisClass.push(res.id_makeup)
+        }
+        
+        // Save the ids for the calendar event creation
+        cls._makeupIds = makeupIdsForThisClass
         currentTime = endTime
       }
     } else {
@@ -1709,7 +1720,7 @@ const saveMakeupClass = async () => {
       let currentTime = selectedSlot.value.timeStart
       for (let i = 0; i < classes.length; i++) {
         const cls = classes[i]
-        const idMakeup = createdIds[i]
+        const idsMakeup = cls._makeupIds || []
 
         if (currentTime === '12:00') currentTime = '13:00'
 
@@ -1735,7 +1746,7 @@ const saveMakeupClass = async () => {
               originalDate: selectedSlot.value.missedDate || absenceForm.value.date,
               term: absenceForm.value.term,
               classes: JSON.stringify([cls]),
-              makeupClassIds: JSON.stringify([idMakeup]),
+              makeupClassIds: JSON.stringify(idsMakeup),
               roomId: cls.roomId,
               roomName: props.rooms?.find(r => Number(r.id_room) === Number(cls.roomId))?.room_name || '',
               description: `วิชา: ${cls.subjectName}${cls.roomId ? '\nห้อง: ' + (props.rooms?.find(r => Number(r.id_room) === Number(cls.roomId))?.room_name || cls.roomId) : ''}${makeupForm.value.notes ? '\n' + makeupForm.value.notes : ''}`
