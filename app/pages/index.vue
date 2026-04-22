@@ -10,7 +10,3 @@
 // Teacher data is still needed for the calendar filtering/display
 const { data: teachers } = await useFetch('/api/teachers')
 </script>
-
-<style scoped>
-/* Page specific styles */
-</style>

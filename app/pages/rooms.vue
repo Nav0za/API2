@@ -533,23 +533,3 @@ const deleteRoom = async () => {
 }
 </script>
 
-<style scoped>
-/* Scrollbar Styling for Table */
-.custom-scrollbar::-webkit-scrollbar {
-  height: 12px;
-  width: 12px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #94a3b8;
-  border-radius: 10px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
-}
-</style>

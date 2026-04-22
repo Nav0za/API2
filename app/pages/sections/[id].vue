@@ -1048,18 +1048,3 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-/* Custom Scrollbar */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #1e293b;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 3px;
-}
-</style>
