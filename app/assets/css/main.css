@@ -23,8 +23,7 @@ body {
   color: #0f172a;
 }
 
-/* FullCalendar button theme (Premium Light) */
-/* FullCalendar button theme (Primary) */
+/* ===== FullCalendar Styles ===== */
 .fc .fc-button,
 .fc .fc-button-primary {
   background-color: var(--color-primary-500, #3b82f6) !important;
@@ -48,7 +47,6 @@ body {
   color: #ffffff !important;
 }
 
-/* FullCalendar date/holiday text (Premium Light) */
 .fc .fc-daygrid-day-number,
 .fc .fc-daygrid-day-top .fc-daygrid-day-number,
 .fc .fc-daygrid-day-number > span,
@@ -62,13 +60,11 @@ body {
   opacity: 1 !important;
 }
 
-/* Ensure holidays/events display as dark text */
 .fc .fc-daygrid-event-harness .fc-event-title,
 .fc .fc-daygrid-event-harness .fc-event-time {
   color: #0f172a !important;
 }
 
-/* FullCalendar toolbar (title + nav buttons) */
 .fc .fc-toolbar,
 .fc .fc-toolbar-chunk {
   background: #ffffff !important;
@@ -79,7 +75,182 @@ body {
   color: #0f172a !important;
 }
 
-/* Ensure today button & nav icons show correctly */
 .fc .fc-button.fc-button-primary .fc-icon {
   color: #ffffff !important;
+}
+
+/* FullCalendar - extracted from AppCalendar.vue */
+.fc-daygrid-event {
+  cursor: pointer;
+}
+
+.fc-event {
+  border-radius: 4px;
+}
+
+.event-holiday .fc-event-title,
+.event-holiday .fc-event-main-frame {
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  padding: 2px 4px !important;
+}
+
+.fc .fc-col-header,
+.fc .fc-col-header tr,
+.fc .fc-col-header th {
+  background-color: #ffffff !important;
+}
+
+.fc .fc-col-header-cell {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+.fc .fc-col-header-cell-cushion {
+  color: #0f172a !important;
+  font-weight: 600;
+}
+
+.fc .fc-scrollgrid {
+  border-color: #e2e8f0 !important;
+}
+
+.fc-theme-standard th {
+  background-color: #f8fafc !important;
+}
+
+.fc .fc-list-day th,
+.fc .fc-list-day td,
+.fc .fc-list-day-cushion,
+.fc .fc-cell-shaded {
+  background-color: #ffffff !important;
+}
+
+.fc-list-day-text,
+.fc-list-day-side-text,
+.fc-list-day-cushion * {
+  color: #1e293b !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+}
+
+.fc-list-event:hover td {
+  background-color: #f1f5f9 !important;
+}
+
+/* ===== Custom Scrollbar (ใช้ร่วมกันทุกหน้า) ===== */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ===== Animations (teacher/[id].vue) ===== */
+@keyframes zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-in {
+  animation: zoom-in 0.2s ease-out forwards;
+}
+
+/* ===== Print Styles (summary.vue) ===== */
+@media print {
+  body,
+  .min-h-screen {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  .min-h-screen {
+    background: white !important;
+    padding-bottom: 0 !important;
+  }
+
+  .no-print,
+  header,
+  nav,
+  .bg-slate-800.sticky {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .bg-slate-800 {
+    background-color: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+
+  .text-white { color: black !important; }
+  .text-slate-400 { color: #475569 !important; }
+  .text-green-500, .text-green-400 { color: #166534 !important; }
+  .text-amber-500, .text-amber-400 { color: #92400e !important; }
+  .text-red-500, .text-red-400 { color: #991b1b !important; }
+
+  .bg-slate-900 {
+    background-color: #f1f5f9 !important;
+  }
+
+  .bg-gradient-to-r {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  th {
+    background-color: #f1f5f9 !important;
+    color: black !important;
+    border-bottom: 2px solid black !important;
+  }
+
+  td {
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  .container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .grid { display: grid !important; }
+
+  .lg\:grid-cols-2 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .mb-8 { margin-bottom: 2rem !important; }
+
+  @page {
+    margin: 1cm;
+    size: A4;
+  }
 }
