@@ -140,7 +140,7 @@
                   <td
                     class="p-4 sticky left-0 bg-white z-10 w-48 shadow-[2px_0_5px_rgba(0,0,0,0.1)] group-hover:bg-slate-50 transition-colors"
                   >
-                    <p class="font-bold text-slate-900 truncate max-w-[160px]">
+                    <p class="text-base font-bold text-slate-900 truncate max-w-[160px]">
                       {{ room.room_name }}
                     </p>
 
@@ -164,11 +164,11 @@
                       >
                         <div class="text-center w-full relative z-40">
                           <p
-                            class="font-bold text-[11px] line-clamp-2 leading-snug break-words whitespace-normal text-white"
+                            class="font-bold text-sm line-clamp-2 leading-snug break-words whitespace-normal text-white"
                           >
                             {{ slot.subjectName }}
                           </p>
-                          <p class="text-[10px] mt-1 line-clamp-1 whitespace-normal text-slate-300">
+                          <p class="text-xs mt-1 line-clamp-1 whitespace-normal text-slate-300">
                             {{
                               slot.teacherName }}
                           </p>
@@ -185,13 +185,13 @@
                       </div>
 
                       <p
-                        class="text-[11px] font-bold truncate leading-tight"
+                        class="text-sm font-bold truncate leading-tight"
                         :class="slot.type === 'makeup' ? 'text-rose-700' : 'text-indigo-800'"
                       >
                         {{ slot.subjectName }}
                       </p>
                       <p
-                        class="text-[10px] truncate"
+                        class="text-xs truncate"
                         :class="slot.type === 'makeup' ? 'text-rose-600/80' : 'text-indigo-600/80'"
                       >
                         {{ slot.teacherName }}
