@@ -761,6 +761,8 @@ watch(existingSchedule, (data) => {
         return { value: slot, room_id: null, section_ids: [] }
       })
     })
+  } else {
+    clearSchedule(true)
   }
 }, { immediate: true })
 
