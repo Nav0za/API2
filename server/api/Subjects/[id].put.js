@@ -12,9 +12,9 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // 1. Update Subject name
-  const stmt = db.prepare('UPDATE Subjects SET name_subject = ? WHERE id_subject = ?')
-  stmt.run(body.name_subject, id)
+  // 1. Update Subject name and curriculum link
+  const stmt = db.prepare('UPDATE Subjects SET name_subject = ?, curriculum_subject_id = ? WHERE id_subject = ?')
+  stmt.run(body.name_subject, body.curriculum_subject_id || null, id)
 
   // Update Sections if provided
   if (body.id_sections && Array.isArray(body.id_sections)) {
