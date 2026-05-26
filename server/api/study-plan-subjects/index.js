@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
         JOIN curriculum_subjects cs ON sps.id_subject_curr = cs.id_subject_curr
         LEFT JOIN curriculum_categories cc ON cs.id_category = cc.id_category
         WHERE sps.id_plan = ?
-        ORDER BY cc.id_category ASC, cs.subject_code ASC
+        ORDER BY sps.year ASC, sps.semester ASC, cc.id_category ASC, cs.subject_code ASC
       `).all(query.id_plan)
     }
     return []
@@ -21,10 +21,12 @@ export default defineEventHandler(async (event) => {
     if (!body.id_plan || !body.id_subject_curr) {
       throw createError({ statusCode: 400, statusMessage: 'id_plan and id_subject_curr are required' })
     }
+    const year = body.year || 1
+    const semester = body.semester || 1
 
     try {
-      const stmt = db.prepare('INSERT INTO study_plan_subjects (id_plan, id_subject_curr) VALUES (?, ?)')
-      const result = stmt.run(body.id_plan, body.id_subject_curr)
+      const stmt = db.prepare('INSERT INTO study_plan_subjects (id_plan, id_subject_curr, year, semester) VALUES (?, ?, ?, ?)')
+      const result = stmt.run(body.id_plan, body.id_subject_curr, year, semester)
       
       // Fetch details back
       const inserted = db.prepare(`

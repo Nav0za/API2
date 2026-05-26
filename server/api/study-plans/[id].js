@@ -5,12 +5,14 @@ export default defineEventHandler(async (event) => {
 
   if (event.node.req.method === 'PUT') {
     const body = await readBody(event)
-    if (!body.name_plan || !body.level || !body.year || !body.semester) {
-      throw createError({ statusCode: 400, statusMessage: 'All fields are required' })
+    if (!body.name_plan || !body.level) {
+      throw createError({ statusCode: 400, statusMessage: 'Name and level are required' })
     }
+    const year = body.year || 0
+    const semester = body.semester || 0
 
     const stmt = db.prepare('UPDATE study_plans SET name_plan = ?, level = ?, year = ?, semester = ? WHERE id_plan = ?')
-    const result = stmt.run(body.name_plan, body.level, body.year, body.semester, id)
+    const result = stmt.run(body.name_plan, body.level, year, semester, id)
     
     if (result.changes === 0) {
       throw createError({ statusCode: 404, statusMessage: 'Study Plan not found' })

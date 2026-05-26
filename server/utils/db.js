@@ -13,6 +13,62 @@ if (!existsSync(dbDir)) {
 const dbPath = resolve(dbDir, 'data.db')
 const db = new Database(dbPath)
 
+// curriculums
+db.exec(`
+  CREATE TABLE IF NOT EXISTS curriculums (
+    id_curriculum INTEGER PRIMARY KEY AUTOINCREMENT,
+    name_curriculum TEXT NOT NULL UNIQUE,
+    description TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );`)
+
+// curriculum_categories
+db.exec(`
+  CREATE TABLE IF NOT EXISTS curriculum_categories (
+    id_category INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_curriculum INTEGER NOT NULL,
+    parent_id INTEGER,
+    name_category TEXT NOT NULL,
+    FOREIGN KEY (id_curriculum) REFERENCES curriculums(id_curriculum) ON DELETE CASCADE,
+    FOREIGN KEY (parent_id) REFERENCES curriculum_categories(id_category) ON DELETE CASCADE
+  );`)
+
+// curriculum_subjects
+db.exec(`
+  CREATE TABLE IF NOT EXISTS curriculum_subjects (
+    id_subject_curr INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_category INTEGER NOT NULL,
+    subject_code TEXT,
+    name_subject TEXT NOT NULL,
+    FOREIGN KEY (id_category) REFERENCES curriculum_categories(id_category) ON DELETE CASCADE
+  );`)
+
+// study_plans
+db.exec(`
+  CREATE TABLE IF NOT EXISTS study_plans (
+    id_plan INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_curriculum INTEGER NOT NULL,
+    name_plan TEXT NOT NULL,
+    level TEXT NOT NULL,
+    year INTEGER NOT NULL,
+    semester INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_curriculum) REFERENCES curriculums(id_curriculum) ON DELETE CASCADE
+  );`)
+
+// study_plan_subjects
+db.exec(`
+  CREATE TABLE IF NOT EXISTS study_plan_subjects (
+    id_plan_subject INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_plan INTEGER NOT NULL,
+    id_subject_curr INTEGER NOT NULL,
+    year INTEGER DEFAULT 1,
+    semester INTEGER DEFAULT 1,
+    FOREIGN KEY (id_plan) REFERENCES study_plans(id_plan) ON DELETE CASCADE,
+    FOREIGN KEY (id_subject_curr) REFERENCES curriculum_subjects(id_subject_curr) ON DELETE CASCADE,
+    UNIQUE(id_plan, id_subject_curr)
+  );`)
+
 // teachers
 db.exec(`
   CREATE TABLE IF NOT EXISTS teachers (
@@ -106,6 +162,17 @@ try {
     db.exec('ALTER TABLE teachers DROP COLUMN subject')
     console.log('Migrated teachers table: removed unused subject column')
   }
+  // Migration: Add year and semester to study_plan_subjects
+  const spsTableInfo = db.prepare('PRAGMA table_info(study_plan_subjects)').all()
+  if (!spsTableInfo.some(col => col.name === 'year')) {
+    db.exec('ALTER TABLE study_plan_subjects ADD COLUMN year INTEGER DEFAULT 1')
+    console.log('Migrated study_plan_subjects table: added year column')
+  }
+  if (!spsTableInfo.some(col => col.name === 'semester')) {
+    db.exec('ALTER TABLE study_plan_subjects ADD COLUMN semester INTEGER DEFAULT 1')
+    console.log('Migrated study_plan_subjects table: added semester column')
+  }
+
 } catch (err) {
   console.error('Migration error:', err)
 }
@@ -330,6 +397,12 @@ try {
 
   // Add index for Subjects term
   db.exec('CREATE INDEX IF NOT EXISTS idx_subjects_term ON Subjects(term)')
+
+  // Add curriculum_subject_id to Subjects if missing
+  if (!subjectInfo.some(col => col.name === 'curriculum_subject_id')) {
+    db.exec('ALTER TABLE Subjects ADD COLUMN curriculum_subject_id INTEGER REFERENCES curriculum_subjects(id_subject_curr) ON DELETE SET NULL')
+    console.log('Migrated Subjects table: added curriculum_subject_id column')
+  }
 
   // 2. Sections/Terms Restructuring
   const sectionInfo = db.prepare('PRAGMA table_info(sections)').all()
