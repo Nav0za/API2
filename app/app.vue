@@ -90,6 +90,7 @@ useHead({
           :ui="{ leadingIcon: 'text-primary' }"
           to="/teachers"
         />
+        <UColorModeButton />
       </template>
     </UHeader>
 
