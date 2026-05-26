@@ -744,6 +744,14 @@ watch(term, () => {
   refreshSchedule()
 })
 
+// Function declarations should be hoisted or defined before they're used in the watch callback
+const clearSchedule = (noConfirm = false) => {
+  if (!noConfirm && !confirm('ล้างตารางทั้งหมด?')) return
+  scheduleSlots.value = Array.from({ length: 7 }, () =>
+    Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [] }))
+  )
+}
+
 watch(existingSchedule, (data) => {
   if (data && data.scheduleData) {
     // Normalize existing data
@@ -1013,12 +1021,7 @@ const getSubjectLabel = (val, roomId = null, sectionIds = null) => {
   return `${subj.name_subject}${teacherName} ${sectionDisplay} ${roomName ? `[${roomName}]` : ''}`
 }
 
-const clearSchedule = (noConfirm = false) => {
-  if (!noConfirm && !confirm('ล้างตารางทั้งหมด?')) return
-  scheduleSlots.value = Array.from({ length: 7 }, () =>
-    Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [] }))
-  )
-}
+
 
 const saveSchedule = async () => {
   saving.value = true
