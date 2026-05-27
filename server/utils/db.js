@@ -425,6 +425,12 @@ try {
     console.log('Migrated Subjects table: added curriculum_subject_id column')
   }
 
+  // Add external_teacher_name to Subjects if missing
+  if (!subjectInfo.some(col => col.name === 'external_teacher_name')) {
+    db.exec('ALTER TABLE Subjects ADD COLUMN external_teacher_name TEXT')
+    console.log('Migrated Subjects table: added external_teacher_name column')
+  }
+
   // Add credits and hours to curriculum_subjects
   const currSubjectsInfo = db.prepare('PRAGMA table_info(curriculum_subjects)').all()
   if (!currSubjectsInfo.some(col => col.name === 'credit')) {
@@ -436,6 +442,19 @@ try {
 
   // 2. Sections/Terms Restructuring
   const sectionInfo = db.prepare('PRAGMA table_info(sections)').all()
+  
+  // Add id_plan to sections if missing
+  if (!sectionInfo.some(col => col.name === 'id_plan')) {
+    db.exec('ALTER TABLE sections ADD COLUMN id_plan INTEGER REFERENCES study_plans(id_plan) ON DELETE SET NULL')
+    console.log('Migrated sections table: added id_plan column')
+  }
+
+  // Add id_plan_subject to Subjects if missing
+  if (!subjectInfo.some(col => col.name === 'id_plan_subject')) {
+    db.exec('ALTER TABLE Subjects ADD COLUMN id_plan_subject INTEGER REFERENCES study_plan_subjects(id_plan_subject) ON DELETE SET NULL')
+    console.log('Migrated Subjects table: added id_plan_subject column')
+  }
+
   if (sectionInfo.some(col => col.name === 'term')) {
     console.log('Starting Sections/Terms migration...')
 

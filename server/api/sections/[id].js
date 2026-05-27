@@ -1,5 +1,17 @@
 import db from '../../utils/db.js'
 
+const parsePlanId = (raw) => {
+  if (raw == null) return null
+  if (typeof raw === 'object') {
+    const v = raw.value ?? raw.id_plan ?? null
+    if (v == null) return null
+    const n = Number(v)
+    return Number.isFinite(n) ? n : null
+  }
+  const n = Number(raw)
+  return Number.isFinite(n) ? n : null
+}
+
 export default defineEventHandler(async (event) => {
   const id = event.context.params.id
 
@@ -11,13 +23,15 @@ export default defineEventHandler(async (event) => {
       const stmt = db.prepare(`
         UPDATE sections 
         SET section_name = COALESCE(?, section_name),
-            description = COALESCE(?, description)
+            description = COALESCE(?, description),
+            id_plan = COALESCE(?, id_plan)
         WHERE id_section = ?
       `)
 
       const result = stmt.run(
         body.section_name || null,
         body.description !== undefined ? body.description : null,
+        body.id_plan !== undefined ? parsePlanId(body.id_plan) : null,
         id
       )
 

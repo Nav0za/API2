@@ -60,9 +60,11 @@ export function syncTeacherToSections(teacherId, term, newTeacherSchedule) {
 
           if (teacherVal && teacherSubjectIds.has(teacherVal) && subjectToSections[teacherVal].has(normalizeId(sectionId)) && isSectionActive) {
             const teacherRoom = newTeacherSchedule[d][s]?.room_id || null
-            if (sectionVal !== teacherVal || sectionScheduleData[d][s].room_id !== teacherRoom) {
+            const teacherType = newTeacherSchedule[d][s]?.type || null
+            if (sectionVal !== teacherVal || sectionScheduleData[d][s].room_id !== teacherRoom || sectionScheduleData[d][s].type !== teacherType) {
               sectionScheduleData[d][s].value = teacherVal
               sectionScheduleData[d][s].room_id = teacherRoom
+              sectionScheduleData[d][s].type = teacherType
               modified = true
             }
           }
@@ -72,6 +74,7 @@ export function syncTeacherToSections(teacherId, term, newTeacherSchedule) {
             // If we are here, Case A failed, meaning teacher schedule doesn't have THIS subject here for THIS section.
             sectionScheduleData[d][s].value = null
             sectionScheduleData[d][s].room_id = null
+            sectionScheduleData[d][s].type = null
             modified = true
           }
         }
@@ -139,6 +142,7 @@ export function syncSectionToTeachers(sectionId, term, newSectionSchedule) {
           // Case A: This slot in Section's schedule has a subject taught by THIS teacher
           if (sectionVal && sectionSubjectIds.has(sectionVal) && subjectToTeacher[sectionVal] === teacherId) {
             const sectionRoom = newSectionSchedule[d][s]?.room_id || null
+            const sectionType = newSectionSchedule[d][s]?.type || null
 
             // Handle section_ids in teacher schedule
             let teacherSections = teacherScheduleData[d][s].section_ids || []
@@ -146,9 +150,10 @@ export function syncSectionToTeachers(sectionId, term, newSectionSchedule) {
               teacherSections = [...teacherSections, Number(sectionId)]
             }
 
-            if (teacherVal !== sectionVal || teacherScheduleData[d][s].room_id !== sectionRoom || JSON.stringify(teacherScheduleData[d][s].section_ids) !== JSON.stringify(teacherSections)) {
+            if (teacherVal !== sectionVal || teacherScheduleData[d][s].room_id !== sectionRoom || teacherScheduleData[d][s].type !== sectionType || JSON.stringify(teacherScheduleData[d][s].section_ids) !== JSON.stringify(teacherSections)) {
               teacherScheduleData[d][s].value = sectionVal
               teacherScheduleData[d][s].room_id = sectionRoom
+              teacherScheduleData[d][s].type = sectionType
               teacherScheduleData[d][s].section_ids = teacherSections
               modified = true
             }
@@ -167,6 +172,7 @@ export function syncSectionToTeachers(sectionId, term, newSectionSchedule) {
               if (teacherSections.length === 0) {
                 teacherScheduleData[d][s].value = null
                 teacherScheduleData[d][s].room_id = null
+                teacherScheduleData[d][s].type = null
               }
               modified = true
             }

@@ -3,10 +3,11 @@
     <!-- Navbar -->
     <nav class="sticky top-16 z-50 bg-white border-b border-slate-200 p-3 shadow-sm no-print">
       <div class="container mx-auto flex items-center">
-        <UButton icon="i-lucide-arrow-left" label="ย้อนกลับ" color="gray" variant="ghost" size="lg" to="/" class="font-bold text-md cursor-pointer hover:bg-slate-100" />
+        <UButton icon="i-lucide-arrow-left" label="ย้อนกลับ" color="gray" variant="ghost" size="lg" to="/"
+          class="font-bold text-md cursor-pointer hover:bg-slate-100" />
       </div>
     </nav>
-      
+
     <!-- Header (Not sticky) -->
     <div class="bg-white border-b border-slate-200 p-6 shadow-sm mb-8 no-print">
       <div class="container mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
@@ -73,7 +74,10 @@
               </UDropdownMenu>
             </div>
 
-            <p class="text-sm text-slate-600 line-clamp-2 h-10 mb-6">
+            <p class="text-sm font-bold text-slate-800 mb-1 flex items-center gap-1.5" v-if="section.name_plan">
+              <UIcon name="i-heroicons-academic-cap" /> {{ section.curriculum_name }} - {{ section.name_plan }}
+            </p>
+            <p class="text-sm text-slate-600 line-clamp-2 h-10 mb-6" :class="{ 'mt-2': !section.name_plan }">
               {{ section.description || 'ไม่มีรายละเอียดเพิ่มเติม' }}
             </p>
 
@@ -114,6 +118,20 @@
                 :ui="{ label: 'text-slate-900 font-bold mb-2' }">
                 <UInput v-model="newSection.name" placeholder="กรอกชื่อกลุ่มเรียน..." size="xl" class="rounded-xl"
                   autofocus :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }" />
+              </UFormField>
+
+              <UFormField class="text-lg" label="แผนการเรียน (หลักสูตร) *"
+                help="เลือกว่ากลุ่มเรียนนี้ใช้โครงสร้างตามแผนการเรียนไหน"
+                :ui="{ label: 'text-slate-900 font-bold mb-2' }">
+                <USelectMenu v-model="newSection.id_plan" :items="studyPlanOptions" class="w-full"
+                  value-attribute="value" option-attribute="label" placeholder="-- เลือกแผนการเรียน --" size="xl"
+                  :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl break-words whitespace-normal text-left h-auto py-2' }">
+                  <template #item="{ item }">
+                    <span class="whitespace-normal break-words text-left w-full block py-0.5">
+                      {{ item.label }}
+                    </span>
+                  </template>
+                </USelectMenu>
               </UFormField>
 
 
@@ -165,12 +183,18 @@
                   autofocus :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl' }" />
               </UFormField>
 
-              <UFormField label="เทอมปัจจุบัน" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
-                <UInput :model-value="`เทอม ${editingSection.term}`" disabled size="xl" class="rounded-xl opacity-70"
-                  :ui="{ base: 'bg-slate-50 border-slate-200 text-slate-500 rounded-2xl' }" />
-                <p class="text-xs text-slate-500 mt-2">
-                  หมายเหตุ: ไม่สามารถเปลี่ยนเทอมได้หลังจากสร้างแล้วค่ะ
-                </p>
+              <UFormField class="text-lg" label="แผนการเรียน (หลักสูตร)"
+                help="เลือกว่ากลุ่มเรียนนี้ใช้โครงสร้างตามแผนการเรียนไหน"
+                :ui="{ label: 'text-slate-900 font-bold mb-2' }">
+                <USelectMenu v-model="editingSection.id_plan" :items="studyPlanOptions" value-attribute="value"
+                  option-attribute="label" placeholder="-- เลือกแผนการเรียน --" size="xl" class="w-full"
+                  :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl break-words whitespace-normal text-left h-auto py-2' }">
+                  <template #item="{ item }">
+                    <span class="whitespace-normal break-words text-left w-full block py-0.5">
+                      {{ item.label }}
+                    </span>
+                  </template>
+                </USelectMenu>
               </UFormField>
 
               <UFormField label="รายละเอียด" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
@@ -249,6 +273,32 @@ const toast = useToast()
 
 // Data fetching
 const { data: terms } = await useFetch('/api/terms')
+const { data: studyPlans } = await useFetch('/api/study-plans')
+
+const normalizePlanId = (val) => {
+  if (val == null) return null
+  if (typeof val === 'object') {
+    // USelectMenu can emit the whole item object depending on config/version
+    const maybe = val.value ?? val.id_plan ?? null
+    return maybe == null ? null : Number(maybe)
+  }
+  const n = Number(val)
+  return Number.isFinite(n) ? n : null
+}
+
+const studyPlanOptions = computed(() => {
+  if (!studyPlans.value) return []
+  return studyPlans.value.map(p => ({
+    value: p.id_plan,
+    label: `${p.name_curriculum ? p.name_curriculum + ' - ' : ''}${p.name_plan}`
+  }))
+})
+
+const getPlanOptionById = (id) => {
+  const planId = normalizePlanId(id)
+  if (planId == null) return null
+  return studyPlanOptions.value.find(opt => Number(opt.value) === planId) || planId
+}
 
 // State
 const openAddModal = ref(false)
@@ -262,14 +312,15 @@ const selectedTerm = ref('')
 const newSection = ref({
   name: '',
   term: '',
-  description: ''
+  description: '',
+  id_plan: null
 })
 
 const editingSection = ref({ // State for editing
   id: null,
   name: '',
-  term: '',
-  description: ''
+  description: '',
+  id_plan: null
 })
 
 const deletingSection = ref(null) // State for deleting
@@ -342,7 +393,8 @@ const handleAddSection = async () => {
       method: 'POST',
       body: {
         section_name: newSection.value.name,
-        description: newSection.value.description
+        description: newSection.value.description,
+        id_plan: normalizePlanId(newSection.value.id_plan)
       }
     })
 
@@ -350,6 +402,7 @@ const handleAddSection = async () => {
     openAddModal.value = false
     newSection.value.name = ''
     newSection.value.description = ''
+    newSection.value.id_plan = null
     refresh()
   } catch (error) {
     console.error(error)
@@ -368,8 +421,8 @@ const openEditSectionModal = (section) => {
   editingSection.value = {
     id: section.id_section,
     name: section.section_name,
-    term: section.term,
-    description: section.description
+    description: section.description,
+    id_plan: getPlanOptionById(section.id_plan)
   }
   openEditModal.value = true
 }
@@ -386,7 +439,8 @@ const handleEditSection = async () => {
       method: 'PUT',
       body: {
         section_name: editingSection.value.name,
-        description: editingSection.value.description
+        description: editingSection.value.description,
+        id_plan: normalizePlanId(editingSection.value.id_plan)
       }
     })
 

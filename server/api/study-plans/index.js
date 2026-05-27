@@ -3,10 +3,24 @@ import db from '../../utils/db.js'
 export default defineEventHandler(async (event) => {
   if (event.node.req.method === 'GET') {
     const query = getQuery(event)
+    let stmt;
     if (query.id_curriculum) {
-      return db.prepare('SELECT * FROM study_plans WHERE id_curriculum = ? ORDER BY created_at DESC').all(query.id_curriculum)
+      stmt = db.prepare(`
+        SELECT p.*, c.name_curriculum 
+        FROM study_plans p
+        LEFT JOIN curriculums c ON p.id_curriculum = c.id_curriculum
+        WHERE p.id_curriculum = ? 
+        ORDER BY p.created_at DESC
+      `)
+      return stmt.all(query.id_curriculum)
     }
-    return db.prepare('SELECT * FROM study_plans ORDER BY id_curriculum ASC, created_at DESC').all()
+    stmt = db.prepare(`
+      SELECT p.*, c.name_curriculum 
+      FROM study_plans p
+      LEFT JOIN curriculums c ON p.id_curriculum = c.id_curriculum
+      ORDER BY p.id_curriculum ASC, p.created_at DESC
+    `)
+    return stmt.all()
   }
 
   if (event.node.req.method === 'POST') {

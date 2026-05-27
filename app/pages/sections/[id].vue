@@ -63,54 +63,101 @@
         </div>
       </div>
 
-      <!-- External Subjects Grid View -->
+      <!-- Subjects in Schedule Grid View -->
       <div class="w-full mt-6 mb-8">
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div class="p-5 border-b border-slate-100 flex justify-between items-center text-slate-900 bg-slate-50/50">
+          <div class="p-5 border-b border-slate-100 flex items-center justify-between text-slate-900 bg-slate-50/50">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
-                <UIcon name="i-heroicons-book-open" class="text-xl text-blue-600" />
+              <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100">
+                <UIcon name="i-heroicons-academic-cap" class="text-xl text-indigo-600" />
               </div>
               <div>
                 <h1 class="text-xl font-bold text-slate-900">
-                  วิชานอกสาขา
+                  รายวิชาเรียน (จากแผนการเรียน)
                 </h1>
-                <p class="text-xs text-slate-500">รายวิชาที่ไม่ได้เรียนกับอาจารย์ในสาขา</p>
+                <p class="text-xs text-slate-500">วิชาทั้งหมดที่กลุ่มนี้จะเรียนในเทอมนี้</p>
               </div>
             </div>
 
             <div class="flex gap-3">
-              <UModal v-model:open="extSubjectModalOpen"
+              <UModal v-model:open="internalSubjectModalOpen"
                 :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
-                <UButton label="เพิ่มวิชานอกสาขา" size="xl" icon="i-heroicons-plus-circle"
-                  class="cursor-pointer rounded-xl font-bold" />
+                <UButton label="เพิ่มวิชาเรียน" size="xl" icon="i-heroicons-plus-circle" color="primary"
+                  class="cursor-pointer rounded-xl font-bold" @click="() => {
+                    if (!section?.id_plan) {
+                       toast.add({ title: 'คำเตือน', description: 'กรุณาระบุแผนการเรียนให้กลุ่มเรียนนี้ก่อนที่หน้าแรก', color: 'orange' })
+                       return
+                    }
+                    internalAddPlanId.value = Number(section.id_plan)
+                    internalSubjectModalOpen = true
+                  }" />
                 <template #content>
                   <div class="flex flex-col max-h-[85vh]">
                     <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
                       <div
-                        class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-100">
-                        <UIcon name="i-heroicons-plus-circle" class="text-3xl text-blue-600" />
+                        class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-indigo-100">
+                        <UIcon name="i-heroicons-plus-circle" class="text-3xl text-indigo-600" />
                       </div>
                       <h3 class="text-2xl font-bold text-slate-900 text-center mb-6">
-                        เพิ่มวิชานอกสาขา
+                        เพิ่มวิชาเรียน
                       </h3>
 
                       <div class="space-y-6">
                         <div>
                           <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
-                            ชื่อรายวิชา <span class="text-red-500">*</span>
+                            แผนการเรียน <span class="text-red-500">*</span>
                           </h3>
-                          <UInput v-model="newExtName" placeholder="กรอกชื่อรายวิชา" size="xl" class="w-full"
-                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl shadow-xs' }" />
+                          <UInput
+                            :model-value="selectedInternalPlanLabel"
+                            readonly
+                            size="xl"
+                            class="w-full"
+                            placeholder="ไม่พบข้อมูลแผนการเรียน"
+                            :ui="{ base: 'bg-slate-50 border-slate-200 text-slate-700 rounded-2xl shadow-xs' }"
+                          />
                         </div>
 
                         <div>
                           <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
-                            ชื่ออาจารย์ผู้สอน (ไม่ระบุก็ได้)
+                            รายวิชา <span class="text-red-500">*</span>
                           </h3>
-                          <UInput v-model="newExtInstructor" placeholder="กรอกชื่ออาจารย์ผู้สอน" size="xl"
+                          <USelectMenu v-model="internalAddSubjectId" :items="availableAddSubjectOptions"
+                            value-attribute="value" option-attribute="label" placeholder="เลือกวิชา" size="xl"
+                            :disabled="!selectedInternalPlanId" class="w-full"
+                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-indigo-500 rounded-2xl shadow-xs break-words whitespace-normal text-left h-auto py-2' }">
+                            <template #item="{ item }">
+                              <span class="whitespace-normal break-words text-left w-full block py-0.5">
+                                {{ item.label }}
+                              </span>
+                            </template>
+                          </USelectMenu>
+                          <p v-if="selectedInternalPlanId && loadingPlanSubjects" class="text-xs text-slate-400 mt-1">
+                            กำลังโหลดรายวิชาจากแผนการเรียน...
+                          </p>
+                          <p v-else-if="selectedInternalPlanId && !loadingPlanSubjects && availableAddSubjectOptions.length === 0"
+                            class="text-xs text-amber-600 mt-1">
+                            ไม่พบรายวิชาในแผนนี้ (ตรวจสอบว่ามีการเพิ่มรายวิชาในแผนการเรียนแล้ว)
+                          </p>
+                        </div>
+
+                        <div>
+                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                            อาจารย์ผู้สอน (ในสาขา หรือ นอกสาขา) <span class="text-red-500">*</span>
+                          </h3>
+                          <USelectMenu v-model="internalAddTeacherId" :items="teacherOptionsWithExternal"
+                            value-attribute="value" option-attribute="label" placeholder="เลือกอาจารย์ผู้สอน" size="xl"
                             class="w-full"
-                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl shadow-xs' }" />
+                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-indigo-500 rounded-2xl shadow-xs break-words whitespace-normal text-left h-auto py-2' }" />
+                        </div>
+
+                        <div v-if="isExternalTeacherSelected"
+                          class="animate-in fade-in slide-in-from-top-4 duration-300">
+                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                            ระบุชื่ออาจารย์นอกสาขา <span class="text-red-500">*</span>
+                          </h3>
+                          <UInput v-model="internalAddExternalName" placeholder="เช่น อ.สมชาย ใจดี" size="xl"
+                            class="w-full"
+                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-indigo-500 rounded-2xl shadow-xs' }" />
                         </div>
                       </div>
                     </div>
@@ -118,126 +165,13 @@
                     <div class="p-6 border-t border-slate-100 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10 w-full">
                       <div class="flex gap-3">
                         <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
-                          class="rounded-2xl py-4 flex-1 font-bold" @click="extSubjectModalOpen = false" />
-                        <UButton label="บันทึกรายวิชา" color="primary" size="xl" block
-                          class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/10 font-bold" :loading="addingExt"
-                          :disabled="!newExtName.trim()" @click="async () => {
-                            await addExtSubject()
-                            extSubjectModalOpen = false
+                          class="rounded-2xl py-4 flex-1 font-bold" @click="internalSubjectModalOpen = false" />
+                        <UButton label="บันทึกรายวิชา" color="indigo" size="xl" block
+                          class="rounded-2xl py-4 flex-1 shadow-lg shadow-indigo-500/10 font-bold"
+                          :loading="addingInternal" :disabled="!isValidInternalSubject" @click="async () => {
+                            await addInternalSubject()
+                            internalSubjectModalOpen = false
                           }" />
-                      </div>
-                    </div>
-                  </div>
-                </template>
-              </UModal>
-
-              <!-- Modal for editing -->
-              <UModal v-model:open="editExtModalOpen"
-                :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
-                <template #content>
-                  <div class="flex flex-col max-h-[85vh]">
-                    <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
-                      <div
-                        class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-100">
-                        <UIcon name="i-lucide-edit" class="text-3xl text-blue-600" />
-                      </div>
-                      <h3 class="text-2xl font-bold text-slate-900 text-center mb-6">
-                        แก้ไขวิชานอกสาขา
-                      </h3>
-
-                      <div class="space-y-6">
-                        <div>
-                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
-                            ชื่อรายวิชา <span class="text-red-500">*</span>
-                          </h3>
-                          <UInput v-model="editExtName" placeholder="กรอกชื่อรายวิชา" size="xl" class="w-full"
-                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl shadow-xs' }" />
-                        </div>
-
-                        <div>
-                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
-                            ชื่ออาจารย์ผู้สอน (ไม่ระบุก็ได้)
-                          </h3>
-                          <UInput v-model="editExtInstructor" placeholder="กรอกชื่ออาจารย์ผู้สอน" size="xl"
-                            class="w-full"
-                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl shadow-xs' }" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="p-6 border-t border-slate-100 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10 w-full">
-                      <div class="flex gap-3">
-                        <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
-                          class="rounded-2xl py-4 flex-1 font-bold" @click="editExtModalOpen = false" />
-                        <UButton label="บันทึกการแก้ไข" color="primary" size="xl" block
-                          class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/10 font-bold"
-                          :disabled="!editExtName.trim()" @click="async () => {
-                            await saveEditExtSubject()
-                            editExtModalOpen = false
-                          }" />
-                      </div>
-                    </div>
-                  </div>
-                </template>
-              </UModal>
-
-              <!-- ลบวิชานอกสาขา -->
-              <UModal
-                v-model:open="deleteExtModalOpen"
-                :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }"
-              >
-                <template #content>
-                  <div class="flex flex-col max-h-[85vh]">
-                    <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
-                      <div
-                        class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20"
-                      >
-                        <UIcon
-                          name="i-heroicons-exclamation-triangle"
-                          class="text-4xl text-red-500"
-                        />
-                      </div>
-
-                      <h3 class="text-2xl font-bold text-slate-900 text-center mb-2">
-                        ยืนยันลบวิชานอกสาขา
-                      </h3>
-                      <p class="text-slate-600 text-center mb-8">
-                        หากวิชานี้มีอยู่ในตารางเรียนแล้ว จะกลายเป็นสถานะ Unknown
-                      </p>
-
-                      <div class="bg-red-500/5 border border-red-500/20 p-6 rounded-2xl text-center relative overflow-hidden">
-                        <div class="relative z-10">
-                          <p class="text-xs font-black uppercase tracking-widest text-red-400/80 mb-1">
-                            วิชาที่เลือก
-                          </p>
-                          <p class="text-xl font-bold text-slate-900 line-clamp-2">
-                            {{ extSubjectToDelete?.name_subject }}
-                          </p>
-                          <p class="text-sm text-slate-500 mt-1">
-                            อาจารย์: {{ extSubjectToDelete?.instructor_name || 'ไม่ระบุ' }}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
-                      <div class="flex flex-col sm:flex-row gap-3">
-                        <UButton
-                          label="ยกเลิก"
-                          color="neutral"
-                          variant="outline"
-                          size="xl"
-                          block
-                          class="rounded-2xl border-slate-200 py-4 flex-1"
-                          @click="deleteExtModalOpen = false"
-                        />
-                        <UButton
-                          label="ยืนยันการลบถาวร"
-                          color="error"
-                          size="xl"
-                          block
-                          class="rounded-2xl py-4 flex-1 shadow-lg shadow-red-500/20 font-bold"
-                          @click="deleteExtSubject"
-                        />
                       </div>
                     </div>
                   </div>
@@ -245,30 +179,27 @@
               </UModal>
             </div>
           </div>
+
           <div class="px-5 py-4 border-t border-slate-50 max-h-80 overflow-y-auto custom-scrollbar">
-            <p v-if="!externalSubjects?.length" class="py-10 text-center text-slate-400 font-medium italic">
-              ยังไม่มีรายวิชานอกสาขา
+            <p v-if="!sectionSubjects?.length" class="py-10 text-center text-slate-400 font-medium italic">
+              ยังไม่มีรายวิชาเรียน (กรุณาเพิ่มวิชาจากแผน)
             </p>
 
-            <!-- Grid view for external subjects -->
             <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              <div v-for="ext in externalSubjects" :key="ext.id_ext_subject"
-                class="group p-4 rounded-2xl bg-slate-100/50 hover:bg-white border border-blue-200 shadow-md shadow-blue-500/5 transition-all duration-300 flex flex-col justify-between">
+              <div v-for="subj in sectionSubjects" :key="subj.id_subject"
+                class="group p-4 rounded-2xl bg-indigo-50/20 hover:bg-white border border-indigo-100 shadow-md shadow-indigo-500/5 transition-all duration-300 flex flex-col justify-between">
                 <div class="mb-3">
                   <h3
-                    class="text-base font-bold text-slate-900 leading-tight group-hover:text-blue-600 transition-colors line-clamp-2">
-                    {{ ext.name_subject }}
+                    class="text-base font-bold text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors line-clamp-2">
+                    {{ subj.name_subject }}
                   </h3>
                   <p class="text-sm text-slate-500 mt-1 line-clamp-1">
-                    อาจารย์: {{ ext.instructor_name || 'ไม่ระบุ' }}
+                    อาจารย์: {{ subj.external_teacher_name || [subj.first_name, subj.last_name].filter(Boolean).join('')
+                      ||
+                    'ไม่ระบุ' }}
+                    <span v-if="!subj.id_teacher && subj.external_teacher_name"
+                      class="text-[10px] bg-amber-100 text-amber-700 px-1 py-0.5 rounded ml-1">นอกสาขา</span>
                   </p>
-                </div>
-
-                <div class="flex items-center justify-end gap-1 mt-auto pt-3 border-t border-slate-100">
-                  <UButton label="แก้ไข" icon="i-lucide-edit" color="warning" variant="outline" size="xs"
-                    class="cursor-pointer rounded-lg hover:bg-amber-50" @click="startEditExtSubject(ext)" />
-                  <UButton label="ลบ" icon="i-lucide-trash" color="error" variant="ghost" size="xs"
-                    class="cursor-pointer rounded-lg hover:bg-red-50" @click="confirmDeleteExtSubject(ext)" />
                 </div>
               </div>
             </div>
@@ -276,9 +207,11 @@
         </div>
       </div>
 
+
+
       <!-- ตารางสอน Section Header -->
       <div
-        class="flex flex-col md:flex-row justify-between items-center mt-12 mb-6 gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        class="flex flex-col md:flex-row justify-between items-center mt-12 mb-4 gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div class="flex-1">
           <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-3 uppercase">
             <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100">
@@ -318,8 +251,8 @@
                       <h3 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 ml-1">
                         เลือกวิชา
                       </h3>
-                      <USelect v-model="quickAddSubject" placeholder="เลือกรายวิชานอกสาขา"
-                        :items="externalSubjectOptions" size="xl" class="w-full"
+                      <USelect v-model="quickAddSubject" placeholder="เลือกรายวิชา" :items="subjectOptions" size="xl"
+                        class="w-full"
                         :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl', placeholder: 'text-slate-900' }" />
                     </div>
 
@@ -403,6 +336,62 @@
         </div>
       </div>
 
+      <!-- Paint Mode Toolbar (แยกบล็อค) -->
+      <div
+        class="bg-indigo-50/50 border border-indigo-200 p-4 rounded-2xl mb-4 flex flex-col xl:flex-row gap-4 items-center shadow-inner transition-all"
+        :class="isPaintMode ? 'bg-indigo-50 ring-2 ring-indigo-500/20' : ''">
+        <div class="flex items-center gap-3 w-full xl:w-auto">
+          <USwitch v-model="isPaintMode" color="primary" size="lg" @update:model-value="togglePaintMode" />
+          <div>
+            <span class="font-bold text-indigo-900 text-lg flex items-center gap-2">
+              <UIcon name="i-lucide-paint-brush" /> โหมดวาดตาราง (Paint)
+            </span>
+            <p class="text-xs text-indigo-600/80 font-medium mt-0.5">ลากเมาส์ผ่านช่องเวลาเพื่อลงวิชาอัตโนมัติ</p>
+          </div>
+        </div>
+
+        <div v-if="isPaintMode"
+          class="flex-1 flex flex-col w-full gap-3 animate-in fade-in slide-in-from-left-4 duration-300">
+
+          <div class="flex flex-col md:flex-row w-full gap-3">
+            <USelectMenu v-model="paintSubjectId"
+              :items="[{ label: '🧹 ลบวิชา (ยางลบ)', value: null }, ...subjectOptions]" value-attribute="value"
+              option-attribute="label" placeholder="-- เลือกวิชาที่จะระบาย --" size="xl" class="flex-1 shadow-sm"
+              :ui="{ base: 'bg-white border-indigo-300 text-slate-900 focus:ring-indigo-500 rounded-xl font-bold' }" />
+
+            <USelectMenu v-model="paintType"
+              :items="[{ label: 'ทฤษฎี (ท.)', value: 'theory' }, { label: 'ปฏิบัติ (ป.)', value: 'practical' }]"
+              value-attribute="value" option-attribute="label" placeholder="-- เลือกประเภท --" size="xl"
+              class="w-full md:w-48 shadow-sm" :disabled="paintSubjectId === null"
+              :ui="{ base: 'bg-white border-indigo-300 text-slate-900 focus:ring-indigo-500 rounded-xl' }" />
+
+            <USelectMenu v-model="paintRoomId" :items="roomOptions" value-attribute="value" option-attribute="label"
+              placeholder="ห้องเรียน (ไม่บังคับ)" size="xl" class="w-full md:w-56 shadow-sm"
+              :disabled="paintSubjectId === null"
+              :ui="{ base: 'bg-white border-indigo-300 text-slate-900 focus:ring-indigo-500 rounded-xl' }" />
+
+            <div v-if="isDragging"
+              class="hidden md:flex items-center px-4 bg-indigo-500 text-white font-bold rounded-xl text-sm shadow-md animate-pulse">
+              กำลังวาด...
+            </div>
+          </div>
+
+          <div v-if="paintSubjectId && paintType"
+            class="flex items-center gap-2 bg-white/60 p-2.5 rounded-xl border border-indigo-200/50">
+            <span class="text-sm font-bold" :class="remainingHours > 0 ? 'text-green-600' : 'text-red-500'">
+              เหลือโควตาชั่วโมง {{ paintType === 'theory' ? 'ทฤษฎี (ท.)' : 'ปฏิบัติ (ป.)' }}: {{ remainingHours }} ชม.
+              (จาก {{
+                limitHours }} ชม.)
+            </span>
+          </div>
+          <div v-else-if="paintSubjectId && !paintType"
+            class="flex items-center gap-2 bg-amber-50/80 p-2.5 rounded-xl border border-amber-200/50">
+            <UIcon name="i-heroicons-exclamation-triangle" class="text-amber-500" />
+            <span class="text-sm font-bold text-amber-700">กรุณาเลือกประเภท (ทฤษฎี หรือ ปฏิบัติ) ก่อนระบาย</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Schedule Table -->
       <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
         <div class="overflow-x-auto">
@@ -442,19 +431,26 @@
                     พักกลางวัน
                   </div>
 
-                  <!-- ช่วงเวลาปกติ -->
                   <div v-else
-                    class="h-full min-h-[60px] p-1 transition-colors flex flex-col items-center justify-center text-center gap-1"
+                    class="h-full min-h-[60px] p-1 transition-colors flex flex-col items-center justify-center text-center gap-1 select-none"
                     :class="[
                       slot.value ? 'bg-blue-100' : (isActiveBox(dayIndex, slot.originalIndex) ? 'bg-blue-100' : 'bg-white hover:bg-indigo-50/80'),
-                      (isReadOnlyStudent || isTeacherSubject(slot.value)) ? 'cursor-default' : 'cursor-pointer',
-                      isActiveBox(dayIndex, slot.originalIndex) ? 'ring-2 ring-inset ring-blue-500/60' : ''
+                      (isReadOnlyStudent || isTeacherSubject(slot.value)) && !isPaintMode ? 'cursor-default' : 'cursor-pointer',
+                      isActiveBox(dayIndex, slot.originalIndex) ? 'ring-2 ring-inset ring-blue-500/60' : '',
+                      isPaintMode ? 'cursor-crosshair hover:bg-indigo-50 border border-dashed hover:border-indigo-300' : ''
                     ]"
-                    @click="!isReadOnlyStudent && !isTeacherSubject(slot.value) && toggleDropdown(dayIndex, slot.originalIndex)">
+                    @click="!isReadOnlyStudent && !isTeacherSubject(slot.value) && toggleDropdown(dayIndex, slot.originalIndex)"
+                    @mousedown="startDrag(dayIndex, slot.originalIndex)"
+                    @mouseenter="onDragOver(dayIndex, slot.originalIndex)">
                     <template v-if="slot.value">
                       <span class="font-bold text-blue-700 line-clamp-1">
                         {{ getSubjectLabel(slot.value, slot.room_id, slot.section_ids) }}
                       </span>
+                      <!-- เพิ่ม badge แสดงเวลาประเภท -->
+                      <span v-if="slot.type === 'theory'"
+                        class="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded shadow-sm leading-none mt-0.5">ทฤษฎี</span>
+                      <span v-if="slot.type === 'practical'"
+                        class="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded shadow-sm leading-none mt-0.5">ปฏิบัติ</span>
                     </template>
                     <span v-else class="text-slate-500 text-xs">ว่าง</span>
                   </div>
@@ -601,6 +597,114 @@ const editingExtId = ref(null)
 const editExtName = ref('')
 const editExtInstructor = ref('')
 const deleteExtModalOpen = ref(false)
+// Paint Mode States
+const isPaintMode = ref(false)
+const paintSubjectId = ref(null)
+const paintRoomId = ref(null)
+const paintType = ref(null) // force user to select
+const isDragging = ref(false)
+const hoursUsageData = ref(null)
+const dragCurrentDay = ref(null)
+
+const togglePaintMode = (val = null) => {
+  if (!isPaintMode.value) {
+    isDragging.value = false
+    activeBox.value = { day: null, slot: null }
+  }
+}
+
+// Check api when subject or term or section changes to find limit
+const fetchHoursUsage = async () => {
+  if (!paintSubjectId.value) return
+  if (typeof paintSubjectId.value === 'string' && paintSubjectId.value.startsWith('ext:')) return
+  try {
+    const data = await $fetch('/api/Subjects/hours-usage', {
+      query: { id_subject: paintSubjectId.value, id_section: sectionId, term: term.value }
+    })
+    hoursUsageData.value = data
+  } catch (e) {
+    console.error('Failed to get hours', e)
+  }
+}
+watch(paintSubjectId, fetchHoursUsage)
+watch([scheduleSlots, paintType], fetchHoursUsage, { deep: true }) // re-check limit on schedule draw
+
+const remainingHours = computed(() => {
+  if (!hoursUsageData.value || !paintType.value) return 0
+  if (paintType.value === 'theory') return hoursUsageData.value.theory_hours_remaining
+  return hoursUsageData.value.practical_hours_remaining
+})
+const limitHours = computed(() => {
+  if (!hoursUsageData.value || !paintType.value) return 0
+  if (paintType.value === 'theory') return hoursUsageData.value.theory_hours_limit
+  return hoursUsageData.value.practical_hours_limit
+})
+
+const applyPaint = (d, s) => {
+  const slot = scheduleSlots.value[d][s]
+
+  if (paintSubjectId.value === null) {
+    slot.value = null
+    slot.room_id = null
+    slot.type = null
+    slot.section_ids = []
+    return
+  }
+
+  // Must select a type before painting
+  if (!paintType.value) {
+    toast.add({ title: 'กรุณาเลือกประเภท', description: 'เลือกว่าจะระบายเป็นทฤษฎีหรือปฏิบัติ', color: 'warning' })
+    isDragging.value = false
+    return
+  }
+
+  // Enforce Limit before applying
+  if (slot.value !== paintSubjectId.value || slot.type !== paintType.value) {
+    if (remainingHours.value <= 0) {
+      toast.add({ title: 'โควตาชั่วโมงเต็มวิชานี้', description: 'ไม่สามารถระบายสีเพิ่มได้', color: 'red' })
+      isDragging.value = false
+      return
+    }
+  }
+
+  const subj = allSubjects.value?.find(sub => sub.id_subject == paintSubjectId.value)
+  const isExternal = subj && !subj.id_teacher && subj.external_teacher_name
+  const defaultSections = subj?.sections ? subj.sections.map(sec => sec.id_section) : []
+
+  slot.value = paintSubjectId.value
+  slot.room_id = paintRoomId.value
+  slot.type = paintType.value
+
+  if (isExternal) {
+    slot.section_ids = [Number(sectionId)]
+  } else {
+    slot.section_ids = [...defaultSections]
+  }
+}
+
+const startDrag = (d, s) => {
+  if (!isPaintMode.value || isReadOnlyStudent) return
+  isDragging.value = true
+  dragCurrentDay.value = d
+
+  // Also clear active dropdowns
+  activeBox.value = { day: null, slot: null }
+  applyPaint(d, s)
+}
+
+const onDragOver = (d, s) => {
+  if (!isDragging.value || !isPaintMode.value || isReadOnlyStudent) return
+  if (dragCurrentDay.value !== null && d !== dragCurrentDay.value) return
+  applyPaint(d, s)
+}
+
+onMounted(() => {
+  document.addEventListener('mouseup', () => {
+    isDragging.value = false
+    dragCurrentDay.value = null
+  })
+})
+
 const extSubjectToDelete = ref(null)
 
 const { data: rooms } = await useFetch('/api/rooms')
@@ -635,19 +739,145 @@ const { data: externalSubjects, refresh: refreshExternalSubjects } = await useFe
   query: computed(() => ({ id_section: sectionId, term: term.value }))
 })
 
-const externalSubjectOptions = computed(() =>
-  externalSubjects.value?.map(ext => ({
-    value: `ext:${ext.id_ext_subject}`,
-    label: `${ext.name_subject} (นอกสาขา)`
-  })) || []
-)
+// === Internal Subjects Modal Logic ===
+const internalSubjectModalOpen = ref(false)
+const internalAddPlanId = ref(null)
+const internalAddSubjectId = ref(null)
+const internalAddTeacherId = ref(null)
+const internalAddExternalName = ref('')
+const addingInternal = ref(false)
+const getRawValue = (val) => (val && typeof val === 'object' && 'value' in val ? val.value : val)
+
+const { data: studyPlans } = await useFetch('/api/study-plans')
+const studyPlanOptions = computed(() => studyPlans.value?.map(p => ({
+  value: p.id_plan,
+  label: `${p.name_curriculum ? `${p.name_curriculum} - ` : ''}${p.name_plan}`
+})) || [])
+
+const selectedInternalPlanId = computed(() => {
+  // Prefer plan id coming from the current section (more reliable for this page)
+  const sectionRaw = getRawValue(section.value?.id_plan)
+  const sectionId = Number(sectionRaw)
+  const hasSectionId = sectionRaw != null && Number.isFinite(sectionId) && sectionId > 0
+
+  if (hasSectionId) return sectionId
+
+  const raw = getRawValue(internalAddPlanId.value)
+  const id = Number(raw)
+  return raw != null && Number.isFinite(id) && id > 0 ? id : null
+})
+
+const selectedInternalPlanLabel = computed(() => {
+  // Prefer label from current section (always available on this page)
+  const sec = section.value
+  if (sec?.name_plan) {
+    const prefix = sec.curriculum_name ? `${sec.curriculum_name} - ` : ''
+    return `${prefix}${sec.name_plan}`
+  }
+  if (!selectedInternalPlanId.value) return ''
+  return studyPlanOptions.value.find(opt => Number(opt.value) === selectedInternalPlanId.value)?.label || ''
+})
+
+const curriculumSubjects = ref([])
+const availableAddSubjectOptions = ref([])
+const loadingPlanSubjects = ref(false)
+
+watch(selectedInternalPlanId, async (newPlanId) => {
+  internalAddSubjectId.value = null
+
+  if (!newPlanId) {
+    curriculumSubjects.value = []
+    availableAddSubjectOptions.value = []
+    return
+  }
+
+  try {
+    loadingPlanSubjects.value = true
+    const subjects = await $fetch('/api/study-plan-subjects', {
+      query: { id_plan: newPlanId }
+    })
+    curriculumSubjects.value = Array.isArray(subjects) ? subjects : []
+    availableAddSubjectOptions.value = curriculumSubjects.value.map(s => ({
+      value: s.id_plan_subject,
+      label: `${s.subject_code || ''} ${s.name_subject || '-'} (${s.credit || 0} นก.)`
+    }))
+  } catch (error) {
+    curriculumSubjects.value = []
+    availableAddSubjectOptions.value = []
+    toast.add({
+      title: 'เกิดข้อผิดพลาด',
+      description: error?.data?.statusMessage || error?.message || 'ไม่สามารถดึงรายวิชาจากแผนการเรียนได้',
+      color: 'red'
+    })
+  } finally {
+    loadingPlanSubjects.value = false
+  }
+}, { immediate: true })
+
+const { data: teachers } = await useFetch('/api/teachers')
+const teacherOptions = computed(() => teachers.value?.map(t => ({
+  value: t.id_teacher,
+  label: `${t.prefix}${t.first_name} ${t.last_name}`
+})) || [])
+const teacherOptionsWithExternal = computed(() => [
+  ...teacherOptions.value,
+  { value: 'external', label: '--- กำหนดชื่ออาจารย์นอกสาขา ---' }
+])
+const isExternalTeacherSelected = computed(() => getRawValue(internalAddTeacherId.value) === 'external')
+
+const isValidInternalSubject = computed(() => {
+  const teacherId = getRawValue(internalAddTeacherId.value)
+  return !!selectedInternalPlanId.value
+    && !!getRawValue(internalAddSubjectId.value)
+    && !!teacherId
+    && (teacherId !== 'external' || !!internalAddExternalName.value.trim())
+})
+
+const addInternalSubject = async () => {
+  if (!isValidInternalSubject.value) return
+  if (!term.value) {
+    toast.add({ title: 'เกิดข้อผิดพลาด', description: 'กรุณาเลือกเทอมก่อน', color: 'red' })
+    return
+  }
+  addingInternal.value = true
+  try {
+    const selectedPlanSubjectId = getRawValue(internalAddSubjectId.value)
+    const selectedPlanSubj = curriculumSubjects.value.find(s => Number(s.id_plan_subject) === Number(selectedPlanSubjectId))
+    if (!selectedPlanSubj) throw new Error("Plan subject not found")
+    const selectedTeacher = getRawValue(internalAddTeacherId.value)
+
+    await $fetch('/api/Subjects', {
+      method: 'POST',
+      body: {
+        id_plan_subject: selectedPlanSubjectId,
+        id_external_subject: null,
+        name_subject: selectedPlanSubj.name_subject,
+        description: null,
+        id_teacher: selectedTeacher === 'external' ? null : selectedTeacher,
+        external_teacher_name: selectedTeacher === 'external' ? internalAddExternalName.value : null,
+        id_sections: [Number(sectionId)],
+        term: term.value,
+        curriculum_subject_id: selectedPlanSubj.id_subject_curr,
+        type: 'internal'
+      }
+    })
+
+    internalAddExternalName.value = ''
+    toast.add({ title: 'สำเร็จ', description: 'เพิ่มวิชาในสาขาแล้ว', color: 'green' })
+    // Refresh to get full subject object
+    await refreshNuxtData()
+  } catch (e) {
+    toast.add({ title: 'เกิดข้อผิดพลาด', description: e.data?.message || e.message, color: 'red' })
+  } finally {
+    addingInternal.value = false
+  }
+}
+// =====================================
 
 const allSubjectOptions = computed(() => {
   return [
     { label: '--- วิชาในสาขา ---', disabled: true },
-    ...subjectOptions.value,
-    ...(externalSubjectOptions.value.length ? [{ label: '--- วิชานอกสาขา ---', disabled: true }] : []),
-    ...externalSubjectOptions.value
+    ...subjectOptions.value
   ]
 })
 
@@ -878,7 +1108,6 @@ const deleteExtSubject = async () => {
 // Methods
 const isTeacherSubject = (val) => {
   if (!val) return false
-  if (typeof val === 'string' && val.startsWith('ext:')) return false
   if (staticOptions.some(o => o.value === val)) return false
 
   const subj = allSubjects.value?.find(sub => sub.id_subject == val)
@@ -982,31 +1211,20 @@ const getSubjectLabel = (val, roomId = null, sectionIds = null) => {
   const staticOpt = staticOptions.find(o => o.value === val)
   if (staticOpt) return staticOpt.label
 
-  if (typeof val === 'string' && val.startsWith('ext:')) {
-    const extId = Number(val.split(':')[1])
-    const extSubj = externalSubjects.value?.find(e => e.id_ext_subject === extId)
-    const roomText = roomId ? ` [${rooms.value?.find(r => r.id_room == roomId)?.room_name || ''}]` : ''
-    if (!extSubj) return `Unknown (ถูกลบ)${roomText}`
-    const instructor = extSubj.instructor_name ? ` (${extSubj.instructor_name})` : ''
-    return `${extSubj.name_subject}${instructor} [นอกสาขา]${roomText}`
-  }
-
   const subj = allSubjects.value?.find(s => s.id_subject == val)
-  if (!subj) return 'Unknown'
+  if (!subj) return '-'
 
   let sectionDisplay = ''
   if (sectionIds && Array.isArray(sectionIds) && sectionIds.length > 0) {
     const names = subj.sections
-      .filter(s => sectionIds.includes(s.id_section))
-      .map(s => s.section_name)
-      .join(', ')
-    sectionDisplay = names ? `(${names})` : '(No section)'
+      ?.filter(s => sectionIds.includes(s.id_section))
+      ?.map(s => s.section_name)
+      ?.join(', ')
+    sectionDisplay = names ? `(${names})` : ''
   } else {
-    // Backwards compatibility or if sectionIds is missing
-    sectionDisplay = `(${subj.section_names || '?'})`
+    sectionDisplay = subj.section_names ? `(${subj.section_names})` : ''
   }
 
-  // If we have a specific roomId for this slot, use it.
   let roomName = ''
   if (roomId) {
     const r = rooms.value?.find(rm => rm.id_room == roomId)
@@ -1014,11 +1232,14 @@ const getSubjectLabel = (val, roomId = null, sectionIds = null) => {
   }
 
   let teacherName = ''
-  if (subj.first_name || subj.last_name) {
+  if (subj.external_teacher_name) {
+    teacherName = ` (${subj.external_teacher_name} [นอกสาขา])`
+  } else if (subj.first_name || subj.last_name) {
     teacherName = ` (${[subj.prefix, subj.first_name, subj.last_name].filter(Boolean).join(' ').trim()})`
   }
 
-  return `${subj.name_subject}${teacherName} ${sectionDisplay} ${roomName ? `[${roomName}]` : ''}`
+  const subjName = subj.name_subject || 'ไม่ระบุชื่อวิชา'
+  return `${subjName}${teacherName} ${sectionDisplay} ${roomName ? `[${roomName}]` : ''}`
 }
 
 
@@ -1052,4 +1273,3 @@ onMounted(() => {
   })
 })
 </script>
-
