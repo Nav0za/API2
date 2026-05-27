@@ -40,6 +40,7 @@ db.exec(`
     id_category INTEGER NOT NULL,
     subject_code TEXT,
     name_subject TEXT NOT NULL,
+    credit INTEGER DEFAULT 0,
     FOREIGN KEY (id_category) REFERENCES curriculum_categories(id_category) ON DELETE CASCADE
   );`)
 
@@ -62,6 +63,8 @@ db.exec(`
     id_subject_curr INTEGER NOT NULL,
     year INTEGER DEFAULT 1,
     semester INTEGER DEFAULT 1,
+    theory_hours INTEGER DEFAULT 0,
+    practical_hours INTEGER DEFAULT 0,
     FOREIGN KEY (id_plan) REFERENCES study_plans(id_plan) ON DELETE CASCADE,
     FOREIGN KEY (id_subject_curr) REFERENCES curriculum_subjects(id_subject_curr) ON DELETE CASCADE,
     UNIQUE(id_plan, id_subject_curr)
@@ -169,6 +172,25 @@ try {
     db.exec('ALTER TABLE study_plan_subjects ADD COLUMN semester INTEGER DEFAULT 1')
     console.log('Migrated study_plan_subjects table: added semester column')
   }
+
+  // Migration: Move theory_hours and practical_hours to study_plan_subjects
+  if (!spsTableInfo.some(col => col.name === 'theory_hours')) {
+    db.exec('ALTER TABLE study_plan_subjects ADD COLUMN theory_hours INTEGER DEFAULT 0')
+    db.exec('ALTER TABLE study_plan_subjects ADD COLUMN practical_hours INTEGER DEFAULT 0')
+    console.log('Migrated study_plan_subjects table: added theory_hours, practical_hours columns')
+
+    // Copy data from curriculum_subjects before we drop those columns
+    db.exec(`
+      UPDATE study_plan_subjects
+      SET theory_hours = (SELECT IFNULL(theory_hours, 0) FROM curriculum_subjects WHERE curriculum_subjects.id_subject_curr = study_plan_subjects.id_subject_curr),
+          practical_hours = (SELECT IFNULL(practical_hours, 0) FROM curriculum_subjects WHERE curriculum_subjects.id_subject_curr = study_plan_subjects.id_subject_curr)
+    `)
+    console.log('Copied theory and practical hours from curriculum_subjects to study_plan_subjects')
+  }
+
+  // Migration: Drop them from curriculum_subjects
+  safeDropColumn('curriculum_subjects', 'theory_hours')
+  safeDropColumn('curriculum_subjects', 'practical_hours')
 
 } catch (err) {
   console.error('Migration error:', err)
@@ -401,6 +423,15 @@ try {
   if (!subjectInfo.some(col => col.name === 'curriculum_subject_id')) {
     db.exec('ALTER TABLE Subjects ADD COLUMN curriculum_subject_id INTEGER REFERENCES curriculum_subjects(id_subject_curr) ON DELETE SET NULL')
     console.log('Migrated Subjects table: added curriculum_subject_id column')
+  }
+
+  // Add credits and hours to curriculum_subjects
+  const currSubjectsInfo = db.prepare('PRAGMA table_info(curriculum_subjects)').all()
+  if (!currSubjectsInfo.some(col => col.name === 'credit')) {
+    db.exec('ALTER TABLE curriculum_subjects ADD COLUMN credit INTEGER DEFAULT 0')
+    db.exec('ALTER TABLE curriculum_subjects ADD COLUMN theory_hours INTEGER DEFAULT 0')
+    db.exec('ALTER TABLE curriculum_subjects ADD COLUMN practical_hours INTEGER DEFAULT 0')
+    console.log('Migrated curriculum_subjects table: added credit, theory_hours, practical_hours columns')
   }
 
   // 2. Sections/Terms Restructuring

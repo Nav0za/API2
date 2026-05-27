@@ -21,13 +21,16 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'id_category and name_subject are required' })
     }
 
-    const stmt = db.prepare('INSERT INTO curriculum_subjects (id_category, subject_code, name_subject) VALUES (?, ?, ?)')
-    const result = stmt.run(body.id_category, body.subject_code || null, body.name_subject)
+    const credit = Number(body.credit) || 0
+
+    const stmt = db.prepare('INSERT INTO curriculum_subjects (id_category, subject_code, name_subject, credit) VALUES (?, ?, ?, ?)')
+    const result = stmt.run(body.id_category, body.subject_code || null, body.name_subject, credit)
     return {
       id_subject_curr: result.lastInsertRowid,
       id_category: body.id_category,
       subject_code: body.subject_code || null,
-      name_subject: body.name_subject
+      name_subject: body.name_subject,
+      credit
     }
   }
 })

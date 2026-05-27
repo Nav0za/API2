@@ -9,8 +9,10 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'name_subject and id_category are required' })
     }
 
-    const stmt = db.prepare('UPDATE curriculum_subjects SET name_subject = ?, subject_code = ?, id_category = ? WHERE id_subject_curr = ?')
-    const result = stmt.run(body.name_subject, body.subject_code || null, body.id_category, id)
+    const credit = Number(body.credit) || 0
+
+    const stmt = db.prepare('UPDATE curriculum_subjects SET name_subject = ?, subject_code = ?, id_category = ?, credit = ? WHERE id_subject_curr = ?')
+    const result = stmt.run(body.name_subject, body.subject_code || null, body.id_category, credit, id)
     
     if (result.changes === 0) {
       throw createError({ statusCode: 404, statusMessage: 'Subject not found' })
