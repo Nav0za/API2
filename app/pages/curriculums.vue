@@ -313,7 +313,7 @@
           </div>
         </div>
 
-        <div v-else
+        <div v-else-if="!curriculums || !curriculums.length"
           class="bg-white rounded-2xl py-20 border border-slate-200 shadow-sm flex flex-col items-center justify-center">
           <UIcon name="i-heroicons-academic-cap" class="text-6xl text-slate-200 mb-4" />
           <p class="text-slate-500 font-medium text-lg">กรุณาเลือกหรือสร้างหลักสูตรเพื่อเริ่มต้นจัดการ</p>
