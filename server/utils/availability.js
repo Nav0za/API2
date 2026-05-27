@@ -126,11 +126,19 @@ export function checkRoomAvailability({ room_id, date, start_time, end_time, ter
           }
 
           if (classUsesRoom) {
-            const subject = db.prepare('SELECT name_subject FROM Subjects WHERE id_subject = ?').get(slot.value)
+            const subject = db.prepare(`
+              SELECT cs.name_subject as curriculum_name, cs.subject_code
+              FROM Subjects s
+              LEFT JOIN curriculum_subjects cs ON s.curriculum_subject_id = cs.id_subject_curr
+              WHERE s.id_subject = ?
+            `).get(slot.value)
+            const subjectName = subject?.curriculum_name
+              ? (subject.subject_code ? `${subject.subject_code} ${subject.curriculum_name}` : subject.curriculum_name)
+              : slot.value
             const teacherName = [ts.prefix, ts.first_name, ts.last_name].filter(Boolean).join(' ').trim()
             return {
               available: false,
-              reason: `ตรงกับตารางเรียนปกติ (วิชา ${subject?.name_subject || slot.value}) สอนโดย ${teacherName}`
+              reason: `ตรงกับตารางเรียนปกติ (วิชา ${subjectName}) สอนโดย ${teacherName}`
             }
           }
         }

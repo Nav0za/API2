@@ -59,7 +59,6 @@ export default defineEventHandler(async (event) => {
     const updateRefs = db.transaction(() => {
       db.prepare('UPDATE schedules SET term = ? WHERE term = ?').run(newTermStr, oldTermStr)
       db.prepare('UPDATE section_schedules SET term = ? WHERE term = ?').run(newTermStr, oldTermStr)
-      db.prepare('UPDATE section_terms SET term = ? WHERE term = ?').run(newTermStr, oldTermStr)
       db.prepare('UPDATE external_subjects SET term = ? WHERE term = ?').run(newTermStr, oldTermStr)
       db.prepare('UPDATE Subjects SET term = ? WHERE term = ?').run(newTermStr, oldTermStr)
       db.prepare('UPDATE terms SET term = ?, academic_year = ?, start_date = ?, end_date = ? WHERE id_term = ?')

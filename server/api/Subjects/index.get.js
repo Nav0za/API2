@@ -9,6 +9,8 @@ export default defineEventHandler((event) => {
   let baseQuery = `
     SELECT s.*,
     t.prefix, t.first_name, t.last_name,
+    cs.name_subject as curriculum_name_subject,
+    cs.subject_code,
     (
       SELECT GROUP_CONCAT(sec.section_name, ', ')
       FROM SubjectSections ss
@@ -24,6 +26,7 @@ export default defineEventHandler((event) => {
     ) as sections_json
     FROM Subjects s
     LEFT JOIN teachers t ON s.id_teacher = t.id_teacher
+    LEFT JOIN curriculum_subjects cs ON s.curriculum_subject_id = cs.id_subject_curr
   `
 
   let whereClauses = []
@@ -45,9 +48,18 @@ export default defineEventHandler((event) => {
   stmt = db.prepare(finalQuery)
   subjects = stmt.all(...params)
 
-  // Parse JSON sections for each subject
-  return subjects.map(s => ({
-    ...s,
-    sections: s.sections_json ? JSON.parse(s.sections_json) : []
-  }))
+  // Parse JSON sections for each subject and resolve dynamic name
+  return subjects.map(s => {
+    let resolvedName = 'Unknown'
+    if (s.curriculum_name_subject) {
+      // Strictly use its name (prepended with code if available)
+      resolvedName = s.subject_code ? `${s.subject_code} ${s.curriculum_name_subject}` : s.curriculum_name_subject
+    }
+    
+    return {
+      ...s,
+      name_subject: resolvedName,
+      sections: s.sections_json ? JSON.parse(s.sections_json) : []
+    }
+  })
 })

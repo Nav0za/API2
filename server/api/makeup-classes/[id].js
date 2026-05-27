@@ -13,12 +13,13 @@ export default defineEventHandler(async (event) => {
         t.first_name,
         t.last_name,
         s.section_name,
-        sub.name_subject,
+        CASE WHEN cs.subject_code IS NOT NULL THEN cs.subject_code || ' ' || cs.name_subject ELSE cs.name_subject END as name_subject,
         r.room_name
       FROM makeup_classes mc
       LEFT JOIN teachers t ON mc.teacher_id = t.id_teacher
       LEFT JOIN sections s ON mc.section_id = s.id_section
       LEFT JOIN Subjects sub ON mc.subject_id = sub.id_subject
+      LEFT JOIN curriculum_subjects cs ON sub.curriculum_subject_id = cs.id_subject_curr
       LEFT JOIN rooms r ON mc.room_id = r.id_room
       WHERE mc.id_makeup = ?
     `)
@@ -142,9 +143,12 @@ export default defineEventHandler(async (event) => {
     const syncCalendarEvent = async (makeupId) => {
       // ค้นหาข้อมูล makeup class ปัจจุบัน
       const cls = db.prepare(`
-        SELECT mc.*, s.name_subject, r.room_name, t.prefix, t.first_name, t.last_name
+        SELECT mc.*,
+          CASE WHEN cs.subject_code IS NOT NULL THEN cs.subject_code || ' ' || cs.name_subject ELSE cs.name_subject END as name_subject,
+          r.room_name, t.prefix, t.first_name, t.last_name
         FROM makeup_classes mc
         LEFT JOIN Subjects s ON mc.subject_id = s.id_subject
+        LEFT JOIN curriculum_subjects cs ON s.curriculum_subject_id = cs.id_subject_curr
         LEFT JOIN rooms r ON mc.room_id = r.id_room
         LEFT JOIN teachers t ON mc.teacher_id = t.id_teacher
         WHERE mc.id_makeup = ?

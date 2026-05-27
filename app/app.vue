@@ -18,7 +18,7 @@ useHead({
       <template #left>
         <NuxtLink class="flex items-center" to="/">
           <img src="/image/logo it.png" class="h-11 w-auto mx-5" alt="RMUTI logo">
-          <span class="text-2xl">ระบบจัดวันสอนชดเชยกึ่งอัตโนมัติ</span>
+          <span class="text-xl">ระบบจัดวันสอนชดเชยกึ่งอัตโนมัติ</span>
         </NuxtLink>
       </template>
 
@@ -27,6 +27,8 @@ useHead({
           variant="ghost" :ui="{ leadingIcon: 'text-primary' }" to="/guide" />
         <UButton class="text-white" label="ปฏิทิน" size="xl" icon="i-heroicons-calendar" color="primary" variant="ghost"
           :ui="{ leadingIcon: 'text-primary' }" to="/" />
+        <UButton class="text-white" label="หลักสูตร" size="xl" icon="i-heroicons-academic-cap" color="primary"
+          variant="ghost" :ui="{ leadingIcon: 'text-primary' }" to="/curriculums" />
         <UButton class="text-white" label="ปีการศึกษา" size="xl" icon="i-lucide-layers" color="primary" variant="ghost"
           :ui="{ leadingIcon: 'text-primary' }" to="/terms" />
         <UButton class="text-white" to="/sections" size="xl" variant="ghost" color="primary" label="ตารางเรียน"

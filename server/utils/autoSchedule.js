@@ -32,10 +32,16 @@ export async function findAvailableSlots(teacherId, missedDate, term) {
     }
   })
 
-  const allSubjects = db.prepare('SELECT id_subject, name_subject FROM Subjects').all()
+  const allSubjects = db.prepare(`
+    SELECT s.id_subject, cs.name_subject as curriculum_name, cs.subject_code
+    FROM Subjects s
+    LEFT JOIN curriculum_subjects cs ON s.curriculum_subject_id = cs.id_subject_curr
+  `).all()
   const subjectNameMap = {}
   allSubjects.forEach((s) => {
-    subjectNameMap[s.id_subject] = s.name_subject
+    subjectNameMap[s.id_subject] = s.curriculum_name
+      ? (s.subject_code ? `${s.subject_code} ${s.curriculum_name}` : s.curriculum_name)
+      : 'ไม่ทราบชื่อวิชา'
   })
 
   // 1. ดึงตารางสอนของอาจารย์ในวันที่ขาด
@@ -395,9 +401,14 @@ function getSectionSchedule(sectionId, term) {
  * ดึงชื่อวิชา
  */
 function getSubjectName(subjectId) {
-  const stmt = db.prepare('SELECT name_subject FROM Subjects WHERE id_subject = ?')
-  const result = stmt.get(subjectId)
-  return result?.name_subject || 'ไม่ทราบชื่อวิชา'
+  const result = db.prepare(`
+    SELECT cs.name_subject as curriculum_name, cs.subject_code
+    FROM Subjects s
+    LEFT JOIN curriculum_subjects cs ON s.curriculum_subject_id = cs.id_subject_curr
+    WHERE s.id_subject = ?
+  `).get(subjectId)
+  if (!result || !result.curriculum_name) return 'ไม่ทราบชื่อวิชา'
+  return result.subject_code ? `${result.subject_code} ${result.curriculum_name}` : result.curriculum_name
 }
 
 /**
@@ -496,10 +507,16 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
     }
   })
 
-  const allSubjects = db.prepare('SELECT id_subject, name_subject FROM Subjects').all()
+  const allSubjects = db.prepare(`
+    SELECT s.id_subject, cs.name_subject as curriculum_name, cs.subject_code
+    FROM Subjects s
+    LEFT JOIN curriculum_subjects cs ON s.curriculum_subject_id = cs.id_subject_curr
+  `).all()
   const subjectNameMap = {}
   allSubjects.forEach((s) => {
-    subjectNameMap[s.id_subject] = s.name_subject
+    subjectNameMap[s.id_subject] = s.curriculum_name
+      ? (s.subject_code ? `${s.subject_code} ${s.curriculum_name}` : s.curriculum_name)
+      : 'ไม่ทราบชื่อวิชา'
   })
 
   // เตรียมข้อมูลวันหยุดและวันลาของอาจารย์
