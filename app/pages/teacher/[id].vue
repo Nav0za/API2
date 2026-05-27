@@ -534,20 +534,43 @@
           </div>
 
           <div v-if="isPaintMode"
-            class="flex-1 flex flex-col md:flex-row w-full gap-3 animate-in fade-in slide-in-from-left-4 duration-300">
-            <USelectMenu v-model="paintSubjectId"
-              :items="[{ label: '🧹 ลบวิชา (ยางลบ)', value: null }, ...subjectOptions]" value-attribute="value"
-              option-attribute="label" placeholder="-- เลือกวิชาที่จะระบาย --" size="xl" class="flex-1 shadow-sm"
-              :ui="{ base: 'bg-white border-indigo-300 text-slate-900 focus:ring-indigo-500 rounded-xl font-bold' }" />
+            class="flex-1 flex flex-col w-full gap-3 animate-in fade-in slide-in-from-left-4 duration-300">
+            
+            <div class="flex flex-col md:flex-row w-full gap-3">
+              <USelectMenu v-model="paintSubjectId"
+                :items="[{ label: '🧹 ลบวิชา (ยางลบ)', value: null }, ...subjectOptions]" value-attribute="value"
+                option-attribute="label" placeholder="-- เลือกวิชาที่จะระบาย --" size="xl" class="flex-1 shadow-sm"
+                :ui="{ base: 'bg-white border-indigo-300 text-slate-900 focus:ring-indigo-500 rounded-xl font-bold' }" />
 
-            <USelectMenu v-model="paintRoomId" :items="roomOptions" value-attribute="value" option-attribute="label"
-              placeholder="ห้องเรียน (ไม่บังคับ)" size="xl" class="w-full md:w-56 shadow-sm"
-              :disabled="paintSubjectId === null"
-              :ui="{ base: 'bg-white border-indigo-300 text-slate-900 focus:ring-indigo-500 rounded-xl' }" />
+              <USelectMenu v-model="paintRoomId" :items="roomOptions" value-attribute="value" option-attribute="label"
+                placeholder="ห้องเรียน (ไม่บังคับ)" size="xl" class="w-full md:w-56 shadow-sm"
+                :disabled="paintSubjectId === null"
+                :ui="{ base: 'bg-white border-indigo-300 text-slate-900 focus:ring-indigo-500 rounded-xl' }" />
 
-            <div v-if="isDragging"
-              class="hidden md:flex items-center px-4 bg-indigo-500 text-white font-bold rounded-xl text-sm shadow-md animate-pulse">
-              กำลังวาด...
+              <div v-if="isDragging"
+                class="hidden md:flex items-center px-4 bg-indigo-500 text-white font-bold rounded-xl text-sm shadow-md animate-pulse">
+                กำลังวาด...
+              </div>
+            </div>
+
+            <!-- Checkboxes for sections -->
+            <div v-if="paintSectionOptions.length > 0" class="flex flex-wrap items-center gap-4 bg-white/60 p-2.5 rounded-xl border border-indigo-200/50">
+              <span class="text-sm font-bold text-indigo-800">เลือกลงแต่ละกลุ่มเรียน:</span>
+              <UCheckbox 
+                v-for="sec in paintSectionOptions" 
+                :key="sec.value" 
+                :model-value="paintSectionIds.includes(sec.value)"
+                @update:model-value="(checked) => {
+                  if (checked) {
+                    if (!paintSectionIds.includes(sec.value)) paintSectionIds.push(sec.value);
+                  } else {
+                    paintSectionIds = paintSectionIds.filter(orig => orig !== sec.value);
+                  }
+                }"
+                :label="sec.label" 
+                color="primary"
+                :ui="{ label: 'font-medium text-slate-700' }"
+              />
             </div>
           </div>
         </div>
@@ -695,9 +718,32 @@ const saving = ref(false)
 // --- Paint Mode State (Drag to Schedule) ---
 const isPaintMode = ref(false)
 const paintSubjectId = ref(null)
+const paintSectionIds = ref([])
 const paintRoomId = ref(null)
 const isDragging = ref(false)
 const dragCurrentDay = ref(null)
+
+const paintSectionOptions = computed(() => {
+  const rawId = getRawValue(paintSubjectId.value)
+  if (!rawId) return []
+  const subj = subjects.value?.find(sub => sub.id_subject == rawId)
+  if (!subj || !subj.sections) return []
+  return subj.sections.map(sec => ({ label: sec.section_name, value: sec.id_section }))
+})
+
+watch(() => paintSubjectId.value, (newVal) => {
+  const rawId = getRawValue(newVal)
+  if (!rawId) {
+    paintSectionIds.value = []
+  } else {
+    const subj = subjects.value?.find(sub => sub.id_subject == rawId)
+    if (subj && subj.sections) {
+      paintSectionIds.value = subj.sections.map(sec => sec.id_section)
+    } else {
+      paintSectionIds.value = []
+    }
+  }
+})
 
 const togglePaintMode = (val = null) => {
   if (!isPaintMode.value) {
@@ -712,19 +758,15 @@ const applyPaint = (dayIndex, slotIndex) => {
   const rawPaintSubjectId = getRawValue(paintSubjectId.value)
   const rawPaintRoomId = getRawValue(paintRoomId.value)
 
-  // Calculate default section_ids based on selected subject
   let sectionIds = []
   if (rawPaintSubjectId) {
-    const subj = subjects.value?.find(sub => sub.id_subject == rawPaintSubjectId)
-    if (subj && subj.sections) {
-      sectionIds = subj.sections.map(sec => sec.id_section)
-    }
+    sectionIds = [...paintSectionIds.value]
   }
 
   // Erase mode (if rawPaintSubjectId is null), otherwise paint mode
   scheduleSlots.value[dayIndex][slotIndex].value = rawPaintSubjectId || null
   scheduleSlots.value[dayIndex][slotIndex].room_id = rawPaintSubjectId ? (rawPaintRoomId || null) : null
-  scheduleSlots.value[dayIndex][slotIndex].section_ids = rawPaintSubjectId ? [...sectionIds] : []
+  scheduleSlots.value[dayIndex][slotIndex].section_ids = rawPaintSubjectId ? sectionIds : []
 }
 
 const startDrag = (dayIndex, slotIndex) => {
