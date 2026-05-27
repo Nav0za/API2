@@ -14,18 +14,13 @@ export default defineEventHandler(async (event) => {
     if (!body.id_curriculum || !body.name_plan || !body.level) {
       throw createError({ statusCode: 400, statusMessage: 'Curriculum ID, name, and level are required' })
     }
-    const year = body.year || 0
-    const semester = body.semester || 0
-
-    const stmt = db.prepare('INSERT INTO study_plans (id_curriculum, name_plan, level, year, semester) VALUES (?, ?, ?, ?, ?)')
-    const result = stmt.run(body.id_curriculum, body.name_plan, body.level, year, semester)
+    const stmt = db.prepare('INSERT INTO study_plans (id_curriculum, name_plan, level) VALUES (?, ?, ?)')
+    const result = stmt.run(body.id_curriculum, body.name_plan, body.level)
     return {
       id_plan: result.lastInsertRowid,
       id_curriculum: body.id_curriculum,
       name_plan: body.name_plan,
-      level: body.level,
-      year: year,
-      semester: semester
+      level: body.level
     }
   }
 })

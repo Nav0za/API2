@@ -50,8 +50,6 @@ db.exec(`
     id_curriculum INTEGER NOT NULL,
     name_plan TEXT NOT NULL,
     level TEXT NOT NULL,
-    year INTEGER NOT NULL,
-    semester INTEGER NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_curriculum) REFERENCES curriculums(id_curriculum) ON DELETE CASCADE
   );`)
@@ -82,7 +80,6 @@ db.exec(`
 db.exec(`
   CREATE TABLE IF NOT EXISTS Subjects (
     id_subject INTEGER PRIMARY KEY AUTOINCREMENT,
-    name_subject TEXT NOT NULL,
     id_teacher INTEGER,
     term TEXT,
     FOREIGN KEY (id_teacher) REFERENCES teachers(id_teacher)
@@ -293,10 +290,7 @@ db.exec(`
     UNIQUE(id_section, term)
   );`)
 
-// สร้าง indexes สำหรับ sections
-db.exec(`
-  CREATE INDEX IF NOT EXISTS idx_section_terms_term 
-  ON section_terms(term);`)
+
 
 db.exec(`
   CREATE INDEX IF NOT EXISTS idx_section_schedules_section 
@@ -386,7 +380,12 @@ try {
   safeDropColumn('rooms', 'capacity')
   safeDropColumn('rooms', 'building')
   safeDropColumn('Subjects', 'id_room')
+  safeDropColumn('Subjects', 'name_subject')
   safeDropColumn('teachers', 'subject')
+  safeDropColumn('study_plans', 'year')
+  safeDropColumn('study_plans', 'semester')
+  
+  db.exec('DROP TABLE IF EXISTS section_terms')
 
   // Add term column to Subjects if missing
   const subjectInfo = db.prepare('PRAGMA table_info(Subjects)').all()
@@ -439,7 +438,7 @@ try {
       db.exec('DELETE FROM sections')
 
       const insertMaster = db.prepare('INSERT INTO sections (section_name, description, created_at) VALUES (?, ?, ?)')
-      const insertTerm = db.prepare('INSERT OR IGNORE INTO section_terms (id_section, term) VALUES (?, ?)')
+
 
       for (const name in masterSections) {
         const m = masterSections[name]
@@ -448,7 +447,6 @@ try {
 
         for (const old of m.oldIds) {
           mapping[old.id] = newId
-          insertTerm.run(newId, old.term)
         }
       }
 
@@ -486,14 +484,12 @@ try {
     console.log('Sections/Terms migration completed successfully.')
 
     // 2.5 Subjects table migration (Populate term if missing)
-    // Run this AFTER section_terms is populated
     console.log('Finalizing Subjects term data...')
     db.exec(`
       UPDATE Subjects 
       SET term = (
-        SELECT st.term 
+        SELECT ss.term 
         FROM SubjectSections ss
-        JOIN section_terms st ON ss.id_section = st.id_section
         WHERE ss.id_subject = Subjects.id_subject
         LIMIT 1
       )

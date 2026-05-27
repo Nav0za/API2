@@ -8,11 +8,8 @@ export default defineEventHandler(async (event) => {
     if (!body.name_plan || !body.level) {
       throw createError({ statusCode: 400, statusMessage: 'Name and level are required' })
     }
-    const year = body.year || 0
-    const semester = body.semester || 0
-
-    const stmt = db.prepare('UPDATE study_plans SET name_plan = ?, level = ?, year = ?, semester = ? WHERE id_plan = ?')
-    const result = stmt.run(body.name_plan, body.level, year, semester, id)
+    const stmt = db.prepare('UPDATE study_plans SET name_plan = ?, level = ? WHERE id_plan = ?')
+    const result = stmt.run(body.name_plan, body.level, id)
     
     if (result.changes === 0) {
       throw createError({ statusCode: 404, statusMessage: 'Study Plan not found' })

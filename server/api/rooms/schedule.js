@@ -47,10 +47,12 @@ export default defineEventHandler(async (event) => {
     // 2. Fetch Makeup Classes for the specific date
     const makeupClasses = db.prepare(`
       SELECT mc.id_makeup, mc.makeup_time_start, mc.makeup_time_end, mc.room_id,
-             t.prefix, t.first_name, t.last_name, sub.name_subject as subject_name
+             t.prefix, t.first_name, t.last_name,
+             CASE WHEN cs.subject_code IS NOT NULL THEN cs.subject_code || ' ' || cs.name_subject ELSE cs.name_subject END as subject_name
       FROM makeup_classes mc
       LEFT JOIN teachers t ON mc.teacher_id = t.id_teacher
       LEFT JOIN Subjects sub ON mc.subject_id = sub.id_subject
+      LEFT JOIN curriculum_subjects cs ON sub.curriculum_subject_id = cs.id_subject_curr
       WHERE mc.makeup_date = ? AND mc.status != 'cancelled' AND mc.room_id IS NOT NULL
     `).all(date)
 
@@ -90,11 +92,17 @@ export default defineEventHandler(async (event) => {
     }
 
     // Lookup table for subjects to get their default rooms
-    const subjectsRaw = db.prepare('SELECT id_subject, name_subject FROM Subjects').all()
+    const subjectsRaw = db.prepare(`
+      SELECT s.id_subject, cs.name_subject as curriculum_name, cs.subject_code
+      FROM Subjects s
+      LEFT JOIN curriculum_subjects cs ON s.curriculum_subject_id = cs.id_subject_curr
+    `).all()
     const subjectData = {}
     subjectsRaw.forEach((s) => {
       subjectData[s.id_subject] = {
-        name: s.name_subject
+        name: s.curriculum_name
+          ? (s.subject_code ? `${s.subject_code} ${s.curriculum_name}` : s.curriculum_name)
+          : 'ไม่ทราบชื่อวิชา'
       }
     })
 

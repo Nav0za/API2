@@ -4,17 +4,18 @@ export default defineEventHandler(async (event) => {
   const { id } = event.context.params
   const body = await readBody(event)
 
-  // Validate input
-  if (!body.name_subject || body.name_subject.trim() === '') {
+  const newCurrId = body.curriculum_subject_id || null
+
+  if (!newCurrId) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'name_subject is required'
+      statusMessage: 'curriculum_subject_id is required'
     })
   }
 
-  // 1. Update Subject name and curriculum link
-  const stmt = db.prepare('UPDATE Subjects SET name_subject = ?, curriculum_subject_id = ? WHERE id_subject = ?')
-  stmt.run(body.name_subject, body.curriculum_subject_id || null, id)
+  // 1. Update Subject curriculum link (name_subject column is removed)
+  const stmt = db.prepare('UPDATE Subjects SET curriculum_subject_id = ? WHERE id_subject = ?')
+  stmt.run(newCurrId, id)
 
   // Update Sections if provided
   if (body.id_sections && Array.isArray(body.id_sections)) {

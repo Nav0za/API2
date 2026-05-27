@@ -145,9 +145,14 @@ function createClassObj(subjectId, startSlot, duration, teacherId, date, roomId,
 }
 
 function getSubjectName(subjectId) {
-  const stmt = db.prepare('SELECT name_subject FROM Subjects WHERE id_subject = ?')
-  const result = stmt.get(subjectId)
-  return result?.name_subject || 'ไม่ทราบชื่อวิชา'
+  const result = db.prepare(`
+    SELECT cs.name_subject as curriculum_name, cs.subject_code
+    FROM Subjects s
+    LEFT JOIN curriculum_subjects cs ON s.curriculum_subject_id = cs.id_subject_curr
+    WHERE s.id_subject = ?
+  `).get(subjectId)
+  if (!result || !result.curriculum_name) return 'ไม่ทราบชื่อวิชา'
+  return result.subject_code ? `${result.subject_code} ${result.curriculum_name}` : result.curriculum_name
 }
 
 function getSectionsForSubjectArray(subjectId) {
