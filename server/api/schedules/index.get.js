@@ -1,4 +1,5 @@
 import db from '../../utils/db.js'
+import { sanitizeTeacherSchedule } from '../../utils/teacherScheduleVisibility.js'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
@@ -14,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
     if (schedule) {
       // Parse JSON กลับมาเป็น array
-      schedule.scheduleData = JSON.parse(schedule.scheduleData)
+      schedule.scheduleData = sanitizeTeacherSchedule(JSON.parse(schedule.scheduleData))
     }
 
     return schedule || null
@@ -28,7 +29,7 @@ export default defineEventHandler(async (event) => {
 
     return schedules.map(s => ({
       ...s,
-      scheduleData: JSON.parse(s.scheduleData)
+      scheduleData: sanitizeTeacherSchedule(JSON.parse(s.scheduleData))
     }))
   }
 
@@ -38,6 +39,6 @@ export default defineEventHandler(async (event) => {
 
   return schedules.map(s => ({
     ...s,
-    scheduleData: JSON.parse(s.scheduleData)
+    scheduleData: sanitizeTeacherSchedule(JSON.parse(s.scheduleData))
   }))
 })

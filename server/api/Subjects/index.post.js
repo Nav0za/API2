@@ -1,4 +1,5 @@
 import db from '../../utils/db.js'
+import { clearTeacherScheduleVisibilityCache } from '../../utils/teacherScheduleVisibility.js'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -24,14 +25,43 @@ export default defineEventHandler(async (event) => {
     if (cs) {
       resolvedName = cs.subject_code ? `${cs.subject_code} ${cs.name_subject}` : cs.name_subject
     }
+    const inferredHideInTeacherSchedule = body.hide_in_teacher_schedule !== undefined
+      ? (body.hide_in_teacher_schedule ? 1 : 0)
+      : (/ฝึกงาน/.test(cs?.name_subject || '') ? 1 : 0)
 
-    // 1. Insert Subject (name_subject column is removed)
-    const stmt = db.prepare('INSERT INTO Subjects (id_teacher, term, curriculum_subject_id) VALUES (?, ?, ?)')
-    const result = stmt.run(body.id_teacher, body.term || null, body.curriculum_subject_id)
-    const subjectId = result.lastInsertRowid
+    // 1. Check if Subject for this teacher/external + term + curriculum_subj already exists
+    let subjectId
+    let queryCond = 'term = ? AND curriculum_subject_id = ?'
+    let queryParams = [body.term, body.curriculum_subject_id]
+    
+    if (body.id_teacher) {
+       queryCond += ' AND id_teacher = ?'
+       queryParams.push(body.id_teacher)
+    } else if (body.external_teacher_name) {
+       queryCond += ' AND external_teacher_name = ?'
+       queryParams.push(body.external_teacher_name)
+    } else {
+       queryCond += ' AND id_teacher IS NULL AND external_teacher_name IS NULL'
+    }
+
+    const existing = db.prepare(`SELECT id_subject FROM Subjects WHERE ${queryCond}`).get(...queryParams)
+    
+    if (existing) {
+       subjectId = existing.id_subject
+       // update id_plan_subject just in case
+       if (body.id_plan_subject) {
+         db.prepare('UPDATE Subjects SET id_plan_subject = ? WHERE id_subject = ?').run(body.id_plan_subject, subjectId)
+       }
+    } else {
+       // Insert Subject
+        const stmt = db.prepare('INSERT INTO Subjects (id_teacher, term, curriculum_subject_id, id_plan_subject, external_teacher_name, hide_in_teacher_schedule) VALUES (?, ?, ?, ?, ?, ?)')
+        const result = stmt.run(body.id_teacher || null, body.term || null, body.curriculum_subject_id, body.id_plan_subject || null, body.external_teacher_name || null, inferredHideInTeacherSchedule)
+        subjectId = result.lastInsertRowid
+        clearTeacherScheduleVisibilityCache(subjectId)
+    }
 
     // 2. Insert SubjectSections (Join table)
-    const insertSection = db.prepare('INSERT INTO SubjectSections (id_subject, id_section) VALUES (?, ?)')
+    const insertSection = db.prepare('INSERT OR IGNORE INTO SubjectSections (id_subject, id_section) VALUES (?, ?)')
     const transaction = db.transaction((sections) => {
       for (const sectionId of sections) {
         insertSection.run(subjectId, sectionId)

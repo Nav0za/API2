@@ -96,16 +96,18 @@
                     <table class="w-full text-left text-slate-600">
                       <thead class="text-md uppercase bg-slate-50 text-slate-500">
                         <tr>
-                          <th class="px-3 py-2 font-bold">รหัสวิชา</th>
+                          <th class="px-3 py-2 font-bold w-[12%]">รหัสวิชา</th>
                           <th class="px-3 py-2 font-bold">ชื่อวิชา</th>
-                          <th class="px-3 py-2 text-right">จัดการ</th>
+                          <th class="px-2 py-2 font-bold text-center w-[10%]">หน่วยกิต</th>
+                          <th class="px-3 py-2 text-right w-[15%]">จัดการ</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-for="sub in getSubjectsForCategory(cat.id_category)" :key="sub.id_subject_curr"
                           class="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
                           <td class="px-3 py-2 font-medium">{{ sub.subject_code || '-' }}</td>
-                          <td class="px-3 py-2">{{ sub.name_subject }}</td>
+                          <td class="px-3 py-2 font-bold text-slate-800">{{ sub.name_subject }}</td>
+                          <td class="px-2 py-2 text-center text-slate-600">{{ sub.credit }}</td>
                           <td class="px-3 py-2 text-right whitespace-nowrap">
                             <UButton size="lg" class="mr-1 cursor-pointer" color="warning" variant="subtle"
                               icon="i-heroicons-pencil" @click="openEditSubjectModal(sub)" />
@@ -114,6 +116,15 @@
                           </td>
                         </tr>
                       </tbody>
+                      <tfoot v-if="getSubjectsForCategory(cat.id_category).length > 0"
+                        class="bg-indigo-50/50 border-t border-slate-200 font-bold text-indigo-900">
+                        <tr>
+                          <td colspan="2" class="px-3 py-3 text-right">รวมทั้งหมด</td>
+                          <td class="px-2 py-3 text-center">{{ sumCredit(getSubjectsForCategory(cat.id_category)) }}
+                          </td>
+                          <td></td>
+                        </tr>
+                      </tfoot>
                     </table>
                   </div>
                 </div>
@@ -156,9 +167,10 @@
                         <table class="w-full text-md text-left text-slate-500">
                           <thead class="uppercase bg-slate-50 text-slate-400">
                             <tr>
-                              <th class="px-2 py-1 font-bold">รหัสวิชา</th>
+                              <th class="px-2 py-1 font-bold w-[15%]">รหัสวิชา</th>
                               <th class="px-2 py-1 font-bold">ชื่อวิชา</th>
-                              <th class="px-2 py-1 text-right">จัดการ</th>
+                              <th class="px-2 py-1 font-bold text-center w-[12%]">หน่วยกิต</th>
+                              <th class="px-2 py-1 text-right w-[15%]">จัดการ</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -166,7 +178,8 @@
                               :key="sub.id_subject_curr"
                               class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                               <td class="px-2 py-1 font-medium">{{ sub.subject_code || '-' }}</td>
-                              <td class="px-2 py-1">{{ sub.name_subject }}</td>
+                              <td class="px-2 py-1 font-bold text-slate-800">{{ sub.name_subject }}</td>
+                              <td class="px-2 py-1 text-center text-slate-600">{{ sub.credit }}</td>
                               <td class="px-2 py-1 text-right whitespace-nowrap">
                                 <UButton size="lg" class="mr-1 cursor-pointer" color="warning" variant="subtle"
                                   icon="i-heroicons-pencil" @click="openEditSubjectModal(sub)" />
@@ -175,10 +188,19 @@
                               </td>
                             </tr>
                             <tr v-if="!getSubjectsForCategory(sub_sub_cat.id_category).length">
-                              <td colspan="3" class="px-2 py-2 text-center text-slate-300 italic">
+                              <td colspan="6" class="px-2 py-2 text-center text-slate-300 italic">
                                 ไม่มีรายวิชาในกลุ่มย่อยนี้</td>
                             </tr>
                           </tbody>
+                          <tfoot v-if="getSubjectsForCategory(sub_sub_cat.id_category).length > 0"
+                            class="bg-indigo-50/30 border-t border-slate-100 font-bold text-indigo-900 text-[11px]">
+                            <tr>
+                              <td colspan="2" class="px-2 py-2 text-right">รวมทั้งหมด</td>
+                              <td class="px-2 py-2 text-center">{{
+                                sumCredit(getSubjectsForCategory(sub_sub_cat.id_category)) }}</td>
+                              <td></td>
+                            </tr>
+                          </tfoot>
                         </table>
                       </div>
                     </div>
@@ -187,16 +209,18 @@
                     <table class="w-full text-md text-left text-slate-600 mt-2">
                       <thead class="text-md uppercase bg-slate-50 text-slate-500">
                         <tr>
-                          <th class="px-3 py-2 font-bold">รหัสวิชา</th>
+                          <th class="px-3 py-2 font-bold w-[12%]">รหัสวิชา</th>
                           <th class="px-3 py-2 font-bold">ชื่อวิชา</th>
-                          <th class="px-3 py-2 text-right">จัดการ</th>
+                          <th class="px-2 py-2 font-bold text-center w-[10%]">หน่วยกิต</th>
+                          <th class="px-3 py-2 text-right w-[15%]">จัดการ</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-for="sub in getSubjectsForCategory(sub_cat.id_category)" :key="sub.id_subject_curr"
                           class="border-b border-slate-100 last:border-0 hover:bg-slate-50/50">
                           <td class="px-3 py-2 font-medium">{{ sub.subject_code || '-' }}</td>
-                          <td class="px-3 py-2">{{ sub.name_subject }}</td>
+                          <td class="px-3 py-2 font-bold text-slate-800">{{ sub.name_subject }}</td>
+                          <td class="px-2 py-2 text-center text-slate-600">{{ sub.credit }}</td>
                           <td class="px-3 py-2 text-right whitespace-nowrap">
                             <UButton size="lg" class="mr-1" color="warning" variant="soft" icon="i-heroicons-pencil"
                               @click="openEditSubjectModal(sub)" />
@@ -205,11 +229,35 @@
                           </td>
                         </tr>
                         <tr v-if="!getSubjectsForCategory(sub_cat.id_category).length">
-                          <td colspan="3" class="px-3 py-3 text-center text-slate-400 italic text-xs">
+                          <td colspan="6" class="px-3 py-3 text-center text-slate-400 italic text-xs">
                             ไม่มีรายวิชาในกลุ่มนี้</td>
                         </tr>
                       </tbody>
+                      <tfoot v-if="getSubjectsForCategory(sub_cat.id_category).length > 0"
+                        class="bg-indigo-50/50 border-t border-slate-100 font-bold text-indigo-900 text-sm">
+                        <tr>
+                          <td colspan="2" class="px-3 py-3 text-right">รวมทั้งหมด</td>
+                          <td class="px-2 py-3 text-center">{{ sumCredit(getSubjectsForCategory(sub_cat.id_category)) }}
+                          </td>
+                          <td></td>
+                        </tr>
+                      </tfoot>
                     </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- รวมทั้งหมวดวิชา -->
+              <div v-if="getAllSubjectsInCategoryTree(cat.id_category).length > 0"
+                class="bg-indigo-100 border-t-2 border-indigo-300 px-5 py-3 flex items-center justify-between">
+                <div class="font-bold text-indigo-900 text-sm">
+                  <UIcon name="i-heroicons-calculator" class="mr-1" />
+                  รวมทั้งหมวด "{{ cat.name_category }}"
+                </div>
+                <div class="flex gap-6 text-sm font-bold text-indigo-900">
+                  <div class="text-center">
+                    <div class="text-md text-indigo-500 uppercase">หน่วยกิต</div>
+                    <div class="text-lg">{{ sumCredit(getAllSubjectsInCategoryTree(cat.id_category)) }}</div>
                   </div>
                 </div>
               </div>
@@ -285,28 +333,65 @@
                 <table class="w-full text-sm text-left text-slate-600">
                   <thead class="text-xs uppercase bg-slate-100 text-slate-500">
                     <tr>
+                      <th class="px-4 py-3 font-bold">ที่</th>
                       <th class="px-4 py-3 font-bold">หมวดวิชา</th>
                       <th class="px-4 py-3 font-bold">รหัสวิชา</th>
                       <th class="px-4 py-3 font-bold">ชื่อวิชา</th>
+                      <th class="px-4 py-3 font-bold text-center">หน่วยกิต</th>
+                      <th class="px-4 py-3 font-bold text-center">ท.</th>
+                      <th class="px-4 py-3 font-bold text-center">ป.</th>
                       <th class="px-4 py-3 text-right">ลบ</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="ps in filteredPlanSubjectsByTerm" :key="ps.id_plan_subject"
+                    <tr v-for="(ps, psIndex) in filteredPlanSubjectsByTerm" :key="ps.id_plan_subject"
                       class="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                      <td class="px-4 py-3 text-center text-slate-400 font-medium">{{ psIndex + 1 }}</td>
                       <td class="px-4 py-3 text-xs text-slate-400">{{ ps.name_category || '-' }}</td>
                       <td class="px-4 py-3 font-medium">{{ ps.subject_code || '-' }}</td>
                       <td class="px-4 py-3 font-bold text-slate-800">{{ ps.name_subject }}</td>
-                      <td class="px-4 py-3 text-right">
-                        <UButton size="sm" color="error" variant="ghost" icon="i-heroicons-x-mark"
-                          @click="removePlanSubject(ps.id_plan_subject)" />
+                      <td class="px-4 py-3 text-center font-bold text-slate-700">{{ ps.credit }}</td>
+                      <td class="px-4 py-3 text-center text-slate-600">
+                        <UInput v-if="editingPlanSubjectId === ps.id_plan_subject" v-model="editPsTheory" type="number"
+                          min="0" size="xs" class="w-16 mx-auto" />
+                        <span v-else>{{ ps.theory_hours }}</span>
+                      </td>
+                      <td class="px-4 py-3 text-center text-slate-600">
+                        <UInput v-if="editingPlanSubjectId === ps.id_plan_subject" v-model="editPsPractical"
+                          type="number" min="0" size="xs" class="w-16 mx-auto" />
+                        <span v-else>{{ ps.practical_hours }}</span>
+                      </td>
+                      <td class="px-4 py-3 text-right whitespace-nowrap">
+                        <div v-if="editingPlanSubjectId === ps.id_plan_subject" class="flex justify-end gap-1">
+                          <UButton size="xs" color="success" variant="soft" icon="i-heroicons-check"
+                            @click="saveEditPlanSubject(ps)" />
+                          <UButton size="xs" color="gray" variant="soft" icon="i-heroicons-x-mark"
+                            @click="editingPlanSubjectId = null" />
+                        </div>
+                        <div v-else class="flex justify-end gap-1">
+                          <UButton size="xs" color="warning" variant="ghost" icon="i-heroicons-pencil"
+                            @click="openEditPlanSubject(ps)" />
+                          <UButton size="xs" color="error" variant="ghost" icon="i-heroicons-x-mark"
+                            @click="removePlanSubject(ps.id_plan_subject)" />
+                        </div>
                       </td>
                     </tr>
                     <tr v-if="!filteredPlanSubjectsByTerm.length">
-                      <td colspan="4" class="px-4 py-12 text-center text-slate-400 italic">ยังไม่มีวิชาในปีที่ {{
+                      <td colspan="8" class="px-4 py-12 text-center text-slate-400 italic">ยังไม่มีวิชาในปีที่ {{
                         viewYear }} ภาคเรียนที่ {{ viewSemester }}</td>
                     </tr>
                   </tbody>
+                  <tfoot v-if="filteredPlanSubjectsByTerm.length > 0"
+                    class="bg-indigo-50 border-t-2 border-indigo-200 font-bold text-indigo-900 text-sm">
+                    <tr>
+                      <td colspan="4" class="px-4 py-3 text-right">รวมภาคเรียนที่ {{ viewSemester }} ({{
+                        filteredPlanSubjectsByTerm.length }} วิชา)</td>
+                      <td class="px-4 py-3 text-center text-lg">{{ sumCredit(filteredPlanSubjectsByTerm) }}</td>
+                      <td class="px-4 py-3 text-center">{{ sumTheory(filteredPlanSubjectsByTerm) }}</td>
+                      <td class="px-4 py-3 text-center">{{ sumPractical(filteredPlanSubjectsByTerm) }}</td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             </div>
@@ -414,6 +499,12 @@
                     class="text-red-500">*</span></label>
                 <UInput v-model="newSubjectName" placeholder="ชื่อรายวิชา" />
               </div>
+              <div class="grid grid-cols-1 gap-3">
+                <div>
+                  <label class="block text-sm font-bold text-slate-500 mb-1">หน่วยกิตรวม</label>
+                  <UInput type="number" v-model="newSubjectCredit" min="0" placeholder="0" />
+                </div>
+              </div>
             </div>
             <div class="mt-6 flex justify-end gap-2">
               <UButton label="ยกเลิก" color="neutral" variant="soft" @click="subjectModal = false" />
@@ -483,7 +574,10 @@
                 <div>
                   <div class="font-bold text-slate-800 text-sm">{{ sub.subject_code ? sub.subject_code + ' ' : '' }}{{
                     sub.name_subject }}</div>
-                  <div class="text-xs text-slate-400 mt-0.5">{{ sub.categoryName }}</div>
+                  <div class="text-xs text-slate-500 mt-0.5">{{ sub.credit }} หน่วยกิต (ท.{{ sub.theory_hours }} ป.{{
+                    sub.practical_hours }} รวม {{ sub.theory_hours + sub.practical_hours }} ชม.)</div>
+                  <div class="text-[10px] bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded inline-block mt-1">{{
+                    sub.categoryName }}</div>
                 </div>
               </div>
               <div v-if="!filteredSubjectsForPlan.length" class="text-center py-8 text-slate-400">ไม่พบวิชาในหมวดนี้
@@ -632,6 +726,21 @@ watch(selectedCurriculumId, () => {
 
 const getSubjectsForCategory = (catId) => subjects.value.filter(s => s.id_category === catId)
 
+// Recursively get ALL subjects under a category tree (including sub & sub-sub categories)
+const getAllSubjectsInCategoryTree = (catId) => {
+  let result = [...getSubjectsForCategory(catId)]
+  const children = allCategories.value.filter(c => c.parent_id === catId)
+  for (const child of children) {
+    result = result.concat(getAllSubjectsInCategoryTree(child.id_category))
+  }
+  return result
+}
+
+// Sum helpers (avoids inline arrow functions in templates that break on auto-format)
+const sumCredit = (list) => list.reduce((s, x) => s + (x.credit || 0), 0)
+const sumTheory = (list) => list.reduce((s, x) => s + (x.theory_hours || 0), 0)
+const sumPractical = (list) => list.reduce((s, x) => s + (x.practical_hours || 0), 0)
+
 // หมวดวิชา (Top Level) Modal
 const categoryModal = ref(false)
 const newCategoryName = ref('')
@@ -705,6 +814,7 @@ const deleteCategory = async (id) => {
 const subjectModal = ref(false)
 const newSubjectCode = ref('')
 const newSubjectName = ref('')
+const newSubjectCredit = ref(0)
 const selectedCategoryIdForNewSubject = ref(null)
 const editingSubjectId = ref(null)
 
@@ -713,6 +823,7 @@ const openAddSubjectModal = (catId) => {
   selectedCategoryIdForNewSubject.value = catId
   newSubjectCode.value = ''
   newSubjectName.value = ''
+  newSubjectCredit.value = 0
   subjectModal.value = true
 }
 
@@ -721,6 +832,7 @@ const openEditSubjectModal = (sub) => {
   selectedCategoryIdForNewSubject.value = sub.id_category
   newSubjectCode.value = sub.subject_code || ''
   newSubjectName.value = sub.name_subject
+  newSubjectCredit.value = sub.credit || 0
   subjectModal.value = true
 }
 
@@ -729,12 +841,12 @@ const saveSubject = async () => {
     if (editingSubjectId.value) {
       await $fetch(`/api/curriculum-subjects/${editingSubjectId.value}`, {
         method: 'PUT',
-        body: { id_category: selectedCategoryIdForNewSubject.value, subject_code: newSubjectCode.value.trim(), name_subject: newSubjectName.value.trim() }
+        body: { id_category: selectedCategoryIdForNewSubject.value, subject_code: newSubjectCode.value.trim(), name_subject: newSubjectName.value.trim(), credit: newSubjectCredit.value }
       })
     } else {
       await $fetch('/api/curriculum-subjects', {
         method: 'POST',
-        body: { id_category: selectedCategoryIdForNewSubject.value, subject_code: newSubjectCode.value.trim(), name_subject: newSubjectName.value.trim() }
+        body: { id_category: selectedCategoryIdForNewSubject.value, subject_code: newSubjectCode.value.trim(), name_subject: newSubjectName.value.trim(), credit: newSubjectCredit.value }
       })
     }
     subjectModal.value = false
@@ -904,6 +1016,35 @@ const savePlanSubjects = async () => {
 const removePlanSubject = async (psId) => {
   await $fetch(`/api/study-plan-subjects/${psId}`, { method: 'DELETE' })
   refreshPlanSubs()
+}
+
+const editingPlanSubjectId = ref(null)
+const editPsTheory = ref(0)
+const editPsPractical = ref(0)
+
+const openEditPlanSubject = (ps) => {
+  editingPlanSubjectId.value = ps.id_plan_subject
+  editPsTheory.value = ps.theory_hours || 0
+  editPsPractical.value = ps.practical_hours || 0
+}
+
+const saveEditPlanSubject = async (ps) => {
+  try {
+    await $fetch(`/api/study-plan-subjects/${ps.id_plan_subject}`, {
+      method: 'PUT',
+      body: {
+        year: ps.year,
+        semester: ps.semester,
+        theory_hours: editPsTheory.value,
+        practical_hours: editPsPractical.value
+      }
+    })
+    editingPlanSubjectId.value = null
+    refreshPlanSubs()
+    toast.add({ title: 'บันทึกสำเร็จ', color: 'success' })
+  } catch (e) {
+    toast.add({ title: 'Error', color: 'red' })
+  }
 }
 </script>
 

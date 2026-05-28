@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event)
     if (query.id_plan) {
       return db.prepare(`
-        SELECT sps.*, cs.subject_code, cs.name_subject, cc.name_category
+        SELECT sps.*, cs.subject_code, cs.name_subject, cs.credit, cc.name_category
         FROM study_plan_subjects sps
         JOIN curriculum_subjects cs ON sps.id_subject_curr = cs.id_subject_curr
         LEFT JOIN curriculum_categories cc ON cs.id_category = cc.id_category
@@ -23,10 +23,12 @@ export default defineEventHandler(async (event) => {
     }
     const year = body.year || 1
     const semester = body.semester || 1
+    const theory_hours = Number(body.theory_hours) || 0
+    const practical_hours = Number(body.practical_hours) || 0
 
     try {
-      const stmt = db.prepare('INSERT INTO study_plan_subjects (id_plan, id_subject_curr, year, semester) VALUES (?, ?, ?, ?)')
-      const result = stmt.run(body.id_plan, body.id_subject_curr, year, semester)
+      const stmt = db.prepare('INSERT INTO study_plan_subjects (id_plan, id_subject_curr, year, semester, theory_hours, practical_hours) VALUES (?, ?, ?, ?, ?, ?)')
+      const result = stmt.run(body.id_plan, body.id_subject_curr, year, semester, theory_hours, practical_hours)
       
       // Fetch details back
       const inserted = db.prepare(`

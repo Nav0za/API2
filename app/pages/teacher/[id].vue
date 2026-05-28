@@ -63,374 +63,6 @@
                 รายวิชาที่สอน
               </h1>
             </div>
-
-            <div class="flex gap-3">
-              <!-- Quick Add Subject to Schedule (Simplified Button) -->
-              <UModal v-model:open="quickAddOpen"
-                :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
-                <template #content>
-                  <div class="flex flex-col max-h-[90vh]">
-                    <!-- Header -->
-                    <div class="p-8 pb-4">
-                      <div
-                        class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-100">
-                        <UIcon name="i-heroicons-calendar-days" class="text-3xl text-blue-600" />
-                      </div>
-                      <h3 class="text-2xl font-bold text-slate-900 text-center mb-4">
-                        เพิ่มรายวิชาในตารางสอน
-                      </h3>
-                    </div>
-
-                    <!-- Scrollable Form Content -->
-                    <div class="flex-1 overflow-y-auto custom-scrollbar px-8 space-y-6 pb-4 text-slate-900">
-                      <div>
-                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
-                          เลือกวิชา
-                        </h3>
-                        <USelect v-model="quickAddSubject" placeholder="เลือกรายวิชา" :items="subjectOptions" size="xl"
-                          class="w-full"
-                          :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl shadow-xs' }" />
-                      </div>
-
-                      <div v-if="quickAddSubject">
-                        <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
-                          กลุ่มเรียน
-                          (เลือกเฉพาะที่เรียนคาบนี้)
-                        </h3>
-                        <div
-                          class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar border border-slate-200 rounded-2xl p-4 bg-slate-50 shadow-inner">
-                          <div v-for="sec in subjects.find(s => s.id_subject == quickAddSubject)?.sections"
-                            :key="sec.id_section"
-                            class="flex items-center gap-3 p-2 hover:bg-slate-100/50 rounded-xl cursor-pointer text-slate-700 transition-colors"
-                            @click="() => {
-                              if (quickAddSelectedSections.includes(sec.id_section)) {
-                                quickAddSelectedSections = quickAddSelectedSections.filter(id => id !== sec.id_section)
-                              }
-                              else {
-                                quickAddSelectedSections = [...quickAddSelectedSections, sec.id_section]
-                              }
-                            }">
-                            <UCheckbox :model-value="quickAddSelectedSections.includes(sec.id_section)"
-                              @update:model-value="(val) => {
-                                if (val) quickAddSelectedSections = [...quickAddSelectedSections, sec.id_section]
-                                else quickAddSelectedSections = quickAddSelectedSections.filter(id => id !== sec.id_section)
-                              }" />
-                            <span class="text-sm font-medium">{{ sec.section_name }}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div class="grid grid-cols-2 gap-4">
-                        <div>
-                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
-                            วัน
-                          </h3>
-                          <USelect v-model="quickAddDay" placeholder="เลือกวัน" :items="dayOptions" size="xl"
-                            class="w-full"
-                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl shadow-xs' }" />
-                        </div>
-                        <div>
-                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
-                            ห้องเรียน
-                          </h3>
-                          <USelect v-model="quickAddRoom" placeholder="ไม่ระบุ" :items="roomOptions" size="xl"
-                            class="w-full"
-                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl shadow-xs' }" />
-                        </div>
-                      </div>
-
-                      <div class="grid grid-cols-2 gap-4">
-                        <div>
-                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
-                            เวลาเริ่ม
-                          </h3>
-                          <USelect v-model="quickAddStartTime" placeholder="เลือกเวลา" :items="timeSlotIndexOptions"
-                            size="xl" class="w-full"
-                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl shadow-xs' }" />
-                        </div>
-                        <div>
-                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
-                            จำนวนชั่วโมง
-                          </h3>
-                          <USelect v-model="quickAddDuration" :items="durationOptions" size="xl" class="w-full"
-                            :ui="{ base: 'bg-white border-slate-200 text-slate-900 rounded-2xl shadow-xs' }" />
-                        </div>
-                      </div>
-
-                      <div v-if="quickAddPreview"
-                        class="bg-blue-500/5 border border-blue-500/10 p-4 rounded-2xl text-center">
-                        <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mb-1">
-                          แสดงตัวอย่าง
-                        </p>
-                        <p class="text-blue-700 font-bold leading-tight">
-                          {{ quickAddPreview }}
-                        </p>
-                      </div>
-                    </div>
-
-                    <!-- Sticky Footer Buttons -->
-                    <div class="p-6 pt-4 border-t border-slate-100 bg-white flex gap-3">
-                      <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
-                        class="rounded-2xl py-4 flex-1 font-bold" @click="quickAddOpen = false" />
-                      <UButton label="เพิ่มลงตาราง" color="primary" size="xl" block
-                        class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/10 font-bold" @click="async () => {
-                          await addToSchedule()
-                          quickAddOpen = false
-                        }" />
-                    </div>
-                  </div>
-                </template>
-              </UModal>
-
-              <!-- เพิ่มรายวิชา -->
-              <UModal v-model:open="open"
-                :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
-                <UButton label="เพิ่มรายวิชาที่สอน" size="xl" icon="i-heroicons-plus-circle"
-                  class="cursor-pointer rounded-xl font-bold" />
-                <template #content>
-                  <div class="flex flex-col max-h-[85vh]">
-                    <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
-                      <div
-                        class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-blue-100">
-                        <UIcon name="i-heroicons-plus-circle" class="text-3xl text-blue-600" />
-                      </div>
-                      <h3 class="text-2xl font-bold text-slate-900 text-center mb-6">
-                        เพิ่มรายวิชาที่สอน
-                      </h3>
-
-                      <div class="space-y-6">
-                        <div class="flex flex-col gap-4">
-                          <div>
-                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">แผนการเรียน
-                            </h3>
-                            <USelectMenu v-model="selectedAddPlanId" :items="studyPlanOptions" value-attribute="value"
-                              option-attribute="label" placeholder="เลือกแผนการเรียน" size="xl" class="w-full"
-                              :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl shadow-xs break-words whitespace-normal text-left h-auto py-2' }">
-                              <template #item="{ item }">
-                                <span class="whitespace-normal break-words text-left w-full block py-0.5">
-                                  {{ item.label }}
-                                </span>
-                              </template>
-                            </USelectMenu>
-                          </div>
-                          <div>
-                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วิชา</h3>
-                            <USelectMenu v-model="selectedAddSubjectId" :items="availableAddSubjectOptions"
-                              value-attribute="value" option-attribute="label" placeholder="เลือกวิชา" size="xl"
-                              :disabled="!selectedAddPlanId" class="w-full"
-                              :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl shadow-xs break-words whitespace-normal text-left h-auto py-2' }">
-                              <template #item="{ item }">
-                                <span class="whitespace-normal break-words text-left w-full block py-0.5">
-                                  {{ item.label }}
-                                </span>
-                              </template>
-                            </USelectMenu>
-                          </div>
-                        </div>
-
-                        <div>
-                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
-                            กลุ่มเรียน
-                            (Sections)
-                          </h3>
-                          <div
-                            class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar border border-slate-200 rounded-2xl p-4 bg-slate-50 shadow-inner">
-                            <!-- Loading state -->
-                            <div v-if="sectionsStatus === 'pending'"
-                              class="flex items-center justify-center gap-2 py-4 text-slate-400 text-sm">
-                              <UIcon name="i-heroicons-arrow-path" class="animate-spin" />
-                              กำลังโหลดกลุ่มเรียน...
-                            </div>
-                            <!-- Empty state -->
-                            <div v-else-if="!sections || sections.length === 0" class="text-center py-4">
-                              <p class="text-slate-400 text-sm italic">ไม่มีกลุ่มเรียนในระบบ</p>
-                              <p class="text-xs text-slate-300 mt-1">กรุณาเพิ่มกลุ่มเรียนในหน้าจัดการกลุ่มเรียนก่อน</p>
-                            </div>
-                            <!-- Section list -->
-                            <template v-else>
-                              <div v-for="section in sections" :key="section.id_section"
-                                class="flex items-center gap-3 p-2.5 hover:bg-slate-100/50 rounded-xl cursor-pointer text-slate-700 transition-colors"
-                                @click="toggleSection(section.id_section)">
-                                <UCheckbox :model-value="selectedSections.includes(section.id_section)"
-                                  @update:model-value="toggleSection(section.id_section)" />
-                                <span class="text-sm font-medium">{{ section.section_name }}</span>
-                              </div>
-                            </template>
-                          </div>
-                        </div>
-
-                        <div v-if="selectedSections.length > 0"
-                          class="bg-blue-50 border border-blue-100 p-3 rounded-xl text-center">
-                          <p class="text-sm text-blue-600 font-medium">
-                            เลือกแล้ว {{ selectedSections?.length || 0 }}
-                            กลุ่มเรียน
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="p-6 border-t border-slate-100 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10 w-full">
-                      <div class="flex gap-3">
-                        <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
-                          class="rounded-2xl py-4 flex-1 font-bold" @click="open = false" />
-                        <UButton label="บันทึกรายวิชา" color="primary" size="xl" block
-                          class="rounded-2xl py-4 flex-1 shadow-lg shadow-blue-500/10 font-bold" @click="async () => {
-                            await addSubject()
-                            open = false
-                          }" />
-                      </div>
-                    </div>
-                  </div>
-                </template>
-              </UModal>
-
-              <!-- แก้ไขรายวิชา -->
-              <UModal v-model:open="editOpen"
-                :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
-                <template #content>
-                  <div class="flex flex-col max-h-[85vh]">
-                    <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
-                      <div
-                        class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-amber-100">
-                        <UIcon name="i-lucide-edit" class="text-3xl text-amber-600" />
-                      </div>
-                      <h3 class="text-2xl font-bold text-slate-900 text-center mb-6">
-                        แก้ไขรายวิชา
-                      </h3>
-
-                      <div class="space-y-6">
-                        <div class="grid grid-cols-2 gap-4">
-                          <div>
-                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">แผนการเรียน
-                              (เพื่อเปลี่ยนวิชา)</h3>
-                            <USelectMenu v-model="editSelectedPlanId" :items="studyPlanOptions" value-attribute="value"
-                              option-attribute="label" placeholder="ไม่เปลี่ยน" size="xl" class="w-full"
-                              :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-amber-500 rounded-2xl shadow-xs break-words whitespace-normal text-left h-auto py-2' }">
-                              <template #item="{ item }">
-                                <span class="whitespace-normal break-words text-left w-full block py-0.5">
-                                  {{ item.label }}
-                                </span>
-                              </template>
-                            </USelectMenu>
-                          </div>
-                          <div>
-                            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">วิชาใหม่
-                              (เลือกจากแผน)</h3>
-                            <USelectMenu v-model="editSelectedSubjectId" :items="availableEditSubjectOptions"
-                              value-attribute="value" option-attribute="label" placeholder="วิชาเดิม" size="xl"
-                              :disabled="!editSelectedPlanId" class="w-full"
-                              :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-amber-500 rounded-2xl shadow-xs break-words whitespace-normal text-left h-auto py-2' }">
-                              <template #item="{ item }">
-                                <span class="whitespace-normal break-words text-left w-full block py-0.5">
-                                  {{ item.label }}
-                                </span>
-                              </template>
-                            </USelectMenu>
-                          </div>
-                        </div>
-
-                        <div class="mt-4">
-                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
-                            วิชาที่จะแสดง
-                          </h3>
-                          <UInput v-model="computedEditSubjectName" disabled size="xl" class="w-full"
-                            :ui="{ base: 'bg-slate-100 border-slate-200 text-slate-500 focus:ring-amber-500 rounded-2xl shadow-xs' }" />
-                        </div>
-
-                        <div>
-                          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
-                            กลุ่มเรียน
-                            (Sections)
-                          </h3>
-                          <div
-                            class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar border border-slate-200 rounded-2xl p-4 bg-slate-50 shadow-inner">
-                            <!-- Loading state -->
-                            <div v-if="sectionsStatus === 'pending'"
-                              class="flex items-center justify-center gap-2 py-4 text-slate-400 text-sm">
-                              <UIcon name="i-heroicons-arrow-path" class="animate-spin" />
-                              กำลังโหลดกลุ่มเรียน...
-                            </div>
-                            <!-- Empty state -->
-                            <p v-else-if="!sections || sections.length === 0"
-                              class="text-slate-400 text-sm text-center py-4 italic">
-                              ไม่มีกลุ่มเรียนในระบบ
-                            </p>
-                            <!-- Section list -->
-                            <template v-else>
-                              <div v-for="section in sections" :key="section.id_section"
-                                class="flex items-center gap-3 p-2.5 hover:bg-slate-100/50 rounded-xl cursor-pointer text-slate-700 transition-colors"
-                                @click="toggleEditSection(section.id_section)">
-                                <UCheckbox :model-value="editSelectedSections.includes(section.id_section)"
-                                  @update:model-value="toggleEditSection(section.id_section)" />
-                                <span class="text-sm font-medium">{{ section.section_name }}</span>
-                              </div>
-                            </template>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="p-6 border-t border-slate-100 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10 w-full">
-                      <div class="flex gap-3">
-                        <UButton label="ยกเลิก" color="neutral" variant="soft" size="xl" block
-                          class="rounded-2xl py-4 flex-1 font-bold" @click="editOpen = false" />
-                        <UButton label="บันทึกการแก้ไข" color="warning" size="xl" block
-                          class="rounded-2xl py-4 flex-1 shadow-lg shadow-amber-500/10 font-bold" @click="async () => {
-                            await updateSubject()
-                            editOpen = false
-                          }" />
-                      </div>
-                    </div>
-                  </div>
-                </template>
-              </UModal>
-
-              <!-- ลบรายวิชา -->
-              <UModal v-model:open="deleteOpen"
-                :ui="{ content: 'bg-white border border-slate-200 rounded-3xl overflow-hidden' }">
-                <template #content>
-                  <div class="flex flex-col max-h-[85vh]">
-                    <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
-                      <div
-                        class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
-                        <UIcon name="i-heroicons-exclamation-triangle" class="text-4xl text-red-500" />
-                      </div>
-
-                      <h3 class="text-2xl font-bold text-slate-900 text-center mb-2">
-                        ยืนยันการลบรายวิชา
-                      </h3>
-                      <p class="text-slate-600 text-center mb-8">
-                        การดำเนินการนี้จะลบรายวิชาออกจากระบบและตารางสอน อาจารย์/กลุ่มเรียน จะได้รับผลกระทบ
-                      </p>
-
-                      <div
-                        class="bg-red-500/5 border border-red-500/20 p-6 rounded-2xl text-center relative overflow-hidden">
-                        <div class="relative z-10">
-                          <p class="text-xs font-black uppercase tracking-widest text-red-400/80 mb-1">
-                            วิชาที่เลือก
-                          </p>
-                          <p class="text-xl font-bold text-slate-900 line-clamp-2">
-                            {{ subjectToDelete?.name_subject }}
-                          </p>
-                          <p class="text-sm text-slate-500 mt-1">
-                            {{ subjectToDelete?.section_names || 'ไม่ระบุกลุ่ม' }}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="p-6 border-t border-slate-200 bg-white/95 backdrop-blur-sm sticky bottom-0 z-10">
-                      <div class="flex flex-col sm:flex-row gap-3">
-                        <UButton label="ยกเลิก" color="neutral" variant="outline" size="xl" block
-                          class="rounded-2xl border-slate-200 py-4 flex-1" @click="deleteOpen = false" />
-                        <UButton label="ยืนยันการลบถาวร" color="error" size="xl" block
-                          class="rounded-2xl py-4 flex-1 shadow-lg shadow-red-500/20 font-bold"
-                          @click="deleteSubject" />
-                      </div>
-                    </div>
-                  </div>
-                </template>
-              </UModal>
-            </div>
           </div>
           <div class="px-5 py-4 border-t border-slate-50 max-h-80 overflow-y-auto custom-scrollbar">
             <div v-if="pending">
@@ -458,12 +90,7 @@
                     </p>
                   </div>
 
-                  <div class="flex items-center justify-end gap-1 mt-auto pt-3 border-t border-slate-100">
-                    <UButton label="แก้ไข" icon="i-lucide-edit" color="warning" variant="outline" size="xs"
-                      class="cursor-pointer rounded-lg hover:bg-amber-50" @click="editSubject(subject)" />
-                    <UButton label="ลบ" icon="i-lucide-trash" color="error" variant="ghost" size="xs"
-                      class="cursor-pointer rounded-lg hover:bg-red-50" @click="confirmDeleteSubject(subject)" />
-                  </div>
+                  <!-- Removed action buttons -->
                 </div>
               </div>
             </div>
@@ -488,16 +115,7 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-4">
-        <!-- ปุ่มบันทึกตารางสอน -->
-        <div class="flex gap-2">
-          <UButton label="ลงวิชาทีละหลายชั่วโมง" icon="i-heroicons-calendar-days" color="primary" variant="solid"
-            size="xl" class="cursor-pointer rounded-xl font-bold" @click="quickAddOpen = true" />
-          <UButton label="บันทึกตาราง" color="primary" icon="i-heroicons-check-circle" size="xl"
-            class="cursor-pointer px-6 rounded-xl font-bold shadow-lg shadow-blue-500/20" :loading="saving"
-            @click="saveSchedule" />
-          <UButton label="ล้างตาราง" color="error" variant="soft" icon="i-heroicons-trash" size="xl"
-            class="cursor-pointer px-4 rounded-xl font-bold" @click="clearSchedule" />
-        </div>
+        <!-- Removed Schedule action buttons -->
 
         <div class="h-8 w-px bg-slate-200 mx-2 hidden md:block" />
 
@@ -519,61 +137,7 @@
       <!-- ตารางสอนและแถบเครื่องมือ (แสดงเมื่อเลือกเทอมแล้ว) -->
       <div v-else class="mt-4">
 
-        <!-- Paint Mode Toolbar -->
-        <div
-          class="bg-indigo-50/50 border border-indigo-200 p-4 rounded-2xl mb-4 flex flex-col xl:flex-row gap-4 items-center shadow-inner transition-all"
-          :class="isPaintMode ? 'bg-indigo-50 ring-2 ring-indigo-500/20' : ''">
-          <div class="flex items-center gap-3 w-full xl:w-auto">
-            <USwitch v-model="isPaintMode" color="primary" size="lg" @update:model-value="togglePaintMode" />
-            <div>
-              <span class="font-bold text-indigo-900 text-lg flex items-center gap-2">
-                <UIcon name="i-lucide-paint-brush" /> โหมดวาดตาราง (Paint)
-              </span>
-              <p class="text-xs text-indigo-600/80 font-medium mt-0.5">ลากเมาส์ผ่านช่องเวลาเพื่อลงวิชาอัตโนมัติ</p>
-            </div>
-          </div>
-
-          <div v-if="isPaintMode"
-            class="flex-1 flex flex-col w-full gap-3 animate-in fade-in slide-in-from-left-4 duration-300">
-            
-            <div class="flex flex-col md:flex-row w-full gap-3">
-              <USelectMenu v-model="paintSubjectId"
-                :items="[{ label: '🧹 ลบวิชา (ยางลบ)', value: null }, ...subjectOptions]" value-attribute="value"
-                option-attribute="label" placeholder="-- เลือกวิชาที่จะระบาย --" size="xl" class="flex-1 shadow-sm"
-                :ui="{ base: 'bg-white border-indigo-300 text-slate-900 focus:ring-indigo-500 rounded-xl font-bold' }" />
-
-              <USelectMenu v-model="paintRoomId" :items="roomOptions" value-attribute="value" option-attribute="label"
-                placeholder="ห้องเรียน (ไม่บังคับ)" size="xl" class="w-full md:w-56 shadow-sm"
-                :disabled="paintSubjectId === null"
-                :ui="{ base: 'bg-white border-indigo-300 text-slate-900 focus:ring-indigo-500 rounded-xl' }" />
-
-              <div v-if="isDragging"
-                class="hidden md:flex items-center px-4 bg-indigo-500 text-white font-bold rounded-xl text-sm shadow-md animate-pulse">
-                กำลังวาด...
-              </div>
-            </div>
-
-            <!-- Checkboxes for sections -->
-            <div v-if="paintSectionOptions.length > 0" class="flex flex-wrap items-center gap-4 bg-white/60 p-2.5 rounded-xl border border-indigo-200/50">
-              <span class="text-sm font-bold text-indigo-800">เลือกลงแต่ละกลุ่มเรียน:</span>
-              <UCheckbox 
-                v-for="sec in paintSectionOptions" 
-                :key="sec.value" 
-                :model-value="paintSectionIds.includes(sec.value)"
-                @update:model-value="(checked) => {
-                  if (checked) {
-                    if (!paintSectionIds.includes(sec.value)) paintSectionIds.push(sec.value);
-                  } else {
-                    paintSectionIds = paintSectionIds.filter(orig => orig !== sec.value);
-                  }
-                }"
-                :label="sec.label" 
-                color="primary"
-                :ui="{ label: 'font-medium text-slate-700' }"
-              />
-            </div>
-          </div>
-        </div>
+        <!-- Removed Paint mode toolbar -->
 
         <!-- ตัวตารางสอน -->
         <div class="overflow-x-auto pb-6 custom-scrollbar">
@@ -604,76 +168,24 @@
                     class="relative border-r border-b border-slate-200 last:border-r-0 min-h-[90px]"
                     :style="{ gridColumn: `span ${slot.span}`, minWidth: `${slot.span * 85}px` }">
                     <div
-                      class="absolute inset-0 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-1.5 select-none"
+                      class="absolute inset-0 transition-all flex flex-col items-center justify-center text-center gap-1.5 select-none cursor-help"
+                      :title="slot.value ? getSubjectLabel(slot.value, slot.room_id, slot.section_ids) : ''"
+                      :aria-label="slot.value ? getSubjectLabel(slot.value, slot.room_id, slot.section_ids) : 'ว่าง'"
                       :class="[
-                        slot.value ? 'bg-blue-50 hover:bg-blue-100 font-bold text-blue-700 border border-blue-100/50 m-1 rounded-xl shadow-xs' : 'bg-transparent hover:bg-slate-50 text-slate-300',
-                        isActiveBox(dayIndex, slot.originalIndex) ? 'ring-2 ring-inset ring-blue-500 bg-blue-50' : '',
-                        isPaintMode ? 'cursor-crosshair hover:bg-indigo-50 border border-dashed hover:border-indigo-300 transition-colors' : ''
-                      ]" @click="toggleDropdown(dayIndex, slot.originalIndex)"
-                      @mousedown="startDrag(dayIndex, slot.originalIndex)"
-                      @mouseenter="onDragOver(dayIndex, slot.originalIndex)">
+                        slot.value ? 'bg-blue-50 font-bold text-blue-700 border border-blue-100/50 m-1 rounded-xl shadow-xs' : 'bg-transparent text-slate-300'
+                      ]">
                       <template v-if="slot.value">
-                        <span class="text-xs line-clamp-2 leading-tight">
+                        <span class="text-xs line-clamp-2 leading-tight" :title="getSubjectLabel(slot.value, slot.room_id, slot.section_ids)">
                           {{ getSubjectLabel(slot.value, slot.room_id, slot.section_ids) }}
                         </span>
+                        <!-- เพิ่ม badge แสดงเวลาประเภท -->
+                        <span v-if="slot.type === 'theory'" class="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">ทฤษฎี</span>
+                        <span v-if="slot.type === 'practical'" class="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">ปฏิบัติ</span>
                       </template>
                       <span v-else class="text-md">ว่าง</span>
                     </div>
 
-                    <!-- Dropdown -->
-                    <div v-if="isActiveBox(dayIndex, slot.originalIndex)"
-                      class="absolute z-50 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden py-1 animate-in fade-in zoom-in duration-200"
-                      :class="[
-                        dayIndex >= 4 ? 'bottom-full mb-2' : 'top-full mt-2',
-                        slot.originalIndex <= 1 ? 'left-0' : slot.originalIndex >= 10 ? 'right-0' : 'left-1/2 -translate-x-1/2'
-                      ]">
-                      <div class="max-h-80 overflow-y-auto custom-scrollbar">
-                        <button
-                          class="w-full text-left px-4 py-2.5 hover:bg-red-50 text-red-600 text-[11px] font-bold border-b border-slate-50 flex items-center gap-2 transition-colors"
-                          @click="setSlotValue(dayIndex, slot.originalIndex, null, slot.span)">
-                          <UIcon name="i-lucide-trash" class="text-red-500 text-sm" />
-                          <span>ล้างข้อมูลคาบนี้</span>
-                        </button>
-
-                        <div
-                          class="px-4 py-1.5 text-[9px] font-bold text-slate-400 bg-slate-50/80 uppercase tracking-widest mt-1">
-                          เลือกรายวิชา
-                        </div>
-                        <button v-for="opt in subjectOptions" :key="opt.value"
-                          class="w-full text-left px-4 py-2 hover:bg-blue-50 text-slate-700 text-[11px] truncate transition-colors font-medium border-l-4 border-transparent"
-                          :class="{ 'bg-blue-50 border-blue-500 text-blue-700': slot.value === opt.value }"
-                          @click="setSlotValue(dayIndex, slot.originalIndex, opt.value, slot.span)">
-                          {{ opt.label }}
-                        </button>
-
-                        <template v-if="slot.value">
-                          <div
-                            class="px-4 py-1.5 text-[9px] font-bold text-slate-400 bg-slate-50/80 uppercase tracking-widest mt-2">
-                            กลุ่มเรียน (Sections)
-                          </div>
-                          <div v-for="sec in subjects.find(s => s.id_subject == slot.value)?.sections"
-                            :key="sec.id_section"
-                            class="w-full text-left px-4 py-2 hover:bg-amber-50 text-slate-700 text-[11px] flex items-center gap-2 cursor-pointer transition-colors font-medium"
-                            @click="toggleSlotSection(dayIndex, slot.originalIndex, sec.id_section, slot.span)">
-                            <UCheckbox
-                              :model-value="(scheduleSlots[dayIndex][slot.originalIndex].section_ids || []).includes(sec.id_section)"
-                              @update:model-value="toggleSlotSection(dayIndex, slot.originalIndex, sec.id_section, slot.span)" />
-                            <span class="truncate">{{ sec.section_name }}</span>
-                          </div>
-
-                          <div
-                            class="px-4 py-1.5 text-[9px] font-bold text-slate-400 bg-slate-50/80 uppercase tracking-widest mt-2">
-                            ห้องเรียน (คาบนี้)
-                          </div>
-                          <button v-for="room in roomOptions" :key="room.value"
-                            class="w-full text-left px-4 py-2 hover:bg-indigo-50 text-slate-600 text-[11px] truncate transition-colors font-medium"
-                            :class="{ 'bg-indigo-50 text-indigo-700': slot.room_id === room.value }"
-                            @click="setSlotRoom(dayIndex, slot.originalIndex, room.value, slot.span)">
-                            {{ room.label || 'ไม่ระบุห้อง' }}
-                          </button>
-                        </template>
-                      </div>
-                    </div>
+                    <!-- Removed Dropdown -->
                   </div>
 
                   <!-- ช่อง พักกลางวัน -->
@@ -726,7 +238,7 @@ const dragCurrentDay = ref(null)
 const paintSectionOptions = computed(() => {
   const rawId = getRawValue(paintSubjectId.value)
   if (!rawId) return []
-  const subj = subjects.value?.find(sub => sub.id_subject == rawId)
+  const subj = findSubjectRecord(rawId)
   if (!subj || !subj.sections) return []
   return subj.sections.map(sec => ({ label: sec.section_name, value: sec.id_section }))
 })
@@ -736,7 +248,7 @@ watch(() => paintSubjectId.value, (newVal) => {
   if (!rawId) {
     paintSectionIds.value = []
   } else {
-    const subj = subjects.value?.find(sub => sub.id_subject == rawId)
+    const subj = findSubjectRecord(rawId)
     if (subj && subj.sections) {
       paintSectionIds.value = subj.sections.map(sec => sec.id_section)
     } else {
@@ -885,10 +397,11 @@ watch(selectedTerm, (newVal) => {
 const { data: subjects, refresh: refreshSubjects } = await useFetch('/api/Subjects', {
   query: { id_teacher: id, term: selectedTerm }
 })
+const { data: allSubjects } = await useFetch('/api/Subjects')
 
 // ข้อมูลตารางสอน
 const scheduleSlots = useState(`schedule-slots-${id}`, () => Array.from({ length: 7 }, () =>
-  Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [] }))
+  Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [], teacher_ids: [] }))
 ))
 
 // ข้อมูลวันเวลา
@@ -898,6 +411,14 @@ const timeSlots = [
   '18:00 - 19:00', '19:00 - 20:00', '20:00 - 21:00'
 ]
 const days = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์']
+
+const findSubjectRecord = (subjectId) => {
+  const rawId = Number(getRawValue(subjectId))
+  if (!Number.isFinite(rawId)) return null
+  return subjects.value?.find(sub => Number(sub.id_subject) === rawId)
+    || allSubjects.value?.find(sub => Number(sub.id_subject) === rawId)
+    || null
+}
 
 // --- Computeds ---
 const teacherData = computed(() =>
@@ -1035,7 +556,7 @@ const quickAddPreview = computed(() => {
 // เมื่อเปลี่ยนวิชาใน Quick Add ให้เลือกทุกกลุ่มเป็นค่าเริ่มต้น
 watch(quickAddSubject, (newVal) => {
   if (newVal) {
-    const subj = subjects.value?.find(s => s.id_subject == newVal)
+    const subj = findSubjectRecord(newVal)
     quickAddSelectedSections.value = subj ? subj.sections.map(s => s.id_section) : []
   } else {
     quickAddSelectedSections.value = []
@@ -1104,16 +625,25 @@ const toggleEditSection = (sectionId) => {
 }
 
 const getSubjectLabel = (val, roomId = null, sectionIds = null) => {
-  const subj = subjects.value?.find(s => s.id_subject == val)
+  const subj = findSubjectRecord(val)
   if (!subj) return 'Unknown'
 
   let sectionDisplay = ''
   if (sectionIds && Array.isArray(sectionIds) && sectionIds.length > 0) {
-    const names = subj.sections
+    const namesFromSubject = (subj.sections || [])
       .filter(s => sectionIds.includes(s.id_section))
       .map(s => s.section_name)
-      .join(', ')
-    sectionDisplay = names ? `(${names})` : '(No section)'
+
+    const namesFromMaster = (sections.value || [])
+      .filter(s => sectionIds.includes(s.id_section))
+      .map(s => s.section_name)
+
+    const names = [...new Set([...namesFromSubject, ...namesFromMaster])].filter(Boolean)
+    if (names.length > 0) {
+      sectionDisplay = `(${names.join(', ')})`
+    } else {
+      sectionDisplay = `(${sectionIds.join(', ')})`
+    }
   } else {
     sectionDisplay = `(${subj.section_names || '?'})`
   }
@@ -1234,22 +764,23 @@ const updateSubject = async () => {
 }
 
 const normalizeSchedule = (data) => {
-  if (!Array.isArray(data)) return Array.from({ length: 7 }, () => Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [] })))
+  if (!Array.isArray(data)) return Array.from({ length: 7 }, () => Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [], teacher_ids: [] })))
   const res = [...data]
-  while (res.length < 7) res.push(Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [] })))
+  while (res.length < 7) res.push(Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [], teacher_ids: [] })))
   return res.map((day) => {
     const d = Array.isArray(day) ? [...day] : []
-    while (d.length < 13) d.push({ value: null, room_id: null, section_ids: [] })
+    while (d.length < 13) d.push({ value: null, room_id: null, section_ids: [], teacher_ids: [] })
     return d.map((slot) => {
       // Handle legacy format (just subject ID as value) or null
       if (typeof slot === 'object' && slot !== null) {
         return {
           value: slot.value,
           room_id: slot.room_id || null,
-          section_ids: slot.section_ids || []
+          section_ids: slot.section_ids || [],
+          teacher_ids: slot.teacher_ids || []
         }
       }
-      return { value: slot, room_id: null, section_ids: [] }
+      return { value: slot, room_id: null, section_ids: [], teacher_ids: [] }
     })
   })
 }
@@ -1257,7 +788,7 @@ const normalizeSchedule = (data) => {
 const clearSchedule = (noConfirm = false) => {
   if (!noConfirm && !confirm('ล้างตารางทั้งหมด?')) return
   scheduleSlots.value = Array.from({ length: 7 }, () =>
-    Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [] }))
+    Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [], teacher_ids: [] }))
   )
 }
 
@@ -1273,7 +804,7 @@ const toggleDropdown = (d, s) => {
 }
 
 const setSlotValue = (d, s, val, span = 1) => {
-  const subj = subjects.value?.find(sub => sub.id_subject == val)
+  const subj = findSubjectRecord(val)
   const defaultSections = subj ? subj.sections.map(sec => sec.id_section) : []
 
   for (let i = 0; i < span; i++) {
@@ -1281,8 +812,10 @@ const setSlotValue = (d, s, val, span = 1) => {
     if (!val) {
       scheduleSlots.value[d][s + i].room_id = null
       scheduleSlots.value[d][s + i].section_ids = []
+      scheduleSlots.value[d][s + i].teacher_ids = []
     } else {
       scheduleSlots.value[d][s + i].section_ids = [...defaultSections]
+      scheduleSlots.value[d][s + i].teacher_ids = scheduleSlots.value[d][s + i].teacher_ids || []
     }
   }
   activeBox.value = { day: null, slot: null }
@@ -1346,7 +879,7 @@ const addToSchedule = async () => {
   const subjectId = quickAddSubject.value
   const roomId = quickAddRoom.value
 
-  const subj = subjects.value?.find(s => s.id_subject == subjectId)
+  const subj = findSubjectRecord(subjectId)
   const defaultSections = subj ? subj.sections.map(s => s.id_section) : []
 
   let slotsAdded = 0
@@ -1363,6 +896,7 @@ const addToSchedule = async () => {
     scheduleSlots.value[dayIdx][currentIdx].value = subjectId
     scheduleSlots.value[dayIdx][currentIdx].room_id = roomId
     scheduleSlots.value[dayIdx][currentIdx].section_ids = [...quickAddSelectedSections.value]
+    scheduleSlots.value[dayIdx][currentIdx].teacher_ids = scheduleSlots.value[dayIdx][currentIdx].teacher_ids || []
 
     slotsAdded++
     currentIdx++
