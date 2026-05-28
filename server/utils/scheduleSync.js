@@ -1,4 +1,5 @@
 import db from './db.js'
+import { isTeacherScheduleHiddenSubject } from './teacherScheduleVisibility.js'
 
 /**
  * Normalizes subject IDs to numbers to avoid type mismatch in Set.has()
@@ -7,6 +8,41 @@ function normalizeId(id) {
   if (id === null || id === undefined) return null
   const num = Number(id)
   return isNaN(num) ? id : num
+}
+
+function normalizeTeacherRef(ref) {
+  if (ref === null || ref === undefined || ref === '') return null
+  if (typeof ref === 'string' && ref.startsWith('ext:')) return ref
+  const num = Number(ref)
+  return Number.isFinite(num) ? num : null
+}
+
+function getInternalTeacherIdsFromSlot(slot, subjectId) {
+  if (slot?.schedule_kind === 'internship' || isTeacherScheduleHiddenSubject(subjectId)) return []
+
+  const teacherRefs = Array.isArray(slot?.teacher_ids) ? slot.teacher_ids : []
+  const selected = [...new Set(teacherRefs.map(normalizeTeacherRef).filter(v => Number.isFinite(v)).map(Number))]
+  if (selected.length > 0) return selected
+
+  const subject = db.prepare(`
+    SELECT id_teacher, id_plan_subject, curriculum_subject_id, external_teacher_name
+    FROM Subjects
+    WHERE id_subject = ?
+  `).get(normalizeId(subjectId))
+
+  if (!subject) return []
+  if (subject.external_teacher_name) return []
+
+  const baseKey = subject.id_plan_subject || subject.curriculum_subject_id
+  if (baseKey == null) return []
+
+  const rows = db.prepare(`
+    SELECT DISTINCT id_teacher
+    FROM Subjects
+    WHERE (id_plan_subject = ? OR curriculum_subject_id = ?) AND id_teacher IS NOT NULL
+  `).all(baseKey, baseKey)
+
+  return [...new Set(rows.map(r => Number(r.id_teacher)).filter(Number.isFinite))]
 }
 
 /**
@@ -44,7 +80,7 @@ export function syncTeacherToSections(teacherId, term, newTeacherSchedule) {
       if (secSchedRecord) {
         sectionScheduleData = JSON.parse(secSchedRecord.scheduleData)
       } else {
-        sectionScheduleData = Array.from({ length: 7 }, () => Array.from({ length: 13 }, () => ({ value: null, room_id: null })))
+        sectionScheduleData = Array.from({ length: 7 }, () => Array.from({ length: 13 }, () => ({ value: null, room_id: null, type: null, schedule_kind: 'lesson', section_ids: [], teacher_ids: [] })))
       }
 
       let modified = false
@@ -61,10 +97,20 @@ export function syncTeacherToSections(teacherId, term, newTeacherSchedule) {
           if (teacherVal && teacherSubjectIds.has(teacherVal) && subjectToSections[teacherVal].has(normalizeId(sectionId)) && isSectionActive) {
             const teacherRoom = newTeacherSchedule[d][s]?.room_id || null
             const teacherType = newTeacherSchedule[d][s]?.type || null
-            if (sectionVal !== teacherVal || sectionScheduleData[d][s].room_id !== teacherRoom || sectionScheduleData[d][s].type !== teacherType) {
+            let sectionTeacherIds = Array.isArray(sectionScheduleData[d][s].teacher_ids) ? sectionScheduleData[d][s].teacher_ids : []
+            if (!sectionTeacherIds.includes(Number(tId))) {
+              sectionTeacherIds = [...sectionTeacherIds, Number(tId)]
+            }
+            if (
+              sectionVal !== teacherVal
+              || sectionScheduleData[d][s].room_id !== teacherRoom
+              || sectionScheduleData[d][s].type !== teacherType
+              || JSON.stringify(sectionScheduleData[d][s].teacher_ids || []) !== JSON.stringify(sectionTeacherIds)
+            ) {
               sectionScheduleData[d][s].value = teacherVal
               sectionScheduleData[d][s].room_id = teacherRoom
               sectionScheduleData[d][s].type = teacherType
+              sectionScheduleData[d][s].teacher_ids = sectionTeacherIds
               modified = true
             }
           }
@@ -72,10 +118,19 @@ export function syncTeacherToSections(teacherId, term, newTeacherSchedule) {
           // but the Teacher's schedule doesn't have it here anymore (or has something else).
           else if (sectionVal && teacherSubjectIds.has(sectionVal)) {
             // If we are here, Case A failed, meaning teacher schedule doesn't have THIS subject here for THIS section.
-            sectionScheduleData[d][s].value = null
-            sectionScheduleData[d][s].room_id = null
-            sectionScheduleData[d][s].type = null
-            modified = true
+            let sectionTeacherIds = Array.isArray(sectionScheduleData[d][s].teacher_ids) ? sectionScheduleData[d][s].teacher_ids : []
+            if (sectionTeacherIds.includes(Number(tId))) {
+              sectionTeacherIds = sectionTeacherIds.filter(id => Number(id) !== Number(tId))
+              sectionScheduleData[d][s].teacher_ids = sectionTeacherIds
+
+              // If no teachers left, clear the whole slot for the section
+              if (sectionTeacherIds.length === 0) {
+                sectionScheduleData[d][s].value = null
+                sectionScheduleData[d][s].room_id = null
+                sectionScheduleData[d][s].type = null
+              }
+              modified = true
+            }
           }
         }
       }
@@ -100,27 +155,31 @@ export function syncTeacherToSections(teacherId, term, newTeacherSchedule) {
 /**
  * Synchronize section's schedule changes to affected teachers.
  */
-export function syncSectionToTeachers(sectionId, term, newSectionSchedule) {
+export function syncSectionToTeachers(sectionId, term, newSectionSchedule, previousSectionSchedule = null) {
   try {
     const sId = Number(sectionId)
     console.log(`[Sync] Section ${sId} -> Teachers for term ${term}`)
 
-    // 1. Get all subjects associated with this section and their teachers
-    const sectionSubjects = db.prepare(`
-            SELECT s.id_subject, s.id_teacher
-            FROM Subjects s
-            JOIN SubjectSections ss ON s.id_subject = ss.id_subject
-            WHERE ss.id_section = ?
-        `).all(sId)
-
-    const sectionSubjectIds = new Set(sectionSubjects.map(s => normalizeId(s.id_subject)))
-    const affectedTeacherIds = new Set(sectionSubjects.map(s => s.id_teacher).filter(id => id != null))
-
-    // Subject to Teacher mapping
-    const subjectToTeacher = {}
-    sectionSubjects.forEach((s) => {
-      subjectToTeacher[normalizeId(s.id_subject)] = s.id_teacher
-    })
+    // 1. Derive affected teachers directly from the current section schedule, and
+    //    also include teachers from the previous schedule so removals get cleaned up.
+    const affectedTeacherIds = new Set()
+    const addTeachersFromSchedule = (schedule) => {
+      if (!Array.isArray(schedule)) return
+      for (let d = 0; d < 7; d++) {
+        for (let s = 0; s < 13; s++) {
+          const sectionSlot = schedule?.[d]?.[s] || {}
+          const slotTeacherIds = getInternalTeacherIdsFromSlot(sectionSlot, sectionSlot?.value)
+          for (const teacherRef of slotTeacherIds) {
+            const teacherNum = Number(teacherRef)
+            if (Number.isFinite(teacherNum)) {
+              affectedTeacherIds.add(teacherNum)
+            }
+          }
+        }
+      }
+    }
+    addTeachersFromSchedule(newSectionSchedule)
+    addTeachersFromSchedule(previousSectionSchedule)
 
     // 2. Update each affected teacher
     for (const teacherId of affectedTeacherIds) {
@@ -130,49 +189,76 @@ export function syncSectionToTeachers(sectionId, term, newSectionSchedule) {
       if (teacherSchedRecord) {
         teacherScheduleData = JSON.parse(teacherSchedRecord.scheduleData)
       } else {
-        teacherScheduleData = Array.from({ length: 7 }, () => Array.from({ length: 13 }, () => ({ value: null, room_id: null })))
+        teacherScheduleData = Array.from({ length: 7 }, () => Array.from({ length: 13 }, () => ({ value: null, room_id: null, type: null, schedule_kind: 'lesson', section_ids: [], teacher_ids: [] })))
       }
 
       let modified = false
       for (let d = 0; d < 7; d++) {
         for (let s = 0; s < 13; s++) {
-          const sectionVal = normalizeId(newSectionSchedule[d][s]?.value)
+          const sectionSlot = newSectionSchedule[d][s] || {}
+          const sectionVal = normalizeId(sectionSlot.value)
           const teacherVal = normalizeId(teacherScheduleData[d][s]?.value)
+          const slotTeacherIds = getInternalTeacherIdsFromSlot(sectionSlot, sectionVal)
+          const isInternshipSlot = sectionSlot?.schedule_kind === 'internship'
+          const teacherSections = Array.isArray(teacherScheduleData[d][s].section_ids) ? teacherScheduleData[d][s].section_ids : []
+          const hasCurrentSection = teacherSections.includes(Number(sectionId))
 
-          // Case A: This slot in Section's schedule has a subject taught by THIS teacher
-          if (sectionVal && sectionSubjectIds.has(sectionVal) && subjectToTeacher[sectionVal] === teacherId) {
-            const sectionRoom = newSectionSchedule[d][s]?.room_id || null
-            const sectionType = newSectionSchedule[d][s]?.type || null
+          // Case A: This slot in Section's schedule has a subject taught by THIS teacher.
+          // The section timetable is authoritative, so we overwrite the teacher slot
+          // whenever this teacher is selected in the section slot.
+          if (sectionVal && slotTeacherIds.includes(Number(teacherId))) {
+            const sectionRoom = sectionSlot?.room_id || null
+            const sectionType = sectionSlot?.type || null
+            const sectionScheduleKind = sectionSlot?.schedule_kind || 'lesson'
 
-            // Handle section_ids in teacher schedule
-            let teacherSections = teacherScheduleData[d][s].section_ids || []
-            if (!teacherSections.includes(Number(sectionId))) {
-              teacherSections = [...teacherSections, Number(sectionId)]
-            }
-
-            if (teacherVal !== sectionVal || teacherScheduleData[d][s].room_id !== sectionRoom || teacherScheduleData[d][s].type !== sectionType || JSON.stringify(teacherScheduleData[d][s].section_ids) !== JSON.stringify(teacherSections)) {
-              teacherScheduleData[d][s].value = sectionVal
-              teacherScheduleData[d][s].room_id = sectionRoom
-              teacherScheduleData[d][s].type = sectionType
-              teacherScheduleData[d][s].section_ids = teacherSections
-              modified = true
-            }
-          }
-          // Case B: This slot in Teacher's schedule CURRENTLY contains a subject that belongs to this section,
-          // but the Section's schedule doesn't have it here anymore.
-          else if (teacherVal && sectionSubjectIds.has(teacherVal)) {
-            // Check if this subject actually belongs to this teacher (redundant check but safe)
-            // When clearing from section side, remove THIS section from teacher's slot
-            let teacherSections = teacherScheduleData[d][s].section_ids || []
-            if (teacherSections.includes(Number(sectionId))) {
-              teacherSections = teacherSections.filter(id => id !== Number(sectionId))
-              teacherScheduleData[d][s].section_ids = teacherSections
-
-              // If no sections left, clear the whole slot for the teacher
-              if (teacherSections.length === 0) {
+            if (isInternshipSlot) {
+              if (teacherScheduleData[d][s].value !== null) {
                 teacherScheduleData[d][s].value = null
                 teacherScheduleData[d][s].room_id = null
                 teacherScheduleData[d][s].type = null
+                teacherScheduleData[d][s].schedule_kind = 'internship'
+                teacherScheduleData[d][s].section_ids = []
+                teacherScheduleData[d][s].teacher_ids = []
+                modified = true
+              }
+              continue
+            }
+
+            let nextTeacherSections = [...teacherSections]
+            if (!nextTeacherSections.includes(Number(sectionId))) {
+              nextTeacherSections = [...nextTeacherSections, Number(sectionId)]
+            }
+            const teacherIds = [...new Set(slotTeacherIds.map(id => Number(id)).filter(Number.isFinite))]
+
+            if (
+              teacherVal !== sectionVal
+              || teacherScheduleData[d][s].room_id !== sectionRoom
+              || teacherScheduleData[d][s].type !== sectionType
+              || teacherScheduleData[d][s].schedule_kind !== sectionScheduleKind
+              || JSON.stringify(teacherScheduleData[d][s].section_ids || []) !== JSON.stringify(nextTeacherSections)
+              || JSON.stringify(teacherScheduleData[d][s].teacher_ids || []) !== JSON.stringify(teacherIds)
+            ) {
+              teacherScheduleData[d][s].value = sectionVal
+              teacherScheduleData[d][s].room_id = sectionRoom
+              teacherScheduleData[d][s].type = sectionType
+              teacherScheduleData[d][s].schedule_kind = sectionScheduleKind
+              teacherScheduleData[d][s].section_ids = nextTeacherSections
+              teacherScheduleData[d][s].teacher_ids = teacherIds
+              modified = true
+            }
+          }
+          // Case B: This slot is no longer present in the section timetable.
+          // Remove this section from the teacher slot if it was previously synced.
+          else if (hasCurrentSection) {
+            const nextSections = teacherSections.filter(id => Number(id) !== Number(sectionId))
+            if (JSON.stringify(nextSections) !== JSON.stringify(teacherSections)) {
+              teacherScheduleData[d][s].section_ids = nextSections
+              if (nextSections.length === 0) {
+                teacherScheduleData[d][s].value = null
+                teacherScheduleData[d][s].room_id = null
+                teacherScheduleData[d][s].type = null
+                teacherScheduleData[d][s].schedule_kind = 'lesson'
+                teacherScheduleData[d][s].teacher_ids = []
               }
               modified = true
             }

@@ -12,6 +12,18 @@ const parsePlanId = (raw) => {
   return Number.isFinite(n) ? n : null
 }
 
+const parseYear = (raw) => {
+  if (raw == null) return null
+  if (typeof raw === 'object') {
+    const v = raw.value ?? raw.year ?? null
+    if (v == null) return null
+    const n = Number(v)
+    return Number.isFinite(n) && n > 0 ? n : null
+  }
+  const n = Number(raw)
+  return Number.isFinite(n) && n > 0 ? n : null
+}
+
 export default defineEventHandler(async (event) => {
   const id = event.context.params.id
 
@@ -24,7 +36,8 @@ export default defineEventHandler(async (event) => {
         UPDATE sections 
         SET section_name = COALESCE(?, section_name),
             description = COALESCE(?, description),
-            id_plan = COALESCE(?, id_plan)
+            id_plan = COALESCE(?, id_plan),
+            year = COALESCE(?, year)
         WHERE id_section = ?
       `)
 
@@ -32,6 +45,7 @@ export default defineEventHandler(async (event) => {
         body.section_name || null,
         body.description !== undefined ? body.description : null,
         body.id_plan !== undefined ? parsePlanId(body.id_plan) : null,
+        body.year !== undefined ? parseYear(body.year) : null,
         id
       )
 

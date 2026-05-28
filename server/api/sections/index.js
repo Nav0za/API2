@@ -23,6 +23,18 @@ const parsePlanId = (raw) => {
   return Number.isFinite(n) ? n : null
 }
 
+const parseYear = (raw) => {
+  if (raw == null) return 1
+  if (typeof raw === 'object') {
+    const v = raw.value ?? raw.year ?? null
+    if (v == null) return 1
+    const n = Number(v)
+    return Number.isFinite(n) && n > 0 ? n : 1
+  }
+  const n = Number(raw)
+  return Number.isFinite(n) && n > 0 ? n : 1
+}
+
 export default defineEventHandler(async (event) => {
   // GET - ดึงกลุ่มเรียนทั้งหมด
   if (event.node.req.method === 'GET') {
@@ -50,6 +62,7 @@ export default defineEventHandler(async (event) => {
     const sectionName = String(body.section_name)
     const description = body.description ? String(body.description) : null
     const idPlan = parsePlanId(body.id_plan)
+    const year = parseYear(body.year)
 
     console.log('[sections POST] Received:', { sectionName, description, idPlan })
 
@@ -60,27 +73,30 @@ export default defineEventHandler(async (event) => {
       if (existing) {
         const finalDesc = description !== null ? description : (existing.description || null)
         const finalPlan = idPlan !== null ? idPlan : (existing.id_plan || null)
+        const finalYear = body.year !== undefined ? year : (existing.year || 1)
 
-        db.prepare('UPDATE sections SET description = ?, id_plan = ? WHERE id_section = ?')
-          .run(finalDesc, finalPlan, existing.id_section)
+        db.prepare('UPDATE sections SET description = ?, id_plan = ?, year = ? WHERE id_section = ?')
+          .run(finalDesc, finalPlan, finalYear, existing.id_section)
 
         return {
           id_section: existing.id_section,
           section_name: sectionName,
           description: finalDesc,
           id_plan: finalPlan,
+          year: finalYear,
           message: 'อัปเดตข้อมูลกลุ่มเรียนเดิมเรียบร้อยแล้ว'
         }
       }
 
-      const res = db.prepare('INSERT INTO sections (section_name, description, id_plan) VALUES (?, ?, ?)')
-        .run(sectionName, description, idPlan)
+      const res = db.prepare('INSERT INTO sections (section_name, description, id_plan, year) VALUES (?, ?, ?, ?)')
+        .run(sectionName, description, idPlan, year)
 
       return {
         id_section: res.lastInsertRowid,
         section_name: sectionName,
         description: description,
         id_plan: idPlan,
+        year,
         created_at: new Date().toISOString()
       }
     } catch (error) {

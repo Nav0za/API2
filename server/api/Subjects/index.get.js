@@ -1,4 +1,5 @@
 import db from '../../utils/db.js'
+import { isTeacherScheduleHiddenSubject } from '../../utils/teacherScheduleVisibility.js'
 
 export default defineEventHandler((event) => {
   const query = getQuery(event)
@@ -61,5 +62,5 @@ export default defineEventHandler((event) => {
       name_subject: resolvedName,
       sections: s.sections_json ? JSON.parse(s.sections_json) : []
     }
-  })
+  }).filter(s => !id_teacher || !isTeacherScheduleHiddenSubject(s.id_subject))
 })

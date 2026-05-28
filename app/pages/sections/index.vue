@@ -74,8 +74,8 @@
               </UDropdownMenu>
             </div>
 
-            <p class="text-sm font-bold text-slate-800 mb-1 flex items-center gap-1.5" v-if="section.name_plan">
-              <UIcon name="i-heroicons-academic-cap" /> {{ section.curriculum_name }} - {{ section.name_plan }}
+            <p class="text-md font-bold text-slate-800 mb-1 flex items-center gap-1.5" v-if="section.name_plan">
+              <UIcon class="size-15" name="i-heroicons-academic-cap" /> {{ section.curriculum_name }} - {{ section.name_plan }}
             </p>
             <p class="text-sm text-slate-600 line-clamp-2 h-10 mb-6" :class="{ 'mt-2': !section.name_plan }">
               {{ section.description || 'ไม่มีรายละเอียดเพิ่มเติม' }}
@@ -132,6 +132,21 @@
                     </span>
                   </template>
                 </USelectMenu>
+              </UFormField>
+
+              <UFormField class="text-lg" label="ชั้นปี *"
+                help="ระบุว่ากลุ่มเรียนนี้เป็นนักศึกษาปีใด"
+                :ui="{ label: 'text-slate-900 font-bold mb-2' }">
+                <USelectMenu
+                  v-model="newSection.year"
+                  :items="yearOptions"
+                  class="w-full"
+                  value-attribute="value"
+                  option-attribute="label"
+                  placeholder="-- เลือกชั้นปี --"
+                  size="xl"
+                  :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl break-words whitespace-normal text-left h-auto py-2' }"
+                />
               </UFormField>
 
 
@@ -195,6 +210,21 @@
                     </span>
                   </template>
                 </USelectMenu>
+              </UFormField>
+
+              <UFormField class="text-lg" label="ชั้นปี *"
+                help="กำหนดชั้นปีของกลุ่มเรียน"
+                :ui="{ label: 'text-slate-900 font-bold mb-2' }">
+                <USelectMenu
+                  v-model="editingSection.year"
+                  :items="yearOptions"
+                  value-attribute="value"
+                  option-attribute="label"
+                  placeholder="-- เลือกชั้นปี --"
+                  size="xl"
+                  class="w-full"
+                  :ui="{ base: 'bg-white border-slate-200 text-slate-900 focus:ring-blue-500 rounded-2xl break-words whitespace-normal text-left h-auto py-2' }"
+                />
               </UFormField>
 
               <UFormField label="รายละเอียด" :ui="{ label: 'text-slate-900 font-bold mb-2' }">
@@ -286,6 +316,18 @@ const normalizePlanId = (val) => {
   return Number.isFinite(n) ? n : null
 }
 
+const normalizeYear = (val) => {
+  if (val == null) return 1
+  if (typeof val === 'object') {
+    const maybe = val.value ?? val.year ?? null
+    if (maybe == null) return 1
+    const n = Number(maybe)
+    return Number.isFinite(n) && n > 0 ? n : 1
+  }
+  const n = Number(val)
+  return Number.isFinite(n) && n > 0 ? n : 1
+}
+
 const studyPlanOptions = computed(() => {
   if (!studyPlans.value) return []
   return studyPlans.value.map(p => ({
@@ -293,6 +335,14 @@ const studyPlanOptions = computed(() => {
     label: `${p.name_curriculum ? p.name_curriculum + ' - ' : ''}${p.name_plan}`
   }))
 })
+
+const yearOptions = computed(() => [
+  { value: 1, label: 'ปี 1' },
+  { value: 2, label: 'ปี 2' },
+  { value: 3, label: 'ปี 3' },
+  { value: 4, label: 'ปี 4' },
+  { value: 5, label: 'ปี 5' }
+])
 
 const getPlanOptionById = (id) => {
   const planId = normalizePlanId(id)
@@ -313,14 +363,16 @@ const newSection = ref({
   name: '',
   term: '',
   description: '',
-  id_plan: null
+  id_plan: null,
+  year: 1
 })
 
 const editingSection = ref({ // State for editing
   id: null,
   name: '',
   description: '',
-  id_plan: null
+  id_plan: null,
+  year: 1
 })
 
 const deletingSection = ref(null) // State for deleting
@@ -394,7 +446,8 @@ const handleAddSection = async () => {
       body: {
         section_name: newSection.value.name,
         description: newSection.value.description,
-        id_plan: normalizePlanId(newSection.value.id_plan)
+        id_plan: normalizePlanId(newSection.value.id_plan),
+        year: normalizeYear(newSection.value.year)
       }
     })
 
@@ -403,6 +456,7 @@ const handleAddSection = async () => {
     newSection.value.name = ''
     newSection.value.description = ''
     newSection.value.id_plan = null
+    newSection.value.year = 1
     refresh()
   } catch (error) {
     console.error(error)
@@ -418,12 +472,13 @@ const handleAddSection = async () => {
 
 // Edit Section Handlers
 const openEditSectionModal = (section) => {
-  editingSection.value = {
-    id: section.id_section,
-    name: section.section_name,
-    description: section.description,
-    id_plan: getPlanOptionById(section.id_plan)
-  }
+    editingSection.value = {
+      id: section.id_section,
+      name: section.section_name,
+      description: section.description,
+      id_plan: getPlanOptionById(section.id_plan),
+      year: normalizeYear(section.year)
+    }
   openEditModal.value = true
 }
 
@@ -440,7 +495,8 @@ const handleEditSection = async () => {
       body: {
         section_name: editingSection.value.name,
         description: editingSection.value.description,
-        id_plan: normalizePlanId(editingSection.value.id_plan)
+        id_plan: normalizePlanId(editingSection.value.id_plan),
+        year: normalizeYear(editingSection.value.year)
       }
     })
 

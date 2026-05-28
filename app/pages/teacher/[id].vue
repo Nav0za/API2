@@ -168,12 +168,14 @@
                     class="relative border-r border-b border-slate-200 last:border-r-0 min-h-[90px]"
                     :style="{ gridColumn: `span ${slot.span}`, minWidth: `${slot.span * 85}px` }">
                     <div
-                      class="absolute inset-0 transition-all flex flex-col items-center justify-center text-center gap-1.5 select-none"
+                      class="absolute inset-0 transition-all flex flex-col items-center justify-center text-center gap-1.5 select-none cursor-help"
+                      :title="slot.value ? getSubjectLabel(slot.value, slot.room_id, slot.section_ids) : ''"
+                      :aria-label="slot.value ? getSubjectLabel(slot.value, slot.room_id, slot.section_ids) : 'ว่าง'"
                       :class="[
                         slot.value ? 'bg-blue-50 font-bold text-blue-700 border border-blue-100/50 m-1 rounded-xl shadow-xs' : 'bg-transparent text-slate-300'
                       ]">
                       <template v-if="slot.value">
-                        <span class="text-xs line-clamp-2 leading-tight">
+                        <span class="text-xs line-clamp-2 leading-tight" :title="getSubjectLabel(slot.value, slot.room_id, slot.section_ids)">
                           {{ getSubjectLabel(slot.value, slot.room_id, slot.section_ids) }}
                         </span>
                         <!-- เพิ่ม badge แสดงเวลาประเภท -->
@@ -236,7 +238,7 @@ const dragCurrentDay = ref(null)
 const paintSectionOptions = computed(() => {
   const rawId = getRawValue(paintSubjectId.value)
   if (!rawId) return []
-  const subj = subjects.value?.find(sub => sub.id_subject == rawId)
+  const subj = findSubjectRecord(rawId)
   if (!subj || !subj.sections) return []
   return subj.sections.map(sec => ({ label: sec.section_name, value: sec.id_section }))
 })
@@ -246,7 +248,7 @@ watch(() => paintSubjectId.value, (newVal) => {
   if (!rawId) {
     paintSectionIds.value = []
   } else {
-    const subj = subjects.value?.find(sub => sub.id_subject == rawId)
+    const subj = findSubjectRecord(rawId)
     if (subj && subj.sections) {
       paintSectionIds.value = subj.sections.map(sec => sec.id_section)
     } else {
@@ -395,10 +397,11 @@ watch(selectedTerm, (newVal) => {
 const { data: subjects, refresh: refreshSubjects } = await useFetch('/api/Subjects', {
   query: { id_teacher: id, term: selectedTerm }
 })
+const { data: allSubjects } = await useFetch('/api/Subjects')
 
 // ข้อมูลตารางสอน
 const scheduleSlots = useState(`schedule-slots-${id}`, () => Array.from({ length: 7 }, () =>
-  Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [] }))
+  Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [], teacher_ids: [] }))
 ))
 
 // ข้อมูลวันเวลา
@@ -408,6 +411,14 @@ const timeSlots = [
   '18:00 - 19:00', '19:00 - 20:00', '20:00 - 21:00'
 ]
 const days = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์', 'อาทิตย์']
+
+const findSubjectRecord = (subjectId) => {
+  const rawId = Number(getRawValue(subjectId))
+  if (!Number.isFinite(rawId)) return null
+  return subjects.value?.find(sub => Number(sub.id_subject) === rawId)
+    || allSubjects.value?.find(sub => Number(sub.id_subject) === rawId)
+    || null
+}
 
 // --- Computeds ---
 const teacherData = computed(() =>
@@ -545,7 +556,7 @@ const quickAddPreview = computed(() => {
 // เมื่อเปลี่ยนวิชาใน Quick Add ให้เลือกทุกกลุ่มเป็นค่าเริ่มต้น
 watch(quickAddSubject, (newVal) => {
   if (newVal) {
-    const subj = subjects.value?.find(s => s.id_subject == newVal)
+    const subj = findSubjectRecord(newVal)
     quickAddSelectedSections.value = subj ? subj.sections.map(s => s.id_section) : []
   } else {
     quickAddSelectedSections.value = []
@@ -614,16 +625,25 @@ const toggleEditSection = (sectionId) => {
 }
 
 const getSubjectLabel = (val, roomId = null, sectionIds = null) => {
-  const subj = subjects.value?.find(s => s.id_subject == val)
+  const subj = findSubjectRecord(val)
   if (!subj) return 'Unknown'
 
   let sectionDisplay = ''
   if (sectionIds && Array.isArray(sectionIds) && sectionIds.length > 0) {
-    const names = subj.sections
+    const namesFromSubject = (subj.sections || [])
       .filter(s => sectionIds.includes(s.id_section))
       .map(s => s.section_name)
-      .join(', ')
-    sectionDisplay = names ? `(${names})` : '(No section)'
+
+    const namesFromMaster = (sections.value || [])
+      .filter(s => sectionIds.includes(s.id_section))
+      .map(s => s.section_name)
+
+    const names = [...new Set([...namesFromSubject, ...namesFromMaster])].filter(Boolean)
+    if (names.length > 0) {
+      sectionDisplay = `(${names.join(', ')})`
+    } else {
+      sectionDisplay = `(${sectionIds.join(', ')})`
+    }
   } else {
     sectionDisplay = `(${subj.section_names || '?'})`
   }
@@ -744,22 +764,23 @@ const updateSubject = async () => {
 }
 
 const normalizeSchedule = (data) => {
-  if (!Array.isArray(data)) return Array.from({ length: 7 }, () => Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [] })))
+  if (!Array.isArray(data)) return Array.from({ length: 7 }, () => Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [], teacher_ids: [] })))
   const res = [...data]
-  while (res.length < 7) res.push(Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [] })))
+  while (res.length < 7) res.push(Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [], teacher_ids: [] })))
   return res.map((day) => {
     const d = Array.isArray(day) ? [...day] : []
-    while (d.length < 13) d.push({ value: null, room_id: null, section_ids: [] })
+    while (d.length < 13) d.push({ value: null, room_id: null, section_ids: [], teacher_ids: [] })
     return d.map((slot) => {
       // Handle legacy format (just subject ID as value) or null
       if (typeof slot === 'object' && slot !== null) {
         return {
           value: slot.value,
           room_id: slot.room_id || null,
-          section_ids: slot.section_ids || []
+          section_ids: slot.section_ids || [],
+          teacher_ids: slot.teacher_ids || []
         }
       }
-      return { value: slot, room_id: null, section_ids: [] }
+      return { value: slot, room_id: null, section_ids: [], teacher_ids: [] }
     })
   })
 }
@@ -767,7 +788,7 @@ const normalizeSchedule = (data) => {
 const clearSchedule = (noConfirm = false) => {
   if (!noConfirm && !confirm('ล้างตารางทั้งหมด?')) return
   scheduleSlots.value = Array.from({ length: 7 }, () =>
-    Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [] }))
+    Array.from({ length: 13 }, () => ({ value: null, room_id: null, section_ids: [], teacher_ids: [] }))
   )
 }
 
@@ -783,7 +804,7 @@ const toggleDropdown = (d, s) => {
 }
 
 const setSlotValue = (d, s, val, span = 1) => {
-  const subj = subjects.value?.find(sub => sub.id_subject == val)
+  const subj = findSubjectRecord(val)
   const defaultSections = subj ? subj.sections.map(sec => sec.id_section) : []
 
   for (let i = 0; i < span; i++) {
@@ -791,8 +812,10 @@ const setSlotValue = (d, s, val, span = 1) => {
     if (!val) {
       scheduleSlots.value[d][s + i].room_id = null
       scheduleSlots.value[d][s + i].section_ids = []
+      scheduleSlots.value[d][s + i].teacher_ids = []
     } else {
       scheduleSlots.value[d][s + i].section_ids = [...defaultSections]
+      scheduleSlots.value[d][s + i].teacher_ids = scheduleSlots.value[d][s + i].teacher_ids || []
     }
   }
   activeBox.value = { day: null, slot: null }
@@ -856,7 +879,7 @@ const addToSchedule = async () => {
   const subjectId = quickAddSubject.value
   const roomId = quickAddRoom.value
 
-  const subj = subjects.value?.find(s => s.id_subject == subjectId)
+  const subj = findSubjectRecord(subjectId)
   const defaultSections = subj ? subj.sections.map(s => s.id_section) : []
 
   let slotsAdded = 0
@@ -873,6 +896,7 @@ const addToSchedule = async () => {
     scheduleSlots.value[dayIdx][currentIdx].value = subjectId
     scheduleSlots.value[dayIdx][currentIdx].room_id = roomId
     scheduleSlots.value[dayIdx][currentIdx].section_ids = [...quickAddSelectedSections.value]
+    scheduleSlots.value[dayIdx][currentIdx].teacher_ids = scheduleSlots.value[dayIdx][currentIdx].teacher_ids || []
 
     slotsAdded++
     currentIdx++

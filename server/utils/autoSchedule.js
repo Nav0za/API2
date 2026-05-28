@@ -71,12 +71,13 @@ export async function findAvailableSlots(teacherId, missedDate, term) {
   const events = db.prepare(`
     SELECT start, end, event_type, teacher_id 
     FROM calendar_events 
-    WHERE (start BETWEEN ? AND ?) 
+    WHERE date(start) <= date(?) 
+      AND date(COALESCE(end, start)) >= date(?) 
       AND (
         event_type = 'holiday' 
         OR (event_type = 'teacher_absence' AND teacher_id = ?)
       )
-  `).all(startStr, endStr, teacherId)
+  `).all(endStr, startStr, teacherId)
 
   // Map วันที่ไม่ว่าง (YYYY-MM-DD)
   const busyDates = new Set()
@@ -533,12 +534,13 @@ export async function findAvailableSlotsForMultipleClasses(teacherId, missedDate
   const events = db.prepare(`
     SELECT start, end, event_type, teacher_id 
     FROM calendar_events 
-    WHERE (start BETWEEN ? AND ?) 
+    WHERE date(start) <= date(?) 
+      AND date(COALESCE(end, start)) >= date(?) 
       AND (
         event_type = 'holiday' 
         OR (event_type = 'teacher_absence' AND teacher_id = ?)
       )
-  `).all(startStr, endStr, teacherId)
+  `).all(endStr, startStr, teacherId)
 
   // เตรียมชุดของวันที่ "ไม่ว่าง" (Busy) โดยเริ่มจากวันที่เป็นวันหยุดแน่นอน
   const holidayDates = new Set()

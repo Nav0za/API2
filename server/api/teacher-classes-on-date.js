@@ -1,4 +1,5 @@
 import db from '../utils/db.js'
+import { sanitizeTeacherSchedule } from '../utils/teacherScheduleVisibility.js'
 
 /**
  * ดึงรายการวิชาที่อาจารย์สอนในวันที่กำหนด
@@ -34,7 +35,7 @@ export default defineEventHandler(async (event) => {
 
   let schedule
   try {
-    schedule = JSON.parse(scheduleResult.scheduleData)
+    schedule = sanitizeTeacherSchedule(JSON.parse(scheduleResult.scheduleData))
   } catch (e) {
     console.error('Error parsing schedule:', e)
     return []

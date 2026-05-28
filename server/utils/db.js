@@ -284,6 +284,7 @@ db.exec(`
     id_section INTEGER PRIMARY KEY AUTOINCREMENT,
     section_name TEXT NOT NULL UNIQUE,
     description TEXT,
+    year INTEGER DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );`)
 
@@ -406,8 +407,10 @@ try {
   safeDropColumn('teachers', 'subject')
   safeDropColumn('study_plans', 'year')
   safeDropColumn('study_plans', 'semester')
-  
-  db.exec('DROP TABLE IF EXISTS section_terms')
+
+  // Keep legacy section_terms table in place so older data is not discarded
+  // during startup migrations. It is no longer used by the current schema,
+  // but leaving it intact avoids accidental data loss on deploy.
 
   // Add term column to Subjects if missing
   const subjectInfo = db.prepare('PRAGMA table_info(Subjects)').all()
@@ -431,6 +434,12 @@ try {
     console.log('Migrated Subjects table: added external_teacher_name column')
   }
 
+  // Add hide_in_teacher_schedule to Subjects if missing
+  if (!subjectInfo.some(col => col.name === 'hide_in_teacher_schedule')) {
+    db.exec('ALTER TABLE Subjects ADD COLUMN hide_in_teacher_schedule INTEGER DEFAULT 0')
+    console.log('Migrated Subjects table: added hide_in_teacher_schedule column')
+  }
+
   // Add credits and hours to curriculum_subjects
   const currSubjectsInfo = db.prepare('PRAGMA table_info(curriculum_subjects)').all()
   if (!currSubjectsInfo.some(col => col.name === 'credit')) {
@@ -448,12 +457,34 @@ try {
     db.exec('ALTER TABLE sections ADD COLUMN id_plan INTEGER REFERENCES study_plans(id_plan) ON DELETE SET NULL')
     console.log('Migrated sections table: added id_plan column')
   }
+  if (!sectionInfo.some(col => col.name === 'year')) {
+    db.exec('ALTER TABLE sections ADD COLUMN year INTEGER DEFAULT 1')
+    console.log('Migrated sections table: added year column')
+  }
 
   // Add id_plan_subject to Subjects if missing
   if (!subjectInfo.some(col => col.name === 'id_plan_subject')) {
     db.exec('ALTER TABLE Subjects ADD COLUMN id_plan_subject INTEGER REFERENCES study_plan_subjects(id_plan_subject) ON DELETE SET NULL')
     console.log('Migrated Subjects table: added id_plan_subject column')
   }
+
+  db.exec(`
+    UPDATE Subjects
+    SET hide_in_teacher_schedule = 1
+    WHERE hide_in_teacher_schedule IS NULL
+       OR (
+         hide_in_teacher_schedule = 0
+         AND EXISTS (
+           SELECT 1
+           FROM curriculum_subjects cs
+           WHERE cs.id_subject_curr = Subjects.curriculum_subject_id
+             AND (
+               cs.name_subject LIKE '%ฝึกงาน%'
+               OR cs.subject_code LIKE '%ฝึกงาน%'
+             )
+         )
+       )
+  `)
 
   if (sectionInfo.some(col => col.name === 'term')) {
     console.log('Starting Sections/Terms migration...')
@@ -488,8 +519,6 @@ try {
       db.exec('DELETE FROM sections')
 
       const insertMaster = db.prepare('INSERT INTO sections (section_name, description, created_at) VALUES (?, ?, ?)')
-
-
       for (const name in masterSections) {
         const m = masterSections[name]
         const res = insertMaster.run(m.name, m.description, m.created_at)

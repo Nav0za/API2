@@ -1,4 +1,5 @@
 import db from '../../utils/db.js'
+import { clearTeacherScheduleVisibilityCache } from '../../utils/teacherScheduleVisibility.js'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -24,6 +25,9 @@ export default defineEventHandler(async (event) => {
     if (cs) {
       resolvedName = cs.subject_code ? `${cs.subject_code} ${cs.name_subject}` : cs.name_subject
     }
+    const inferredHideInTeacherSchedule = body.hide_in_teacher_schedule !== undefined
+      ? (body.hide_in_teacher_schedule ? 1 : 0)
+      : (/ฝึกงาน/.test(cs?.name_subject || '') ? 1 : 0)
 
     // 1. Check if Subject for this teacher/external + term + curriculum_subj already exists
     let subjectId
@@ -50,9 +54,10 @@ export default defineEventHandler(async (event) => {
        }
     } else {
        // Insert Subject
-       const stmt = db.prepare('INSERT INTO Subjects (id_teacher, term, curriculum_subject_id, id_plan_subject, external_teacher_name) VALUES (?, ?, ?, ?, ?)')
-       const result = stmt.run(body.id_teacher || null, body.term || null, body.curriculum_subject_id, body.id_plan_subject || null, body.external_teacher_name || null)
-       subjectId = result.lastInsertRowid
+        const stmt = db.prepare('INSERT INTO Subjects (id_teacher, term, curriculum_subject_id, id_plan_subject, external_teacher_name, hide_in_teacher_schedule) VALUES (?, ?, ?, ?, ?, ?)')
+        const result = stmt.run(body.id_teacher || null, body.term || null, body.curriculum_subject_id, body.id_plan_subject || null, body.external_teacher_name || null, inferredHideInTeacherSchedule)
+        subjectId = result.lastInsertRowid
+        clearTeacherScheduleVisibilityCache(subjectId)
     }
 
     // 2. Insert SubjectSections (Join table)

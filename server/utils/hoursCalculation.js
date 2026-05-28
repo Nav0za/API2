@@ -21,10 +21,16 @@ export function getSectionSubjectHoursUsed(sectionId, term) {
     for (let s = 0; s < 13; s++) {
       const slot = scheduleData[d][s]
       if (slot && slot.value && typeof slot === 'object') {
-        const valStr = String(slot.value)
-        if (!usage[valStr]) {
-          usage[valStr] = { theory: 0, practical: 0, unknown: 0 }
-        }
+        const subjectId = Number(slot.value)
+        const subject = db.prepare(`
+          SELECT s.id_plan_subject, s.curriculum_subject_id
+          FROM Subjects
+          AS s
+          WHERE s.id_subject = ?
+        `).get(subjectId)
+        const baseKey = subject?.id_plan_subject || subject?.curriculum_subject_id || subjectId
+        const valStr = String(baseKey)
+        if (!usage[valStr]) usage[valStr] = { theory: 0, practical: 0, unknown: 0 }
 
         if (slot.type === 'theory') {
           usage[valStr].theory += 1
