@@ -26,7 +26,7 @@ useHead({
         <UButton class="text-white" label="คู่มือ" size="xl" icon="i-heroicons-information-circle" color="primary"
           variant="ghost" :ui="{ leadingIcon: 'text-primary' }" to="/guide" />
         <UButton class="text-white" label="ปฏิทิน" size="xl" icon="i-heroicons-calendar" color="primary" variant="ghost"
-          :ui="{ leadingIcon: 'text-primary' }" to="/" />
+          :ui="{ leadingIcon: 'text-primary' }" to="/calendar" />
         <UButton class="text-white" label="หลักสูตร" size="xl" icon="i-heroicons-academic-cap" color="primary"
           variant="ghost" :ui="{ leadingIcon: 'text-primary' }" to="/curriculums" />
         <UButton class="text-white" label="ปีการศึกษา" size="xl" icon="i-lucide-layers" color="primary" variant="ghost"
