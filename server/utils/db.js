@@ -2,16 +2,31 @@ import Database from 'better-sqlite3'
 import { resolve } from 'path'
 import { existsSync, mkdirSync } from 'fs'
 
-// ใช้โฟลเดอร์ server/data
-const dbDir = resolve(process.cwd(), 'server', 'data')
+const isNode = typeof process !== 'undefined' && process.versions && process.versions.node;
 
-// ถ้าโฟลเดอร์ไม่มี ให้สร้าง
-if (!existsSync(dbDir)) {
-  mkdirSync(dbDir, { recursive: true })
+let db;
+if (isNode) {
+  // ใช้โฟลเดอร์ server/data
+  const dbDir = resolve(process.cwd(), 'server', 'data')
+
+  // ถ้าโฟลเดอร์ไม่มี ให้สร้าง
+  if (!existsSync(dbDir)) {
+    mkdirSync(dbDir, { recursive: true })
+  }
+
+  const dbPath = resolve(dbDir, 'data.db')
+  db = new Database(dbPath)
+} else {
+  db = {
+    exec: () => {},
+    prepare: () => ({
+      all: () => [],
+      run: () => ({ lastInsertRowid: 0 }),
+      get: () => null
+    }),
+    transaction: (fn) => fn
+  }
 }
-
-const dbPath = resolve(dbDir, 'data.db')
-const db = new Database(dbPath)
 
 // Helper for dropping columns safely
 const safeDropColumn = (tableName, columnName) => {
