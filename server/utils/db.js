@@ -2,7 +2,7 @@ import Database from 'better-sqlite3'
 import { resolve } from 'path'
 import { existsSync, mkdirSync } from 'fs'
 
-const isNode = typeof process !== 'undefined' && process.versions && process.versions.node;
+const isNode = typeof process !== 'undefined' && process.release?.name === 'node';
 
 let db;
 if (isNode) {
