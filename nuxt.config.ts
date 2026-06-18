@@ -5,6 +5,10 @@ export default defineNuxtConfig({
     '@nuxt/ui'
   ],
 
+  build: {
+    transpile: ['@vueuse/core']
+  },
+
   devtools: {
     enabled: true
   },

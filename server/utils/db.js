@@ -13,6 +13,20 @@ if (!existsSync(dbDir)) {
 const dbPath = resolve(dbDir, 'data.db')
 const db = new Database(dbPath)
 
+// Helper for dropping columns safely
+const safeDropColumn = (tableName, columnName) => {
+  try {
+    const info = db.prepare(`PRAGMA table_info(${tableName})`).all()
+    if (info.some(col => col.name === columnName)) {
+      db.exec(`ALTER TABLE ${tableName} DROP COLUMN ${columnName}`)
+      console.log(`Cleaned up ${tableName} table: removed ${columnName} column`)
+    }
+  } catch (err) {
+    console.error(`Error dropping ${columnName} from ${tableName}:`, err.message)
+  }
+}
+
+
 // curriculums
 db.exec(`
   CREATE TABLE IF NOT EXISTS curriculums (
@@ -382,18 +396,7 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_makeup_teacher 
   ON makeup_classes(teacher_id);`)
 
-// Helper for dropping columns safely
-const safeDropColumn = (tableName, columnName) => {
-  try {
-    const info = db.prepare(`PRAGMA table_info(${tableName})`).all()
-    if (info.some(col => col.name === columnName)) {
-      db.exec(`ALTER TABLE ${tableName} DROP COLUMN ${columnName}`)
-      console.log(`Cleaned up ${tableName} table: removed ${columnName} column`)
-    }
-  } catch (err) {
-    console.error(`Error dropping ${columnName} from ${tableName}:`, err.message)
-  }
-}
+
 
 // Migration (Cleanup & Restructure)
 try {
